@@ -7,6 +7,8 @@
 
 import * as React from "react"
 import { useStaticQuery, graphql } from "gatsby"
+import { Flex } from '@chakra-ui/react';
+
 
 import Header from "./header"
 import "./layout.css"
@@ -24,14 +26,8 @@ const Layout = ({ children }) => {
 
   return (
     <>
-      <Header siteTitle={data.site.siteMetadata?.title || `Title`} />
-      <div
-        style={{
-          margin: `0 auto`,
-          maxWidth: `var(--size-content)`,
-          padding: `var(--size-gutter)`,
-        }}
-      >
+      <Header/>
+      <Flex direction={'column'}>
         <main>{children}</main>
         <footer
           style={{
@@ -39,11 +35,9 @@ const Layout = ({ children }) => {
             fontSize: `var(--font-sm)`,
           }}
         >
-          © {new Date().getFullYear()} &middot; Built with
-          {` `}
-          <a href="https://www.gatsbyjs.com">Gatsby</a>
+          © {new Date().getFullYear()} &middot; Tejit Pabari
         </footer>
-      </div>
+      </Flex>
     </>
   )
 }

@@ -9,9 +9,9 @@
  */
 module.exports = {
   siteMetadata: {
-    title: `Gatsby Default Starter`,
-    description: `Kick off your next, great Gatsby project with this default starter. This barebones starter ships with the main Gatsby configuration files you might need.`,
-    author: `@gatsbyjs`,
+    title: `Tejit Pabari's Website`,
+    description: `Tejit Pabari's Website`,
+    author: `tejitpabari`,
     siteUrl: `https://gatsbystarterdefaultsource.gatsbyjs.io/`,
   },
   plugins: [
@@ -37,6 +37,23 @@ module.exports = {
         // theme_color: `#663399`,
         display: `minimal-ui`,
         icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+      },
+    },
+    `gatsby-plugin-styled-components`,
+    {
+      resolve: '@chakra-ui/gatsby-plugin',
+      options: {
+        /**
+         * @property {boolean} [resetCSS=true]
+         * if false, this plugin will not use `<CSSReset />
+         */
+        resetCSS: true,
+        /**
+         * @property {number} [portalZIndex=undefined]
+         * The z-index to apply to all portal nodes. This is useful
+         * if your app uses a lot z-index to position elements.
+         */
+        portalZIndex: undefined,
       },
     },
   ],
