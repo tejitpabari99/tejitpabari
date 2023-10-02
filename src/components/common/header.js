@@ -20,6 +20,7 @@ const Header = () => {
   return (
     <>
       <Flex
+        zIndex={1}
         as="header" position="fixed"
         width={'100%'}
         bg={useColorModeValue('white', 'gray.800')}
