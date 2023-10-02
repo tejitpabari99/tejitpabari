@@ -9,8 +9,8 @@
  */
 module.exports = {
   siteMetadata: {
-    title: `Tejit Pabari's Website`,
-    description: `Tejit Pabari's Website`,
+    title: `Tejit Pabari`,
+    description: `Tejit Pabari`,
     author: `tejitpabari`,
     siteUrl: `https://gatsbystarterdefaultsource.gatsbyjs.io/`,
   },
@@ -36,7 +36,7 @@ module.exports = {
         // https://css-tricks.com/meta-theme-color-and-trickery/
         // theme_color: `#663399`,
         display: `minimal-ui`,
-        icon: `src/images/gatsby-icon.png`, // This path is relative to the root of the site.
+        icon: `src/images/cat.png`, // This path is relative to the root of the site.
       },
     },
     `gatsby-plugin-styled-components`,
