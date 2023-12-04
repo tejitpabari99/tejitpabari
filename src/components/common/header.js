@@ -15,6 +15,21 @@ import {
 } from '@chakra-ui/react'
 import { MoonIcon, SunIcon } from '@chakra-ui/icons'
 
+/*
+  {
+    label: 'Blog',
+    children: [
+      {
+        label: 'Work',
+        href: '#',
+      },
+      {
+        label: 'Outdoors',
+        href: '#',
+      },
+    ],
+  },
+  */
 const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode()
   return (
@@ -34,11 +49,13 @@ const Header = () => {
           as={'a'}
           textAlign={'center'}
           fontFamily={'heading'}
+          fontWeight={'medium'}
+          fontSize={'4vh'}
           marginBottom={0}
           paddingLeft={'10px'}
           bg={useColorModeValue('white', 'gray.800')}
           color={useColorModeValue('gray.700', 'gray.200')}
-          href={'/'}
+          href={'./files'}
           variant='link'
           _hover={{
             textDecoration: 'none',
@@ -60,7 +77,7 @@ const Header = () => {
             fontWeight={600}
             color={'pink.400'}
             bg={useColorModeValue('white', 'gray.800')}
-            href={'https://bit.ly/tejitpabari-resume'}
+            href={''}
             target="_blank"
             isExternal={'true'}
             borderStyle={'solid'}
@@ -148,23 +165,16 @@ const DesktopSubNav = ({ label, href }) => {
 
 const NAV_ITEMS = [
   {
+    label: 'Research',
+    href: '/research',
+  },
+  {
+    label: 'Work Experience',
+    href: '/work-experience',
+  },
+  {
     label: 'Projects',
-  },
-  {
-    label: 'Experience',
-  },
-  {
-    label: 'Blog',
-    children: [
-      {
-        label: 'Work',
-        href: '#',
-      },
-      {
-        label: 'Outdoors',
-        href: '#',
-      },
-    ],
+    href: '/projects',
   },
   {
     label: 'About',
