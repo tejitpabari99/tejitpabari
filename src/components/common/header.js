@@ -55,7 +55,7 @@ const Header = () => {
           paddingLeft={'10px'}
           bg={useColorModeValue('white', 'gray.800')}
           color={useColorModeValue('gray.700', 'gray.200')}
-          href={'./files'}
+          href={'/'}
           variant='link'
           _hover={{
             textDecoration: 'none',
@@ -77,7 +77,7 @@ const Header = () => {
             fontWeight={600}
             color={'pink.400'}
             bg={useColorModeValue('white', 'gray.800')}
-            href={''}
+            href={'https://drive.google.com/file/d/1HcqZCkdxfU73PUHmFSKqJGIG7_yG3mGS/view?usp=sharing'}
             target="_blank"
             isExternal={'true'}
             borderStyle={'solid'}
