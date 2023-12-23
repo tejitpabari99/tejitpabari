@@ -49,8 +49,12 @@ const writeupData = [
   {
     "title": "Columbia Space Initiative",
     "subtitle": "Micro-G Challenge Leader",
-    "description": `Led a team of 6 students to pursue the 2018 Micro-G challenge by NASA.`,
+    "description": `Co-led a team of 6 students to pursue the 2018 Micro-G challenge by NASA. Ideated, designed and built a working prototype of a novel zip-tie cutting device for astronauts to use in space. The device was selected for testing at NASA's Neutral Buoyancy Lab, and our team was invited to be a part of the testing as well. `,
     "links": [
+      {
+        "title": "Website",
+        "link": "https://columbiaspace.org/microg/2018/01/19/micro-g-2018-intro-and-update/"
+      },
       {
         "title": "News Coverage",
         "link": "https://www.engineering.columbia.edu/news/csi-spaceposium"

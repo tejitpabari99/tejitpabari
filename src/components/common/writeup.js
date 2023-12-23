@@ -8,7 +8,6 @@ import {
   Heading,
   Text,
   Button,
-  Divider,
   useColorModeValue
 } from '@chakra-ui/react'
 

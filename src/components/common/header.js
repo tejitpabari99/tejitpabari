@@ -90,7 +90,6 @@ const Header = () => {
             Résumé
           </Button>
         </Stack>
-        
       </Flex>
     </>
   )
@@ -175,11 +174,7 @@ const NAV_ITEMS = [
   {
     label: 'Projects',
     href: '/projects',
-  },
-  {
-    label: 'About',
-    href: '/about',
-  },
+  }
 ]
 
 export default Header
