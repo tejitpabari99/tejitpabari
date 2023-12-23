@@ -17,11 +17,11 @@ const Writeup = ({ writeupData, heading }) => {
   return (
     <Flex maxW={'70%'} paddingTop={'20vh'} display={'block'}
         direction={'column'} marginLeft={'auto'} marginRight={'auto'}>
-        {heading && <Heading as="h1" size="2xl" noOfLines={1} marginBottom={'2vh'}> 
+        <Heading as="h1" size="2xl" noOfLines={1} marginBottom={'2vh'}> 
           {heading} 
-        </Heading>}
+        </Heading>
         <Stack direction='column'>
-            {writeupData && writeupData.map((item) => 
+            {writeupData.map((item) => 
                 <WriteupItem {...item}/>
             )}
         </Stack>
@@ -29,16 +29,17 @@ const Writeup = ({ writeupData, heading }) => {
   )
 }
 
-const WriteupItem = ({title, description, links}) => {
+const WriteupItem = ({title, subtitle, description, links}) => {
     return(
         <Box marginTop={'6vh'} marginB>
             <Heading as="h2" size="lg">{title}</Heading>
-            <Text maxWidth={"100%"} paddingTop={'2vh'}>{description}</Text>
-            <Stack direction={'row'} spacing={5}>
+            {subtitle && <Heading as="h3" size="md" paddingTop={'1vh'}>{subtitle}</Heading>}
+            <Text maxWidth={"100%"} paddingTop={'2vh'} marginBottom={'0'}>{description}</Text>
+            {links && <Stack direction={'row'} spacing={5} marginTop={'3vh'}>
               {links && links.map((item) => 
                   <WriteupLinks {...item}/>
               )}
-            </Stack>
+            </Stack>}
         </Box>
     )
 }
