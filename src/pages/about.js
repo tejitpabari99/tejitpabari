@@ -3,7 +3,7 @@ import * as React from "react"
 import Layout from "../components/common/layout"
 import Seo from "../components/common/seo"
 
-const IndexPage = () => (
+const AboutPage = () => (
   <Layout>
     About
   </Layout>
@@ -11,4 +11,4 @@ const IndexPage = () => (
 
 export const Head = () => <Seo/>
 
-export default IndexPage
+export default AboutPage
