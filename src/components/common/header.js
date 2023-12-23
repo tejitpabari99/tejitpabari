@@ -87,7 +87,7 @@ const Header = () => {
               bg: 'pink.400',
               color: 'white'
             }}>
-            Resume
+            Résumé
           </Button>
         </Stack>
         
