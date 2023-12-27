@@ -1,7 +1,5 @@
 import * as React from 'react';
-import { Box, Flex, forwardRef, Avatar, Container, Image, Stack } from '@chakra-ui/react';
-
-const ANIMATION_DURATION = 0.5;
+import { Box, Flex} from '@chakra-ui/react';
 
 const IntroSection = () => {
   return (

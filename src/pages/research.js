@@ -29,7 +29,7 @@ const writeupData = [
   {
     "title": "DVMM Lab",
     "subtitle": "Computer Vision Researcher",
-    "description": `Developed a phrase grounding pipeline using YOLOv3 and BERT for image and caption extraction from research papers. Achieved 85\% accuracy. Constructed a searchable knowledge graph between image and captions. Classified Dosage Response curve using extracted features. Achieved 92.7% accuracy with AdaBoost.`,
+    "description": `Developed a phrase grounding pipeline using YOLOv3 and BERT for image and caption extraction from research papers. Achieved 85% accuracy. Constructed a searchable knowledge graph between image and captions. Classified Dosage Response curve using extracted features. Achieved 92.7% accuracy with AdaBoost.`,
     "links": [
       {
         "title": "Project Report",

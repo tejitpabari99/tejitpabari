@@ -1,18 +1,9 @@
-/**
- * Configure your Gatsby site with this file.
- *
- * See: https://www.gatsbyjs.com/docs/reference/config-files/gatsby-config/
- */
-
-/**
- * @type {import('gatsby').GatsbyConfig}
- */
 module.exports = {
   siteMetadata: {
     title: `Tejit Pabari`,
     description: `Tejit Pabari`,
     author: `tejitpabari`,
-    siteUrl: `https://gatsbystarterdefaultsource.gatsbyjs.io/`,
+    siteUrl: `https://tejitpabari.com/`,
   },
   plugins: [
     `gatsby-plugin-image`,
@@ -33,8 +24,29 @@ module.exports = {
     {
       resolve: `gatsby-source-filesystem`,
       options: {
-        name: `content`,
-        path: `${__dirname}/src/content`,
+        name: `blog`,
+        path: `${__dirname}/src/content/blog`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `projects`,
+        path: `${__dirname}/src/content/pages/projects`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `research`,
+        path: `${__dirname}/src/content/pages/research`,
+      },
+    },
+    {
+      resolve: `gatsby-source-filesystem`,
+      options: {
+        name: `work-experience`,
+        path: `${__dirname}/src/content/pages/work-experience`,
       },
     },
     `gatsby-transformer-remark`,
