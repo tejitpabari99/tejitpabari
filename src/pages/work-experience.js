@@ -12,13 +12,13 @@ const WorkExperiencePage = () => (
 
 const writeupData = [
   {
-    "title": "Azure Maps Creator",
-    "subtitle": "Software Engineer",
-    "description": `Developed a Performance Testing Framework with PowerBI visualization to diagnose latency regressions. Shadow Product Manager, drove product development for Creator Onboarding tool. Analyzed metrics for API usage to drive feature-development. Spearheaded development of a QGIS plugin for Creator APIs, with efficient parallel data loading, intuitive UI design, debugging support and comprehensive documentation. Plugin has been downloaded 1,000+ times. Directed diversity initiatives, health-focused challenges, team bonding events.`,
+    "title": "Microsoft Fabric Maps",
+    "subtitle": "Software Engineer II",
+    "description": `Served as lead engineer for the Tileset Job API, owning end-to-end design and delivery — from architecture and backend implementation to frontend integration, testing, telemetry, and iteration on user feedback — enabling large-scale geospatial data ingestion and map tile generation. Drove reliability and scalability improvements through infrastructure optimization, performance benchmarking, and SLA definition. Built a Power BI–driven performance testing framework that reduced latency regressions by 15% ahead of releases. Led security compliance and modernization through a classic-to-YAML pipeline migration with cross-team coordination. Also served as Shadow Product Manager, conducting competitive analysis of Databricks, ESRI, and CARTO, with findings directly informing the 2025 Public Preview roadmap.`,
     "links": [
       {
-        "title": "Azure Maps Creator",
-        "link": "https://www.microsoft.com/en-us/maps/azure/azure-maps-creator"
+        "title": "Microsoft Fabric Maps",
+        "link": "https://blog.fabric.microsoft.com/en-us/blog/introducing-maps-in-fabric-geospatial-insights-for-everyone/"
       },
       {
         "title": "Creator QGIS Plugin",
