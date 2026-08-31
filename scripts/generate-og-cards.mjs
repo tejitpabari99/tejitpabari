@@ -24,11 +24,36 @@ const BODY_TEXT = '#3E514D';
 // (SP07 §4.6) — the only value this script treats as "no real photo yet."
 const UNSPLASH_PLACEHOLDER = 'https://images.unsplash.com/photo-1572177812156-58036aae439c';
 
+// Mirrors src/data/shared.ts's assertSlugMatchesFilename: unlike that
+// loader, this script's own output path is built directly from frontmatter
+// `slug` (main()'s `path.join(ROOT, 'public/og', outDir, `${item.slug}.png`)`
+// -> writeFileSync). Without this check, a slug of e.g.
+// "../../../../tmp/pwned-poc" escapes public/og/ entirely — an
+// arbitrary-file-write primitive running via the `prebuild` npm script
+// before anything else in the pipeline validates the slug.
+function assertValidSlug(filePath, filenameSlug, slug) {
+  if (typeof slug !== 'string' || slug.length === 0) {
+    throw new Error(`generate-og-cards.mjs: ${filePath}: missing or empty "slug" in frontmatter.`);
+  }
+  if (slug !== filenameSlug) {
+    throw new Error(`generate-og-cards.mjs: ${filePath}: frontmatter "slug: ${slug}" does not match filename "${filenameSlug}.md".`);
+  }
+  if (slug.includes('/') || slug.includes('\\') || slug.includes('..')) {
+    throw new Error(`generate-og-cards.mjs: ${filePath}: "slug: ${slug}" must not contain path separators or "..".`);
+  }
+}
+
 export function readCollection(dirName) {
   const dir = path.join(ROOT, 'src/content', dirName);
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
-    .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data);
+    .map((f) => {
+      const filePath = path.join(dir, f);
+      const data = matter(readFileSync(filePath, 'utf-8')).data;
+      const filenameSlug = f.replace(/\.md$/, '');
+      assertValidSlug(filePath, filenameSlug, data.slug);
+      return data;
+    });
 }
 
 const fontDir = path.join(ROOT, 'scripts/assets/fonts');
@@ -128,7 +153,19 @@ export function cardJsx({ title, tags, status, imageDataUri }) {
   };
 }
 
+// Defense-in-depth: even with readCollection's own slug validation,
+// confirm the resolved output path never leaves public/og/ before writing
+// anything to disk.
+const OG_ROOT = path.join(ROOT, 'public/og');
+function assertWithinOgRoot(outPath) {
+  const resolved = path.resolve(outPath);
+  if (resolved !== OG_ROOT && !resolved.startsWith(OG_ROOT + path.sep)) {
+    throw new Error(`generate-og-cards.mjs: refusing to write outside public/og/: ${resolved}`);
+  }
+}
+
 async function renderCard(props, outPath) {
+  assertWithinOgRoot(outPath);
   const svg = await satori(cardJsx(props), { width: CARD_WIDTH, height: CARD_HEIGHT, fonts });
   const png = new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH } }).render().asPng();
   mkdirSync(path.dirname(outPath), { recursive: true });

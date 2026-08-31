@@ -23,10 +23,10 @@
 // resolves identically here and in a clean CI checkout. The module's own
 // `main()` is guarded behind `import.meta.url === file://process.argv[1]`,
 // so importing it here never triggers a real render or writes to disk.
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
 import path from 'node:path';
-import { localImageDataUri, cardJsx } from './generate-og-cards.mjs';
+import { localImageDataUri, cardJsx, readCollection } from './generate-og-cards.mjs';
 
 const UNSPLASH_PLACEHOLDER = 'https://images.unsplash.com/photo-1572177812156-58036aae439c';
 const fixtureDir = path.resolve(import.meta.dirname, '../public/_fixture-images');
@@ -94,5 +94,66 @@ describe('cardJsx status pill', () => {
     const leftColumn = tree.props.children[0];
     const textGroup = leftColumn.props.children[0];
     expect(textGroup.props.children.every((node: unknown) => node !== false && node != null)).toBe(true);
+  });
+});
+
+// Security regression (verified finding): readCollection() used to read
+// `slug` straight out of frontmatter with no check against the filename
+// (unlike src/data/shared.ts's assertSlugMatchesFilename), and main() then
+// does `path.join(ROOT, 'public/og', outDir, `${item.slug}.png`)` ->
+// writeFileSync. A slug of "../../../../tmp/pwned-poc" resolves that join
+// straight out of public/og/ — an arbitrary-file-write primitive that runs
+// via the `prebuild` npm script before anything else validates the slug.
+// readCollection's own dir (src/content/<dirName>) is hardcoded, not
+// parameterized, so these tests exercise it against a real, throwaway
+// fixture collection directory under src/content/ — created and torn down
+// per test, same pattern scripts/check-no-forms.test.ts uses against the
+// real src/pages/live/.
+describe('readCollection slug validation', () => {
+  const fixtureDirName = '__test-fixture-og-collection__';
+  const fixtureDir = path.resolve(import.meta.dirname, '../src/content', fixtureDirName);
+
+  afterEach(() => {
+    if (existsSync(fixtureDir)) rmSync(fixtureDir, { recursive: true, force: true });
+  });
+
+  it('throws, naming the file and value, for a traversal slug', () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(
+      path.join(fixtureDir, 'evil.md'),
+      '---\nslug: ../../../../tmp/pwned-poc\ntitle: Evil\n---\nBody.\n',
+    );
+
+    expect(() => readCollection(fixtureDirName)).toThrow(/evil\.md.*pwned-poc/s);
+  });
+
+  it('throws, naming the file, for a slug containing a path separator (no ".." needed)', () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(
+      path.join(fixtureDir, 'evil2.md'),
+      '---\nslug: sub/dir-escape\ntitle: Evil2\n---\nBody.\n',
+    );
+
+    expect(() => readCollection(fixtureDirName)).toThrow(/evil2\.md/);
+  });
+
+  it('throws, naming the file, for a slug that does not match its filename', () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(
+      path.join(fixtureDir, 'real-name.md'),
+      '---\nslug: different-slug\ntitle: Mismatch\n---\nBody.\n',
+    );
+
+    expect(() => readCollection(fixtureDirName)).toThrow(/real-name\.md.*different-slug/s);
+  });
+
+  it('does not throw for a valid, matching slug', () => {
+    mkdirSync(fixtureDir, { recursive: true });
+    writeFileSync(
+      path.join(fixtureDir, 'valid-slug.md'),
+      '---\nslug: valid-slug\ntitle: Valid\n---\nBody.\n',
+    );
+
+    expect(readCollection(fixtureDirName)).toEqual([{ slug: 'valid-slug', title: 'Valid' }]);
   });
 });
