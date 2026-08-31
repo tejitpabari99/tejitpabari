@@ -871,6 +871,8 @@ export function HomePage() {
 
 ### Task 11 — `ProjectCard` unit tests
    - Files: `src/components/ProjectCard.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added five behavioral tests covering title routing, optional status and external links, and isolated card/external click callbacks; targeted test and typecheck pass.
    - Changes: Per PRD §7, first bullet. Depends on Task 1. Use `@testing-library/react` + a `MemoryRouter` wrapper (the component renders a react-router `<Link>`).
 
 ```tsx
@@ -956,6 +958,8 @@ describe('ProjectCard', () => {
 
 ### Task 12 — Timeline behavior tests
    - Files: `src/components/timeline/Timeline.test.tsx` (new), `src/sections/WorkExperienceSection.test.ts` (new)
+   - Status: Complete
+   - Progress: Added seven fixture-based tests for current-dot selection, stub rendering and spine padding, plus landing timeline boundary behavior; targeted tests and typecheck pass.
    - Changes: Per PRD §7, second bullet. Depends on Tasks 4 and 5. Use in-memory `WorkExperience[]` fixtures — never the real loaded `workExperience`.
 
 ```tsx
@@ -1051,6 +1055,8 @@ describe('computeLandingTimelineState', () => {
 
 ### Task 13 — `formatWorkDate` unit tests
    - Files: `src/components/timeline/formatWorkDate.test.ts` (new)
+   - Status: Complete
+   - Progress: Added three fixed ISO-to-Mon-YYYY cases and confirmed the `Present` branch guards the end-date formatter; targeted tests and typecheck pass.
    - Changes: Per PRD §7, third bullet. Depends on Task 4.
 
 ```ts
@@ -1074,6 +1080,8 @@ describe('formatWorkDate', () => {
 
 ### Task 14 — `ContactSection` pre/post-mount integration test
    - Files: `src/sections/ContactSection.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added pre/post-hook-state integration coverage for both email affordances; primary `Email Me` label/href and aside display link are asserted. Because RTL `render()` flushes effects in this React version, the test controls the hook value across rerenders; real hook timing remains covered by SP05’s test.
    - Changes: Per PRD §7, fourth bullet. Depends on Task 8. This is the test that pins the hydration-safety property the PRD spends a full paragraph justifying — verify the behavior actually holds, not just that it's plausible in theory.
 
 ```tsx
@@ -1116,6 +1124,8 @@ describe('ContactSection', () => {
 
 ### Task 15 — `useSectionScrollDepth` unit test
    - Files: `src/hooks/useSectionScrollDepth.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added mocked-IntersectionObserver coverage for per-section de-duplication and non-intersecting entries; targeted tests and typecheck pass.
    - Changes: Per PRD §7, fifth bullet. Depends on Task 9. Mock `IntersectionObserver` (not provided by jsdom).
 
 ```tsx
@@ -1186,6 +1196,8 @@ describe('useSectionScrollDepth', () => {
 
 ### Task 16 — `HomePage` smoke test
    - Files: `src/pages/HomePage.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added two smoke tests for no-throw rendering and five-section composition. The supplied id assertion was reconciled to include Hero’s intentional empty id before the four anchored ids; targeted tests and typecheck pass.
    - Changes: Per PRD §7, sixth bullet. Depends on Task 10 (and transitively on every section task). Renders the real composed `HomePage` — if `@/config/featured`/`@/data` throw because content hasn't landed yet (per the phase-ordering hazard noted at the top of this file), this test will fail for reasons outside this task's own code; if that happens, note it and do not attempt to work around it by mocking `@/data` in a way that diverges from how `HomePage` actually consumes it in production.
 
 ```tsx
