@@ -381,6 +381,7 @@ export function ResearchPage() {
 ---
 
 ### Task 6 — `DetailHeader` shared component
+   - Status: Complete
    - Files: `src/components/DetailHeader.tsx` (new)
    - Changes: Implement per PRD §4.4. Shared, collection-agnostic header block: image, title, optional status pill, tags. Same "no reserved space" guarantee as SP03's `ProjectCard` — the status pill is an absolute overlay, never a layout element.
 
