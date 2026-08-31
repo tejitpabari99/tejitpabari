@@ -11,9 +11,11 @@
 import type { ComponentType } from 'react';
 import type { Project } from '@/data';
 import { projects } from '@/data';
+import SampleProjectLive from './sample-project';
 
-// SP06 adds the 'sample-project' entry when it lands; empty until then.
-export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {};
+export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {
+  'sample-project': SampleProjectLive,
+};
 
 /** Redirect-XOR-hosted cross-check, exported and parameterized for testing. */
 export function validateLiveRegistry(hostedSlugs: string[], allProjects: Project[]): void {
