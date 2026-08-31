@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 3/7 tasks complete
+**Progress:** 6/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -278,6 +278,7 @@ date: "2020-05-01"
 ---
 
 ### Task 4 — Research collection (5 files)
+   - Status: Done
    - Files: `src/content/research/flood-event-extraction-bangladesh.md` (new), `src/content/research/dvmm-lab.md` (new), `src/content/research/incite-labs.md` (new), `src/content/research/pill-recognition-prescription-extraction.md` (new), `src/content/research/solar-illumination-water-bottle.md` (new)
    - Changes: Per PRD §4.2. **No `liveUrl` key on any of these five** — SP02's Research schema doesn't define the field at all; setting it fails the build via `assertNoUnknownKeys`. Every entry gets the same drafted abstract text in both `description` and `body` — per PRD §4.2's own note, all 5 research bodies are "abstract-only" (no separate short-blurb/long-writeup split the way Projects has one): the 2–3 sentence, 30–50 word abstract is the entire content deliverable for each item, so it is written once and populates both the required `description` field and the markdown `body`. `flood-event-extraction-bangladesh.md`'s abstract is quoted verbatim from PRD §4.5.4 (the one the task explicitly required); the other four are drafted below, following the identical rule (past tense, method → headline result/number → outcome), not to be re-drafted.
 
@@ -407,6 +408,7 @@ Experimentally demonstrated that a "Liter of Light" water bottle outperforms a g
 ---
 
 ### Task 5 — Work Experience collection (2 files)
+   - Status: Done
    - Files: `src/content/work-experience/microsoft-fabric-maps.md` (new), `src/content/work-experience/jio-reliance-industries.md` (new)
    - Changes: Per PRD §4.3 and §4.5.5. **Exactly these two files — do not create a third file for "Programming for Entrepreneurs and Social Good."** That role is dropped from the site entirely (owner decision, PRD §4.3/§9) — there is no filename, no frontmatter, no `DRAFT_DATE` placeholder for it anywhere. Both files ship real, résumé-sourced dates; **zero `DRAFT_DATE: true` entries exist in this collection.** Per SP02's schema (§4.4.4), this collection has no `slug`/filename-agreement check and no `title`/`description`/`tags`/`status`/`image` fields at all — only `company`, `role`, `startDate`, `endDate`, `links`, and `body`.
 
@@ -453,6 +455,7 @@ Built a TensorFlow-based license-plate recognition model for a campus security s
 ---
 
 ### Task 6 — Hero, About, and Contact copy (handed to SP03)
+   - Status: Done
    - Files: none — this copy is not a markdown content file SP07 owns; it's prose consumed directly by SP03's `src/sections/Hero.tsx`, `src/sections/AboutSection.tsx`, and `src/sections/ContactSection.tsx` (already implemented per `03-landing-page-timeline/TASKS.md` Tasks 3, 8, 9, which inlined this exact text). This task exists to record the final, PRD-approved wording as the authoritative source and to verify SP03's implementation matches it — not to write a new file.
    - Changes: Per PRD §4.5.1, §4.5.2, §4.5.6. All three pieces of copy are quoted verbatim below — the PRD drafted them in full, so there is nothing left to draft here, only to confirm and cross-check.
 
