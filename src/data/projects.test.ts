@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { liveMode, type Project } from './projects';
+import { liveMode, projects, type Project } from './projects';
 
 const baseProject: Project = {
   slug: 'x', title: 'X', description: 'D', image: '/x.png',
@@ -13,5 +13,12 @@ describe('liveMode', () => {
 
   it('returns hosted mode when liveUrl is absent', () => {
     expect(liveMode(baseProject)).toEqual({ mode: 'hosted' });
+  });
+});
+
+describe('migrated project links', () => {
+  it('keeps the Juno Website link on HTTPS', () => {
+    const juno = projects.find((project) => project.slug === 'juno');
+    expect(juno?.links).toContainEqual({ label: 'Website', href: 'https://meetjuno.health/' });
   });
 });

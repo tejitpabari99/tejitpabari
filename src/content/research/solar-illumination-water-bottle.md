@@ -19,4 +19,3 @@ links:
     href: https://timesofindia.indiatimes.com/education/news/two-indian-teens-among-global-finalists-at-google-science-fair/articleshow/53736020.cms
 date: "2017-05-01"
 ---
-Experimentally demonstrated that a "Liter of Light" water bottle outperforms a glass plate at illuminating low-light spaces like slums. Named a Regional Finalist at the Google Science Fair, and published and presented the research in the Journal of Basic and Applied Engineering Research.

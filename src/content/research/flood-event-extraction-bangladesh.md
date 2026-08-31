@@ -17,4 +17,3 @@ links:
     href: https://agu.confex.com/agu/fm20/meetingapp.cgi/Paper/766342
 date: "2020-12-01"
 ---
-Built a BERT-based classifier to extract flood events from 40,000+ tagged Bangladeshi news articles, then used the resulting time-series — validated against Sentinel satellite data — to help the Bangladesh government develop a flood-index insurance product. Presented at AGU; published as a pre-print.

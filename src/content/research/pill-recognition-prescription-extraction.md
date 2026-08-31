@@ -13,4 +13,3 @@ links:
     href: https://www.researchgate.net/publication/340528010_Pill_Detection_Prescription_Analysis
 date: "2019-05-01"
 ---
-Used Google Vision and OCR to extract pill features and prescription-bottle imprints, then built a multi-dimensional embedding from the collected data to train RandomForest and SVM classifiers for precise pill identification.

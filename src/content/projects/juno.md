@@ -14,7 +14,7 @@ links:
   - label: App
     href: https://app.meetjuno.health/
   - label: Website
-    href: http://meetjuno.health/
+    href: https://meetjuno.health/
 date: "2025-06-01"
 ---
 Juno helps patients get more out of every doctor's visit. During an appointment, it takes structured notes in real time and prompts context-aware questions a patient might not think to ask in the moment — then turns the conversation into a clear summary with concrete follow-ups, instead of a page of hurried handwriting.
