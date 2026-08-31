@@ -9,7 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/03-landing-page
 - Any component-level test that needs project/work-experience data must use **in-memory fixtures**, never the real loaded `projects`/`workExperience` arrays.
 - Where a task's manual/dev-server check would show an empty grid or a timeline with zero entries because content hasn't landed yet, that is expected and not a defect — note it, don't "fix" it by inventing placeholder content.
 
-**Progress:** 2/16 tasks complete.
+**Progress:** 3/16 tasks complete.
 
 ---
 
@@ -251,6 +251,7 @@ Note: `<HeroPortrait />` is called here with **no `src`** — the monogram place
 ---
 
 ### Task 3 — `FeaturedProjectsSection`
+   - Status: Complete
    - Files: `src/sections/FeaturedProjectsSection.tsx` (new)
    - Changes: Per PRD §4.4. Depends on Task 1 (`ProjectCard`).
 
