@@ -1,0 +1,62 @@
+name: Deploy to Firebase Hosting on PR
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Check — no forms in hosted /live pages
+        run: npm run check:no-forms
+
+      - name: Check — pre-launch content gate
+        run: npm run check:launch
+
+      - name: Build
+        run: npm run build
+        env:
+          # Deliberately no failure guard here (unlike the merge workflow,
+          # §4.5) — preview builds should not be sending analytics at all,
+          # so an empty value is the CORRECT state for a PR build, not a
+          # misconfiguration to catch. See §4.7 for the full asymmetry.
+          VITE_GA_MEASUREMENT_ID: ${{ vars.VITE_GA_MEASUREMENT_ID }}
+
+      - name: Deploy preview channel
+        # Repository secrets are never exposed to a workflow run triggered by
+        # a pull_request from a fork — GitHub's own security boundary, not a
+        # bug. Without this guard, a fork PR would reach this step, find
+        # `secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99` empty, and fail
+        # with a raw "invalid credentials" error from the deploy action —
+        # confusing for anyone who didn't already know why. This is a
+        # personal portfolio repo; a fork PR from a stranger is unlikely, but
+        # the guard costs one line and turns a baffling failure into a clean,
+        # silent skip. See §4.8.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
+          projectId: tejitpabari-99
+          expires: 7d

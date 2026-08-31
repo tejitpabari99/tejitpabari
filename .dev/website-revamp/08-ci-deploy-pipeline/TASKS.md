@@ -9,6 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 ---
 
 ### Task 1 — `package.json` reconciliation: `typecheck` script and `tsx` devDependency
+   - Status: Complete
    - Files: `package.json` (modify — SP01-owned file, additive only)
    - Changes: Per PRD §4.10. Two real gaps this PRD's own design surfaced while tracing exactly which npm scripts the workflows below invoke: (1) no standalone `typecheck` script exists — `tsc --noEmit` is only ever bundled inside `build`, with no way to name it as its own CI step; (2) `tsx` (the runner `check:launch` invokes) is never declared as a dependency, so a clean `npm ci` on a CI runner has no global fallback and fails with `tsx: command not found`. Add exactly these two entries; do not touch any other script or dependency. (`"typecheck"`/`"build"` corrected during SP01 implementation, inherited here: the root `tsconfig.json` is solution-style (`"files": []` + `references`), so a plain `tsc --noEmit` checks zero files and always exits 0 — a silent no-op that would make this sub-project's own CI gate gate on nothing. `tsc -b --noEmit` walks the project references and actually typechecks; see SP01 Task 3.)
 
@@ -53,6 +54,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 ---
 
 ### Task 2 — `firebase-hosting-pull-request.yml` — preview-channel workflow
+   - Status: Complete
    - Files: `.github/workflows/firebase-hosting-pull-request.yml` (new)
    - Changes: Per PRD §4.2/§4.3/§4.7/§4.8/§4.9 exactly. One job, sequential steps through the build, diverging only at the deploy step; fork-PR guard on the deploy step alone; `concurrency` keyed on `github.workflow`+`github.ref` with `cancel-in-progress: true`; `expires: 7d`; no `VITE_GA_MEASUREMENT_ID` failure guard (deliberate asymmetry, §4.6). Complete file content:
 
@@ -129,6 +131,7 @@ jobs:
 ---
 
 ### Task 3 — `firebase-hosting-merge.yml` — live-channel workflow
+   - Status: Complete
    - Files: `.github/workflows/firebase-hosting-merge.yml` (new)
    - Changes: Per PRD §4.2/§4.4/§4.6/§4.8 exactly. Same shared shape as Task 2 through the build, plus the one step unique to this workflow — the loud `VITE_GA_MEASUREMENT_ID` guard — and `channelId: live` instead of a preview channel. No fork-PR guard needed (a `push` to `main` never runs against a fork). Complete file content:
 
@@ -211,6 +214,7 @@ jobs:
 ---
 
 ### Task 4 — Provision the dedicated GCP service account, roles, and key; upload the deploy secret
+   - Status: Partial — `.gitignore` hardening done; the six `gcloud`/`gh` provisioning commands below were NOT run (out of scope for this implementation pass per its explicit SCOPE BOUNDARY — this machine's session has no authorization to mutate the `tejitpabari-99` GCP project or the `tejitpabari99/tejitpabari` GitHub repo's secret store in this context). Owner action required; see run report.
    - Files: none (this task mutates GCP IAM and the GitHub repo's secret store — no repository file changes); `.gitignore` (modify — one defensive addition, see below)
    - Changes: Per PRD §4.5. **Requires `gcloud`/`gh` credentials with write access to the `tejitpabari-99` GCP project and the `tejitpabari99/tejitpabari` GitHub repo** — this machine's standing setup has both (per the PRD header), but flag before running if that access is not actually present in the executing environment; if it isn't, this becomes a human-run task instead. Run in order:
 
@@ -267,6 +271,7 @@ rm ~/tejitpabari-99-github-actions-key.json
 ---
 
 ### Task 5 — Set the `VITE_GA_MEASUREMENT_ID` repository variable
+   - Status: Blocked — owner-only. `gh variable set` mutates the real `tejitpabari99/tejitpabari` GitHub repo and is out of scope for this implementation pass (SCOPE BOUNDARY). Not attempted. Exact command recorded in the run report for the owner to execute.
    - Files: none (mutates the GitHub repo's variable store only)
    - Changes: Per PRD §4.6. A repository **variable**, not a secret — a GA4 measurement ID is emitted in plaintext in every page's own HTML, so storing it as a secret would misrepresent its sensitivity and make it harder to inspect (`gh variable list` shows the value; `gh secret list` never does, by design).
 
@@ -282,6 +287,7 @@ gh variable set VITE_GA_MEASUREMENT_ID \
 ---
 
 ### Task 6 — Verify provisioning end-to-end (read-only)
+   - Status: Partial — only the fourth (pure local `git ls-tree`) command was run; the three `gh`/`gcloud` commands authenticate to the real remote GitHub repo/GCP project and are out of scope for this implementation pass (SCOPE BOUNDARY treats any authenticating gh/gcloud call as off-limits, even read-only ones). Local check result: `git ls-tree -r website-revamp --name-only | grep '^\.github/workflows'` → "none yet" (Tasks 2/3's workflow files live on branch `sp08-b1`, not yet merged into `website-revamp`); the same check against `sp08-b1` itself shows both files present. Remote verification (secret, variable, IAM roles) not attempted — genuinely not provable from this session; see run report.
    - Files: none — read-only verification task
    - Changes: Per PRD §4.13. Run once Tasks 1–5 have landed, as the mechanical proof the setup actually happened and matches the PRD's design, rather than trusting it from memory. All four commands are read-only/safe to run any time, including months later as a standing sanity check:
 
@@ -315,6 +321,7 @@ git -C /root/projects/tejitpabari ls-tree -r website-revamp --name-only | grep '
 ---
 
 ### Task 7 — Open a validation PR and confirm the preview workflow end to end
+   - Status: Blocked — owner-only. Requires Tasks 4/5's real GCP/GitHub provisioning to exist first (neither was run, see Tasks 4/5), and requires pushing a real branch/PR to `tejitpabari99/tejitpabari` and observing live GitHub Actions runs — nothing here is simulable locally, and mutating the real repo is out of scope for this implementation pass (SCOPE BOUNDARY). Not attempted.
    - Files: none — this task exercises the pipeline against a real, trivial, reviewable PR (e.g. a comment or whitespace tweak on a non-critical file); revert or keep the PR open per the outcome, do not merge it as part of this task
    - Changes: Per PRD §7's manual-QA checklist, items 1–4 and 6. This is the first real proof the two workflow files (Tasks 2–3) and the provisioned secret/variable (Tasks 4–5) actually compose correctly — nothing in GitHub Actions' secret-scoping, concurrency, or PR-comment behavior can be faithfully simulated locally.
      1. Push a trivial, reviewable commit to a feature branch off `website-revamp` and open a PR. Confirm `Deploy to Firebase Hosting on PR` fires automatically.
@@ -333,6 +340,7 @@ git -C /root/projects/tejitpabari ls-tree -r website-revamp --name-only | grep '
 ---
 
 ### Task 8 — Merge to `main`: first live deploy (production cutover), watched
+   - Status: Blocked — owner-only, explicitly. This is the production cutover: merging `website-revamp` into `main` is explicitly forbidden for this implementation pass (SCOPE BOUNDARY: "do NOT merge `website-revamp` into `main` [...] which would deploy live"). Requires Tasks 1–7 complete first per the task's own precondition, and requires the owner's explicit go-ahead per PRD §8 item 5 before it can happen at all. Not attempted.
    - Files: none — this task is the act of merging `website-revamp` into `main` and observing the resulting workflow run
    - Changes: Per PRD §4.4/§4.12 and §7's manual-QA checklist items 7–9. **State plainly: this merge is the production cutover, not a routine git operation.** The moment it lands, `Deploy to Firebase Hosting on merge` runs the full gate sequence and, if every gate passes, deploys straight to `tejitpabari-99`'s live Hosting channel — overwriting the hand-built holding page currently serving it (§4.12), and, once DNS propagation is complete, becoming what `tejitpabari.com` itself serves. This is the intended, designed outcome of this pipeline's first successful run, not an incident to review afterward — nobody should attempt to restore the holding page once this happens.
      1. Confirm Tasks 1–7 have all passed before proceeding — merging with an unverified pipeline turns this from a controlled cutover into a live experiment.
