@@ -381,6 +381,7 @@ export function ResearchPage() {
 ---
 
 ### Task 6 — `DetailHeader` shared component
+   - Status: Complete
    - Files: `src/components/DetailHeader.tsx` (new)
    - Changes: Implement per PRD §4.4. Shared, collection-agnostic header block: image, title, optional status pill, tags. Same "no reserved space" guarantee as SP03's `ProjectCard` — the status pill is an absolute overlay, never a layout element.
 
@@ -427,6 +428,7 @@ export function DetailHeader({ image, imageAlt = '', title, status, tags }: Deta
 ---
 
 ### Task 7 — `LinksRow` shared component
+   - Status: Complete
    - Files: `src/components/LinksRow.tsx` (new)
    - Changes: Implement per PRD §4.4. Renders SP02's `links[]` plus an optional internal "Open Live" CTA (Projects only — Research never passes `liveHref`). Uses SP01's `ExternalLinkIcon`/`ArrowIcon`. Emits `outbound_click` with `context: 'content_external_link'` on every external link click — **this is the renamed enum value (from `'project_external_link'`) that this PRD's §4.4/§9 resolves; confirm SP05 has actually shipped it in its `AnalyticsEventName` union before this file is expected to typecheck** (see the sequencing note at the top of this file).
 
@@ -486,6 +488,7 @@ export function LinksRow({ links, liveHref }: LinksRowProps) {
 ---
 
 ### Task 8 — `src/pages/live/registry.ts` — the hosted mini-project convention
+   - Status: Complete
    - Files: `src/pages/live/registry.ts` (new)
    - Changes: Implement per PRD §4.7. This is the file SP05 §9's "no forms" mechanical check was blocked on, and the file SP06's `sample-project` plugs into later with exactly one line. **Ships with `HOSTED_LIVE_PAGES` empty — do not add `sample-project` here; that's SP06's task, not this one.**
    - **Testability deviation from the PRD's exact code sample, same class of deviation SP02's `src/data/index.ts` already made (SP02 `TASKS.md` Task 8):** the cross-check and the `projectLiveSlugs` computation are pulled into two exported, parameterized functions (`validateLiveRegistry`, `computeProjectLiveSlugs`) that the real module-scope code calls with the real `HOSTED_LIVE_PAGES`/`projects`, and that Task 21's tests call directly with fixture data — this preserves the PRD's exact "eager, fail loud, name the file" runtime behavior while making it possible to unit test the redirect-XOR-hosted conflict and the "no matching project" case without mocking `@/data` and forcing a fresh module evaluation.
