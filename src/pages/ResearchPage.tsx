@@ -3,6 +3,7 @@ import { BackButton } from '@/components/BackButton';
 import { SearchFilter } from '@/components/SearchFilter';
 import { EmptyState } from '@/components/EmptyState';
 import { ProjectCard } from '@/components/ProjectCard'; // same shared component, no fork
+import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { useCollectionFilter } from '@/hooks/useCollectionFilter';
 import { research } from '@/data';
 import { trackEvent } from '@/lib/analytics';
@@ -13,6 +14,11 @@ export function ResearchPage() {
 
   return (
     <div className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+      <RouteMeta
+        title="Research"
+        description="Published and presented research, from flood-event NLP to a Google Science Fair project."
+        path="/research"
+      />
       <BackButton />
       <h1 className="mt-6 text-[1.9rem] font-extrabold tracking-tight text-ink sm:text-[2.3rem]">Research</h1>
       <div className="mt-8">

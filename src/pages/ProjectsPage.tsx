@@ -3,6 +3,7 @@ import { BackButton } from '@/components/BackButton';
 import { SearchFilter } from '@/components/SearchFilter';
 import { EmptyState } from '@/components/EmptyState';
 import { ProjectCard } from '@/components/ProjectCard'; // SP03, verbatim — no fork
+import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { useCollectionFilter } from '@/hooks/useCollectionFilter';
 import { projects } from '@/data';
 import { trackEvent } from '@/lib/analytics';
@@ -13,6 +14,11 @@ export function ProjectsPage() {
 
   return (
     <div className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+      <RouteMeta
+        title="Projects"
+        description="Health-tech and developer-tools projects, from Juno to a decade of shipped side projects."
+        path="/projects"
+      />
       <BackButton />
       <h1 className="mt-6 text-[1.9rem] font-extrabold tracking-tight text-ink sm:text-[2.3rem]">Projects</h1>
       <div className="mt-8">
