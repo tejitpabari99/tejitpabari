@@ -9,7 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/03-landing-page
 - Any component-level test that needs project/work-experience data must use **in-memory fixtures**, never the real loaded `projects`/`workExperience` arrays.
 - Where a task's manual/dev-server check would show an empty grid or a timeline with zero entries because content hasn't landed yet, that is expected and not a defect — note it, don't "fix" it by inventing placeholder content.
 
-**Progress:** 6/16 tasks complete.
+**Progress:** 7/16 tasks complete.
 
 ---
 
@@ -603,6 +603,7 @@ No `showSeeAll` prop passed — defaults to `false`, so this page renders every 
 ---
 
 ### Task 7 — `AboutSection`
+   - Status: Complete
    - Files: `src/sections/AboutSection.tsx` (new)
    - Changes: Per PRD §4.7. No external dependencies beyond Tailwind tokens.
 
