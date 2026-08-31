@@ -60,16 +60,19 @@ describe('TermsPage', () => {
     expect(container.textContent).toContain('tejitpabari99 _at_ gmail [dot] com');
   });
 
-  it('reflects the page title and description in the rendered output (RouteMeta not yet available — SP06)', () => {
+  it('reflects the page title and description in the rendered output via RouteMeta', () => {
     // The globally-mocked `<Head>` (see src/setupTests.ts) renders its
     // children as plain elements. React 19 then auto-hoists <title>/<meta>
     // to document.head regardless of where in the tree they were rendered
     // (confirmed by inspection — they never appear inside the render
     // container itself), so this is the real, honest place to assert the
-    // exact title/description strings RouteMeta would have received.
+    // exact title/description strings passed into RouteMeta. The rendered
+    // title carries RouteMeta's " · Tejit Pabari" site-name suffix
+    // (src/components/RouteMeta.tsx) on top of the bare page title passed
+    // in below.
     renderTermsPage();
     const title = document.head.querySelector('title');
-    expect(title?.textContent).toBe('Terms of Use');
+    expect(title?.textContent).toBe('Terms of Use · Tejit Pabari');
     const description = document.head.querySelector('meta[name="description"]');
     expect(description?.getAttribute('content')).toBe(
       'Terms governing use of tejitpabari.com, a personal portfolio — no company, no warranty, and how hosted projects and outbound links are treated.',

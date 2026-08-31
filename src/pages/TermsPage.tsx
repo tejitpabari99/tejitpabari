@@ -1,15 +1,8 @@
 // src/pages/TermsPage.tsx
 import type { ReactNode } from 'react';
-import { Head } from 'vite-react-ssg';
+import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
-// SP06 hasn't landed `@/components/RouteMeta` yet (see TASKS.md's own
-// sequencing note: "SP06 lands RouteMeta ... assumed shape"). Using
-// vite-react-ssg's `Head` directly here, with the same title/description
-// this page would hand to `RouteMeta`, so the prerendered <head> is correct
-// today. When SP06 ships `RouteMeta`, swap this for
-// `<RouteMeta title description path="/terms" />` — everything else about
-// this page is unaffected.
 
 const LAST_UPDATED = '2026-08-30'; // placeholder — owner confirms the real ship date
 
@@ -27,13 +20,11 @@ export function TermsPage() {
 
   return (
     <div className="mx-auto max-w-content px-4 py-16 sm:px-6 lg:px-8">
-      <Head>
-        <title>Terms of Use</title>
-        <meta
-          name="description"
-          content="Terms governing use of tejitpabari.com, a personal portfolio — no company, no warranty, and how hosted projects and outbound links are treated."
-        />
-      </Head>
+      <RouteMeta
+        title="Terms of Use"
+        description="Terms governing use of tejitpabari.com, a personal portfolio — no company, no warranty, and how hosted projects and outbound links are treated."
+        path="/terms"
+      />
       <div className="mx-auto max-w-2xl space-y-8">
         <header className="space-y-1">
           <h1 className="text-3xl font-semibold text-ink">Terms of Use</h1>
