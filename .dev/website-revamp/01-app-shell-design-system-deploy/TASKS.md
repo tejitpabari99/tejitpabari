@@ -843,7 +843,7 @@ export function BackButton({ className = '' }: { className?: string }) {
 
 ### Task 18 — `src/layout/Nav.tsx`
    - Files: `src/layout/Nav.tsx` (new)
-   - Changes: Per PRD §4.6. Depends on Task 11's `NAV_LINKS`. Ports techfolio's floating-pill markup and scroll-listener active-section logic, with three deliberate departures the PRD calls out explicitly: **no "Home" item** (four items only); **nothing in the nav's top-left corner**, satisfied structurally (the `<header>`'s only child is one `mx-auto w-fit` centered pill — there's no logo-left/nav-center/actions-right grid to begin with); and **route-aware re-scanning**, which techfolio's true single-page reference never needs — this site has multiple routes sharing one persistent `Nav` (react-router's layout-route pattern keeps `PageShell` mounted across sibling-route navigation), so the effect is keyed on `location.pathname`, re-queries `document.getElementById` inside the handler itself (not cached outside it), and explicitly clears `activeSection` to `null` whenever `pathname !== '/'`.
+   - Changes: Per PRD §4.6. Depends on Task 11's `NAV_LINKS`. Ports techfolio's floating-pill markup and scroll-listener active-section logic, with three deliberate departures the PRD calls out explicitly: **no "Home" item** (four items only); **nothing in the nav's top-left corner**, satisfied structurally (the `<header>`'s only child is one `mx-auto w-fit` centered pill — there's no logo-left/nav-center/actions-right grid to begin with); and **route-aware re-scanning**, which techfolio's true single-page reference never needs — this site has multiple routes sharing one persistent `Nav` (react-router's layout-route pattern keeps `PageShell` mounted across sibling-route navigation), so the effect is keyed on `isHome` (derived from `location.pathname`), re-queries `document.getElementById` inside the handler itself (not cached outside it), and the rendered `activeSection` is derived at render time as `null` whenever `pathname !== '/'` (the block below was originally written with a synchronous `setActiveSection(null)` inside the effect body for this non-home case; that violated `react-hooks/set-state-in-effect`, caught by Task 26's `npm run lint` gate, and was corrected during implementation to the derived-at-render-time form shown here).
 
 ```tsx
 // src/layout/Nav.tsx
@@ -862,20 +862,19 @@ const sectionIdOf = (href: string) => href.slice(2); // "/#projects" -> "project
 const SCROLL_OFFSET = 140; // px — matches techfolio's own threshold
 
 export function Nav() {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [scrollSection, setScrollSection] = useState<string | null>(null);
   const { pathname } = useLocation();
+  const isHome = pathname === '/';
+  const activeSection = isHome ? scrollSection : null;
 
   useEffect(() => {
-    if (pathname !== '/') {
-      setActiveSection(null);
-      return;
-    }
+    if (!isHome) return;
 
     const updateActiveSection = () => {
       const nearPageBottom =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 32;
       if (nearPageBottom) {
-        setActiveSection(sectionIdOf(NAV_LINKS[NAV_LINKS.length - 1].href));
+        setScrollSection(sectionIdOf(NAV_LINKS[NAV_LINKS.length - 1].href));
         return;
       }
       const scrollMarker = window.scrollY + SCROLL_OFFSET;
@@ -885,7 +884,7 @@ export function Nav() {
         const el = document.getElementById(sectionId);
         if (el && scrollMarker >= el.offsetTop) current = sectionId;
       }
-      setActiveSection(current);
+      setScrollSection(current);
     };
 
     updateActiveSection();
@@ -895,7 +894,7 @@ export function Nav() {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
     };
-  }, [pathname]);
+  }, [isHome]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">

@@ -14,20 +14,19 @@ const sectionIdOf = (href: string) => href.slice(2); // "/#projects" -> "project
 const SCROLL_OFFSET = 140; // px — matches techfolio's own threshold
 
 export function Nav() {
-  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [scrollSection, setScrollSection] = useState<string | null>(null);
   const { pathname } = useLocation();
+  const isHome = pathname === '/';
+  const activeSection = isHome ? scrollSection : null;
 
   useEffect(() => {
-    if (pathname !== '/') {
-      setActiveSection(null);
-      return;
-    }
+    if (!isHome) return;
 
     const updateActiveSection = () => {
       const nearPageBottom =
         window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 32;
       if (nearPageBottom) {
-        setActiveSection(sectionIdOf(NAV_LINKS[NAV_LINKS.length - 1].href));
+        setScrollSection(sectionIdOf(NAV_LINKS[NAV_LINKS.length - 1].href));
         return;
       }
       const scrollMarker = window.scrollY + SCROLL_OFFSET;
@@ -37,7 +36,7 @@ export function Nav() {
         const el = document.getElementById(sectionId);
         if (el && scrollMarker >= el.offsetTop) current = sectionId;
       }
-      setActiveSection(current);
+      setScrollSection(current);
     };
 
     updateActiveSection();
@@ -47,7 +46,7 @@ export function Nav() {
       window.removeEventListener('scroll', updateActiveSection);
       window.removeEventListener('resize', updateActiveSection);
     };
-  }, [pathname]);
+  }, [isHome]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">
