@@ -945,6 +945,7 @@ describe('buildSitemapUrls', () => {
 ```
 
    - Acceptance criteria: `npm test` passes both cases. The second test is the one PRD §7 flags as "directly proving binding decision D by construction, not just by code inspection."
+   - Status: Complete. `scripts/generate-sitemap.test.ts` written with 4 cases (the 2 above plus a bare-static-routes case and a multi-slug-independent-of-collection case). **Not run by plain `npm test`** — same `scripts/**` exclusion as Tasks 15/16; run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-sitemap.test.ts`. Result: 1 file, 4 tests, all passed. Full `npm test` (unaffected): 37 test files / 171 tests passed. `npm run typecheck`: clean.
 
 ---
 
