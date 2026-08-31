@@ -340,6 +340,7 @@ git -C /root/projects/tejitpabari ls-tree -r website-revamp --name-only | grep '
 ---
 
 ### Task 8 — Merge to `main`: first live deploy (production cutover), watched
+   - Status: Blocked — owner-only, explicitly. This is the production cutover: merging `website-revamp` into `main` is explicitly forbidden for this implementation pass (SCOPE BOUNDARY: "do NOT merge `website-revamp` into `main` [...] which would deploy live"). Requires Tasks 1–7 complete first per the task's own precondition, and requires the owner's explicit go-ahead per PRD §8 item 5 before it can happen at all. Not attempted.
    - Files: none — this task is the act of merging `website-revamp` into `main` and observing the resulting workflow run
    - Changes: Per PRD §4.4/§4.12 and §7's manual-QA checklist items 7–9. **State plainly: this merge is the production cutover, not a routine git operation.** The moment it lands, `Deploy to Firebase Hosting on merge` runs the full gate sequence and, if every gate passes, deploys straight to `tejitpabari-99`'s live Hosting channel — overwriting the hand-built holding page currently serving it (§4.12), and, once DNS propagation is complete, becoming what `tejitpabari.com` itself serves. This is the intended, designed outcome of this pipeline's first successful run, not an incident to review afterward — nobody should attempt to restore the holding page once this happens.
      1. Confirm Tasks 1–7 have all passed before proceeding — merging with an unverified pipeline turns this from a controlled cutover into a live experiment.
