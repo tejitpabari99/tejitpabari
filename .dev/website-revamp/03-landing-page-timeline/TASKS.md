@@ -1055,6 +1055,8 @@ describe('computeLandingTimelineState', () => {
 
 ### Task 13 — `formatWorkDate` unit tests
    - Files: `src/components/timeline/formatWorkDate.test.ts` (new)
+   - Status: Complete
+   - Progress: Added three fixed ISO-to-Mon-YYYY cases and confirmed the `Present` branch guards the end-date formatter; targeted tests and typecheck pass.
    - Changes: Per PRD §7, third bullet. Depends on Task 4.
 
 ```ts
