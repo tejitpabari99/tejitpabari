@@ -271,6 +271,7 @@ rm ~/tejitpabari-99-github-actions-key.json
 ---
 
 ### Task 5 — Set the `VITE_GA_MEASUREMENT_ID` repository variable
+   - Status: Blocked — owner-only. `gh variable set` mutates the real `tejitpabari99/tejitpabari` GitHub repo and is out of scope for this implementation pass (SCOPE BOUNDARY). Not attempted. Exact command recorded in the run report for the owner to execute.
    - Files: none (mutates the GitHub repo's variable store only)
    - Changes: Per PRD §4.6. A repository **variable**, not a secret — a GA4 measurement ID is emitted in plaintext in every page's own HTML, so storing it as a secret would misrepresent its sensitivity and make it harder to inspect (`gh variable list` shows the value; `gh secret list` never does, by design).
 
