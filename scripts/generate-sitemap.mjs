@@ -1,5 +1,5 @@
 // scripts/generate-sitemap.mjs
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
 
@@ -18,10 +18,55 @@ export function collectionSlugs(dir) {
     .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data.slug);
 }
 
-export function hostedLiveSlugs(liveDir) {
-  return readdirSync(liveDir)
-    .filter((f) => f.endsWith('.tsx') && f !== 'registry.ts')
-    .map((f) => f.replace(/\.tsx$/, ''));
+// Hosted /live slugs must come from src/pages/live/registry.ts's
+// HOSTED_LIVE_PAGES — the one map routes.tsx/getStaticPaths actually build
+// on (see registry.ts's computeProjectLiveSlugs) — never from a raw
+// directory listing. A filesystem scan of `*.tsx` files necessarily also
+// matches sibling test files (e.g. `sample-project.test.tsx`, which itself
+// ends in `.tsx`), publishing sitemap entries for routes that don't exist.
+//
+// registry.ts can't be `import`-ed from this plain `.mjs` script: it pulls
+// in `@/data`, whose loaders call Vite-only `import.meta.glob(...)` at
+// module top level — a build-time macro with no runtime implementation
+// outside Vite's own transform. Node (and esbuild-based `tsx`, already a
+// devDependency) both throw `TypeError: (intermediate value).glob is not
+// a function` on that import; this is the exact, already-documented
+// constraint scripts/check-launch-content.test.ts hit for the same
+// `src/data` import (see that file's header comment) — it's why that
+// script runs under Vitest's own transform instead of `tsx`/`node`, which
+// isn't an option here since this generator is a `prebuild` script, not a
+// test file.
+//
+// So: parse registry.ts's source text for the HOSTED_LIVE_PAGES object's
+// keys directly. This makes the registry authoritative (the slug list is
+// read out of the registry's own literal contents, not re-derived from
+// directory contents) without needing a module import. Each parsed slug is
+// then cross-checked against the real filesystem so a malformed registry
+// edit fails the build loudly instead of silently mis-publishing.
+export function hostedLiveSlugs(liveDir, registryPath = path.join(liveDir, 'registry.ts')) {
+  const source = readFileSync(registryPath, 'utf-8');
+  const objectMatch = source.match(/HOSTED_LIVE_PAGES\s*:\s*Record<[^>]*>\s*=\s*\{([\s\S]*?)\n\};/);
+  if (!objectMatch) {
+    throw new Error(
+      `generate-sitemap.mjs: could not find "HOSTED_LIVE_PAGES: Record<...> = { ... }" in ` +
+        `${registryPath} — the sitemap generator derives hosted /live slugs from that object ` +
+        `and cannot proceed without it.`,
+    );
+  }
+
+  const slugs = [...objectMatch[1].matchAll(/['"]([^'"]+)['"]\s*:/g)].map((m) => m[1]);
+
+  for (const slug of slugs) {
+    const componentFile = path.join(liveDir, `${slug}.tsx`);
+    if (!existsSync(componentFile)) {
+      throw new Error(
+        `generate-sitemap.mjs: ${registryPath}'s HOSTED_LIVE_PAGES lists "${slug}" but ` +
+          `${componentFile} does not exist.`,
+      );
+    }
+  }
+
+  return slugs;
 }
 
 /** Pure URL-list builder — no filesystem access, easy to unit-test directly. */

@@ -16,8 +16,11 @@
 // anything, run this file with the same lever `check:launch` uses to lift
 // the `scripts/**` exclusion for one invocation:
 // `CHECK_LAUNCH=1 npx vitest run scripts/generate-sitemap.test.ts`.
-import { describe, it, expect } from 'vitest';
-import { buildSitemapUrls, STATIC_ROUTES } from './generate-sitemap.mjs';
+import { afterEach, describe, it, expect } from 'vitest';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { buildSitemapUrls, hostedLiveSlugs, STATIC_ROUTES } from './generate-sitemap.mjs';
 
 describe('buildSitemapUrls', () => {
   it('includes every static route, project slug, research slug, and hosted /live slug', () => {
@@ -48,5 +51,81 @@ describe('buildSitemapUrls', () => {
     expect(urls).toContain('/projects/a/live');
     expect(urls).toContain('/projects/b/live');
     expect(urls).not.toContain('/research/a/live');
+  });
+});
+
+describe('hostedLiveSlugs', () => {
+  // Regression coverage for the LIVE defect a code review caught after
+  // sp06-b3 merged: `sample-project.test.tsx` (SP06 Task 18's unit test
+  // for `SampleProjectLive`) lives right next to `sample-project.tsx` in
+  // src/pages/live/, and the ORIGINAL implementation derived hosted slugs
+  // from `readdirSync(liveDir).filter(f => f.endsWith('.tsx'))` — a filter
+  // that matches `.test.tsx` files too, since they end in `.tsx`. That
+  // shipped a `/projects/sample-project.test/live` entry to sitemap.xml:
+  // a URL with no route, no prerendered page, and no registry entry,
+  // published straight to search engines. The fix reads the slug list out
+  // of registry.ts's HOSTED_LIVE_PAGES object text instead of scanning the
+  // directory at all, so a sibling `*.test.tsx` file can never contribute
+  // a slug regardless of its name.
+  let fixtureDir: string;
+
+  afterEach(() => {
+    if (fixtureDir) {
+      rmSync(fixtureDir, { recursive: true, force: true });
+    }
+  });
+
+  function makeFixtureDir(): string {
+    return mkdtempSync(path.join(tmpdir(), 'hosted-live-slugs-'));
+  }
+
+  it('emits only the real hosted slug from registry.ts, ignoring a sibling *.test.tsx file entirely', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(
+      path.join(fixtureDir, 'registry.ts'),
+      [
+        "import type { ComponentType } from 'react';",
+        "import RealProjectLive from './real-project';",
+        '',
+        'export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {',
+        "  'real-project': RealProjectLive,",
+        '};',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(path.join(fixtureDir, 'real-project.tsx'), 'export default function RealProjectLive() { return null; }\n');
+    // The exact shape of the live defect: a same-directory test file that
+    // ends in `.tsx` and would have matched the old readdirSync-based
+    // filter, but is NOT listed in HOSTED_LIVE_PAGES.
+    writeFileSync(path.join(fixtureDir, 'real-project.test.tsx'), "import { it } from 'vitest';\nit.skip('placeholder', () => {});\n");
+
+    const slugs = hostedLiveSlugs(fixtureDir);
+
+    expect(slugs).toEqual(['real-project']);
+    expect(slugs).not.toContain('real-project.test');
+  });
+
+  it('throws, naming the missing file, when registry.ts lists a slug with no matching component file', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(
+      path.join(fixtureDir, 'registry.ts'),
+      [
+        "import type { ComponentType } from 'react';",
+        '',
+        'export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {',
+        "  'ghost-project': GhostProjectLive,",
+        '};',
+        '',
+      ].join('\n'),
+    );
+
+    expect(() => hostedLiveSlugs(fixtureDir)).toThrow(/ghost-project/);
+  });
+
+  it('throws when registry.ts has no HOSTED_LIVE_PAGES object to parse', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(path.join(fixtureDir, 'registry.ts'), "export const NOTHING_HERE = 42;\n");
+
+    expect(() => hostedLiveSlugs(fixtureDir)).toThrow(/HOSTED_LIVE_PAGES/);
   });
 });
