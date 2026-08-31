@@ -948,6 +948,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 23 — `LiveRedirectFallback` test
+   - Status: Complete
    - Files: `src/components/LiveRedirectFallback.test.tsx` (new)
    - Changes: Covers Task 11's acceptance criteria as an automated test — mock `trackEvent` and `window.location.replace`; render with fixture `to`/`label` props; assert both are called exactly once with the correct arguments, and that the tracking call is not skipped or deferred past the navigation call.
    - Acceptance criteria: `npm test` passes.
