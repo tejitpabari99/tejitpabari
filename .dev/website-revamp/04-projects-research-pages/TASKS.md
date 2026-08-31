@@ -912,6 +912,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 19 — `DetailHeader` and `LinksRow` component tests
+   - Status: Complete
    - Files: `src/components/DetailHeader.test.tsx` (new), `src/components/LinksRow.test.tsx` (new)
    - Changes: `DetailHeader` — status pill renders only when `status` is provided, and confirms no extra DOM node/spacing exists when it's absent (same claim SP03's own `ProjectCard` test already pins, per PRD §7). `LinksRow` — renders `null` when both `links` is empty and `liveHref` is undefined; renders the "Open Live" CTA only when `liveHref` is provided, pointing at that exact path; clicking an external link fires `trackEvent('outbound_click', ...)` with `context: 'content_external_link'` and the correct `label`/`url`.
    - Acceptance criteria: `npm test` passes; `LinksRow`'s test explicitly asserts the `context` value is the string `'content_external_link'` (not the old `'project_external_link'`), since this is the one field a copy-paste from an older draft would most easily get wrong.
