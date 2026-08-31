@@ -9,8 +9,8 @@
   "bugs": { "url": "https://github.com/tejitpabari99/tejitpabari/issues" },
   "scripts": {
     "dev": "vite-react-ssg dev",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite-react-ssg build",
+    "typecheck": "tsc -b --noEmit",
+    "build": "npm run typecheck && vite-react-ssg build",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",

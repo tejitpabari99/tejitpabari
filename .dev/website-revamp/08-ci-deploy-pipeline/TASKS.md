@@ -10,12 +10,12 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 
 ### Task 1 — `package.json` reconciliation: `typecheck` script and `tsx` devDependency
    - Files: `package.json` (modify — SP01-owned file, additive only)
-   - Changes: Per PRD §4.10. Two real gaps this PRD's own design surfaced while tracing exactly which npm scripts the workflows below invoke: (1) no standalone `typecheck` script exists — `tsc --noEmit` is only ever bundled inside `build`, with no way to name it as its own CI step; (2) `tsx` (the runner `check:launch` invokes) is never declared as a dependency, so a clean `npm ci` on a CI runner has no global fallback and fails with `tsx: command not found`. Add exactly these two entries; do not touch any other script or dependency:
+   - Changes: Per PRD §4.10. Two real gaps this PRD's own design surfaced while tracing exactly which npm scripts the workflows below invoke: (1) no standalone `typecheck` script exists — `tsc --noEmit` is only ever bundled inside `build`, with no way to name it as its own CI step; (2) `tsx` (the runner `check:launch` invokes) is never declared as a dependency, so a clean `npm ci` on a CI runner has no global fallback and fails with `tsx: command not found`. Add exactly these two entries; do not touch any other script or dependency. (`"typecheck"`/`"build"` corrected during SP01 implementation, inherited here: the root `tsconfig.json` is solution-style (`"files": []` + `references`), so a plain `tsc --noEmit` checks zero files and always exits 0 — a silent no-op that would make this sub-project's own CI gate gate on nothing. `tsc -b --noEmit` walks the project references and actually typechecks; see SP01 Task 3.)
 
 ```json
 {
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc -b --noEmit"
   },
   "devDependencies": {
     "tsx": "^4.19.2"
@@ -29,9 +29,9 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 {
   "scripts": {
     "dev": "vite-react-ssg dev",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "prebuild": "node scripts/generate-og-cards.mjs && node scripts/generate-sitemap.mjs",
-    "build": "tsc --noEmit && vite-react-ssg build",
+    "build": "npm run typecheck && vite-react-ssg build",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
@@ -42,9 +42,9 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 }
 ```
 
-     **Deliberately not fixed here:** `build`'s own `tsc --noEmit` prefix stays — trimming it would change `npm run build`'s existing, already-documented local-dev meaning for reasons that have nothing to do with CI. The resulting double-run of `tsc --noEmit` per CI job (once as `Typecheck`, again inside `Build`) is accepted, not a bug (PRD §4.10).
+     **Deliberately not fixed here:** `build`'s own typecheck prefix (`npm run typecheck`, i.e. `tsc -b --noEmit`) stays — trimming it would change `npm run build`'s existing, already-documented local-dev meaning for reasons that have nothing to do with CI. The resulting double-run of the typecheck per CI job (once as `Typecheck`, again inside `Build`) is accepted, not a bug (PRD §4.10).
    - Acceptance criteria:
-     1. `cat package.json | grep -A1 '"typecheck"'` shows `"typecheck": "tsc --noEmit"`.
+     1. `cat package.json | grep -A1 '"typecheck"'` shows `"typecheck": "tsc -b --noEmit"`.
      2. `npm ls tsx` shows it installed at `^4.19.2`; `package-lock.json`'s diff includes the new entry.
      3. `npm run typecheck` runs standalone and exits 0 (or fails with real type errors, not a "script not found" error).
      4. Every pre-existing script (`build`, `dev`, `test`, `check:no-forms`, `check:launch`, `prebuild`, etc.) is byte-for-byte unchanged except for the new `typecheck` line.

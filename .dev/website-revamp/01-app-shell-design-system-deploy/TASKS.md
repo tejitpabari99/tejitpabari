@@ -75,7 +75,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 
 ### Task 3 — `package.json` and dependency install
    - Files: `package.json` (overwritten in place)
-   - Changes: Per PRD §4.2. Replace the entire file with the exact block below — a dependency-for-dependency mirror of `juno-landing-page`'s proven-working `package.json`, plus `prettier` (already a stated preference via the surviving `.prettierrc`) and the two additions PRD §4.2 calls out by name: the standalone `"typecheck"` script and the `"tsx"` devDependency (both exist specifically so SP08's CI pipeline and SP02's `check:launch` script have something to run against — binding, do not omit either).
+   - Changes: Per PRD §4.2. Replace the entire file with the exact block below — a dependency-for-dependency mirror of `juno-landing-page`'s proven-working `package.json`, plus `prettier` (already a stated preference via the surviving `.prettierrc`) and the two additions PRD §4.2 calls out by name: the standalone `"typecheck"` script and the `"tsx"` devDependency (both exist specifically so SP08's CI pipeline and SP02's `check:launch` script have something to run against — binding, do not omit either). (`"typecheck"`/`"build"` corrected during implementation: the root `tsconfig.json` is solution-style (`"files": []` + `references`), so a plain `tsc --noEmit` checks zero files and always exits 0 — a silent no-op that would also make SP08's CI gate, which runs a typecheck before every build, gate on nothing. `tsc -b --noEmit` walks the project references and actually typechecks.)
 
 ```json
 {
@@ -89,8 +89,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
   "bugs": { "url": "https://github.com/tejitpabari99/tejitpabari/issues" },
   "scripts": {
     "dev": "vite-react-ssg dev",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc --noEmit && vite-react-ssg build",
+    "typecheck": "tsc -b --noEmit",
+    "build": "npm run typecheck && vite-react-ssg build",
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
@@ -231,11 +231,22 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 
 ### Task 5 — Vite, PostCSS, and ESLint config
    - Files: `vite.config.ts` (new), `postcss.config.js` (new), `eslint.config.js` (new)
-   - Changes: Per PRD §4.2.
+   - Changes: Per PRD §4.2. (The `/// <reference types="vite-react-ssg" />` line was added during implementation: `vite-react-ssg` types `ssgOptions` by augmenting Vite's `UserConfig` via `declare module 'vite'` in its own `.d.ts`, but this project splits config into `tsconfig.node.json` (only `include`s `vite.config.ts`) and `tsconfig.app.json`, and TS only applies an ambient augmentation within the compiled program that includes the declaring file. Since nothing else in `vite.config.ts` imports from `vite-react-ssg`, the augmentation was invisible here once the typecheck gate was made real (see Task 3), and `ssgOptions` failed to typecheck. The reference pulls in those types for this file at zero runtime cost — the same defect exists unfixed in `juno-landing-page`'s `vite.config.ts`, confirmed by running `tsc -b --noEmit` there for real.)
 
 ```ts
 // vite.config.ts
 /// <reference types="vitest/config" />
+// vite-react-ssg augments Vite's `UserConfig` (adding `ssgOptions`) via a
+// `declare module 'vite'` block in its own .d.ts. TS only applies an ambient
+// augmentation to files inside the same compiled "program" as the file that
+// declares it. This file is type-checked in isolation under
+// tsconfig.node.json (only `include`s vite.config.ts), and nothing in this
+// file otherwise imports from 'vite-react-ssg', so without this reference
+// the augmentation is invisible here and `ssgOptions` below fails to
+// typecheck ("does not exist in type 'UserConfigExport'"). This triple-slash
+// reference pulls in vite-react-ssg's types for this file only, at zero
+// runtime cost, which is the mechanism TS provides for exactly this case.
+/// <reference types="vite-react-ssg" />
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import path from 'node:path';
