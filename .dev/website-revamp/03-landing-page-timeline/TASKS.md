@@ -9,7 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/03-landing-page
 - Any component-level test that needs project/work-experience data must use **in-memory fixtures**, never the real loaded `projects`/`workExperience` arrays.
 - Where a task's manual/dev-server check would show an empty grid or a timeline with zero entries because content hasn't landed yet, that is expected and not a defect — note it, don't "fix" it by inventing placeholder content.
 
-**Progress:** 9/16 tasks complete.
+**Progress:** 10/16 tasks complete.
 
 ---
 
@@ -827,6 +827,7 @@ export function useSectionScrollDepth(sectionIds: string[]): void {
 ---
 
 ### Task 10 — `HomePage` composition
+   - Status: Complete
    - Files: `src/pages/HomePage.tsx` (modify — replaces SP01's placeholder)
    - Changes: Per PRD §4.1. Depends on Tasks 2, 3, 5, 7, 8, 9 (every section plus the scroll-depth hook).
 
