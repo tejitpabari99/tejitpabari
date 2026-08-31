@@ -884,6 +884,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 17 — `useCollectionFilter` URL-sync tests
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.test.ts` (same file as Task 16, or a sibling `useCollectionFilter.urlSync.test.ts` — either is fine, pick one and keep it consistent) — new test cases
    - Changes: Per PRD §4.2 and §7's explicit call-out that this timing is "worth pinning directly since it's easy to accidentally 'fix' into a hydration-mismatch-prone synchronous read":
      - Given a fixture wrapped in `MemoryRouter` with an initial entry `?q=maps&tag=Health%20Tech`, the hook's returned `query`/`activeTag` are still the empty/`null` defaults on the very first synchronous render, and only reflect the URL values **after** the mount effect runs (assert both states — pre-effect-flush and post-effect-flush — not just the final settled state).

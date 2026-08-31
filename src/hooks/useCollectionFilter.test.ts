@@ -1,6 +1,6 @@
 // src/hooks/useCollectionFilter.test.ts
 //
-// Task 16 (filtering + analytics) per
+// Task 16 (filtering + analytics) and Task 17 (URL sync) per
 // .dev/website-revamp/04-projects-research-pages/TASKS.md. Fixture data
 // only — never the real loaded `projects`/`research` arrays.
 //
@@ -9,7 +9,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createElement, type ReactNode } from 'react';
 import { act, renderHook } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, unstable_HistoryRouter as HistoryRouter } from 'react-router-dom';
+import { createMemoryHistory } from '@remix-run/router';
 import { useCollectionFilter } from './useCollectionFilter';
 import { trackEvent } from '@/lib/analytics';
 
@@ -183,6 +184,64 @@ describe('useCollectionFilter', () => {
         vi.advanceTimersByTime(1000);
       });
       expect(trackEvent).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('URL sync (Task 17)', () => {
+    it('adopts ?q=/?tag= from the URL only after the mount effect runs, not on the very first synchronous render', () => {
+      // renderHook wraps the initial render in act(), which flushes the
+      // mount effect before returning — result.current alone would only
+      // ever show the settled value. Capture every render's return value to
+      // honestly observe the pre-effect-flush state too (same technique as
+      // src/hooks/useContactMailto.test.ts).
+      const renders: { query: string; activeTag: string | null }[] = [];
+      const { result } = renderHook(
+        () => {
+          const hook = useCollectionFilter<FixtureItem>({ items: FIXTURE_ITEMS, collection: 'projects' });
+          renders.push({ query: hook.query, activeTag: hook.activeTag });
+          return hook;
+        },
+        { wrapper: memoryRouterWrapper(['/?q=maps&tag=Health%20Tech']) },
+      );
+
+      expect(renders[0]).toEqual({ query: '', activeTag: null });
+      expect(result.current.query).toBe('maps');
+      expect(result.current.activeTag).toBe('Health Tech');
+    });
+
+    it('updates the URL via replace, not push, across several sequential query changes', () => {
+      // @remix-run/router's MemoryHistory doesn't expose `.length` directly,
+      // only `.index` — but that's an equally valid proxy here: `.replace`
+      // never advances it, only `.push` does, so an unchanging `.index`
+      // across several updates proves the URL is never growing the stack.
+      const history = createMemoryHistory({ initialEntries: ['/'] });
+      const { result } = renderHook(
+        () => useCollectionFilter<FixtureItem>({ items: FIXTURE_ITEMS, collection: 'projects' }),
+        { wrapper: ({ children }) => createElement(HistoryRouter, { history }, children) },
+      );
+
+      expect(history.index).toBe(0);
+
+      act(() => {
+        result.current.setQuery('j');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      act(() => {
+        result.current.setQuery('ju');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      act(() => {
+        result.current.setQuery('juno');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+
+      expect(history.index).toBe(0);
     });
   });
 });
