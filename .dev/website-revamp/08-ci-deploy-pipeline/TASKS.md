@@ -214,6 +214,7 @@ jobs:
 ---
 
 ### Task 4 — Provision the dedicated GCP service account, roles, and key; upload the deploy secret
+   - Status: Partial — `.gitignore` hardening done; the six `gcloud`/`gh` provisioning commands below were NOT run (out of scope for this implementation pass per its explicit SCOPE BOUNDARY — this machine's session has no authorization to mutate the `tejitpabari-99` GCP project or the `tejitpabari99/tejitpabari` GitHub repo's secret store in this context). Owner action required; see run report.
    - Files: none (this task mutates GCP IAM and the GitHub repo's secret store — no repository file changes); `.gitignore` (modify — one defensive addition, see below)
    - Changes: Per PRD §4.5. **Requires `gcloud`/`gh` credentials with write access to the `tejitpabari-99` GCP project and the `tejitpabari99/tejitpabari` GitHub repo** — this machine's standing setup has both (per the PRD header), but flag before running if that access is not actually present in the executing environment; if it isn't, this becomes a human-run task instead. Run in order:
 
