@@ -972,3 +972,44 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 4. **Cross-sub-project sequencing risk, not something a dev agent can resolve alone:** SP05's `AnalyticsEventName` union must actually include `'search_query'` and the renamed `'content_external_link'` outbound-click context before Tasks 4, 5, 7, and 11 will typecheck — confirm SP05's landed code (not just its PRD prose) matches before those tasks are marked done, since `05-legal-analytics/PRD.md` was still being concurrently edited as this task list was written.
 5. **Cross-sub-project sequencing risk on `ProjectCard`'s exact prop signature:** Tasks 4 and 5 assume the prop names this PRD's own snippets already use (`href, image, imageAlt, title, description, tags, status, externalHref, externalLabel, onCardClick, onExternalClick`). `03-landing-page-timeline/PRD.md` was also being concurrently edited — verify SP03's actually-shipped `ProjectCard` matches before treating a `tsc` failure on Tasks 4/5 as this sub-project's own bug.
 6. **Nothing else in this sub-project is owner-blocked.** The Fuse config, the URL-state design, the redirect mechanism, and the hosted-project convention are all specified precisely enough (PRD §8 item 4) for implementation to proceed without further input from you.
+
+---
+
+## Post-implementation fixes
+
+### Defect: `/projects/<slug>` and `/research/<slug>` detail pages never prerendered
+
+**Symptom:** After all of Tasks 1–25 landed, `npm run build` produced only the 6
+top-level static routes plus (after Task 13/14) the 6 `/projects/<slug>/live`
+routes in `dist/`. Every individual `/projects/<slug>` and `/research/<slug>`
+detail page — the entire point of this sub-project — was silently absent from
+the prerendered output, with no build error or warning.
+
+**Root cause (content/data, not routing):** `src/routes.tsx`'s `getStaticPaths`
+for `projects/:slug` and `research/:slug` correctly import `projectSlugs` /
+`researchSlugs` from `@/content/projects` and `@/content/research`. But
+`src/content/projects/index.ts` and `src/content/research/index.ts` were still
+the SP02-era placeholder files, each hardcoding `export const projectSlugs:
+string[] = []` / `researchSlugs: string[] = []`, with a comment noting they
+were meant to be "replaced by SP02's real gray-matter loader" — a wiring step
+that never happened. `vite-react-ssg`'s `routesToPaths` (see
+`node_modules/vite-react-ssg/dist/shared/vite-react-ssg.Ctg3mDmH.mjs`) calls
+`route.getStaticPaths()` and adds exactly what it returns to the prerendered
+path set; with both arrays always empty, zero paths were ever generated for
+either dynamic route. `src/pages/live/registry.ts`'s `projectLiveSlugs`, by
+contrast, was correctly wired against `@/data/projects`'s real gray-matter
+loader from the start, which is why `/projects/<slug>/live` routes prerendered
+fine while `/projects/<slug>` and `/research/<slug>` did not — confirming this
+was a stale/unwired data source, not a defect in `getStaticPaths`'s shape or
+in `routes.tsx`'s route declarations.
+
+**Fix:** Rewired `src/content/projects/index.ts` and
+`src/content/research/index.ts` to derive their exports from the real loaders
+in `src/data/projects.ts` (`projects`) and `src/data/research.ts` (`research`)
+— `projectSlugs = projects.map(p => p.slug)` and `researchSlugs =
+research.map(r => r.slug)` — instead of hardcoded empty arrays.
+`src/routes.tsx` was not touched. Verified via `find dist -name index.html`:
+went from 11 files (6 top-level + 6 `/live`, minus the `/projects/index.html`
+already counted) to 27 (6 top-level + 10 `/projects/<slug>` + 5
+`/research/<slug>` + 6 `/projects/<slug>/live`), with `npm run typecheck` and
+`npm test` (27 files / 116 tests) both clean before and after.
