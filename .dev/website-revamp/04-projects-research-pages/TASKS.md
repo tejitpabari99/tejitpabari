@@ -956,6 +956,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 24 — `liveRedirectsPlugin` test
+   - Status: Complete
    - Files: `vite.config.test.ts` (new, or `scripts/liveRedirectsPlugin.test.ts` if the plugin/`readLiveUrls` is easier to import in isolation from that location — pick one, keep `vite.config.ts`'s own exports minimal either way)
    - Changes: Per PRD §7 — given a fixture temp directory (created via `fs.mkdtempSync` in a `beforeEach`) containing a mix of `liveUrl`-bearing and hosted-mode `.md` files (frontmatter written directly as strings, no need for `gray-matter` to round-trip anything complex), call Task 13's exported `readLiveUrls(fixtureDir)` directly and assert it returns exactly the expected `{slug, liveUrl}` pairs (hosted-mode files, with no `liveUrl` key, are excluded). Separately, construct a fixture `firebase.json`-shaped object, apply the same `entries.map(...)` transform the plugin's `closeBundle` uses, and assert the resulting `hosting.redirects` array is exactly `[{source, destination, type: 302}, ...]` while every other key on the fixture object is unchanged (reference-equal or deep-equal, either is fine to assert).
    - Acceptance criteria: `npm test` passes; this test does not invoke a real `npm run build` (confirmed fast, per PRD §7's explicit "not requiring a real vite build" framing).
