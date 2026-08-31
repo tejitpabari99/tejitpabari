@@ -37,7 +37,7 @@ links:
   - label: App
     href: https://app.meetjuno.health/
   - label: Website
-    href: http://meetjuno.health/
+    href: https://meetjuno.health/
 date: "2025-06-01"
 ---
 Juno helps patients get more out of every doctor's visit. During an appointment, it takes structured notes in real time and prompts context-aware questions a patient might not think to ask in the moment — then turns the conversation into a clear summary with concrete follow-ups, instead of a page of hurried handwriting.
@@ -280,7 +280,7 @@ date: "2020-05-01"
 ### Task 4 — Research collection (5 files)
    - Status: Done
    - Files: `src/content/research/flood-event-extraction-bangladesh.md` (new), `src/content/research/dvmm-lab.md` (new), `src/content/research/incite-labs.md` (new), `src/content/research/pill-recognition-prescription-extraction.md` (new), `src/content/research/solar-illumination-water-bottle.md` (new)
-   - Changes: Per PRD §4.2. **No `liveUrl` key on any of these five** — SP02's Research schema doesn't define the field at all; setting it fails the build via `assertNoUnknownKeys`. Every entry gets the same drafted abstract text in both `description` and `body` — per PRD §4.2's own note, all 5 research bodies are "abstract-only" (no separate short-blurb/long-writeup split the way Projects has one): the 2–3 sentence, 30–50 word abstract is the entire content deliverable for each item, so it is written once and populates both the required `description` field and the markdown `body`. `flood-event-extraction-bangladesh.md`'s abstract is quoted verbatim from PRD §4.5.4 (the one the task explicitly required); the other four are drafted below, following the identical rule (past tense, method → headline result/number → outcome), not to be re-drafted.
+   - Changes: Per PRD §4.2. **No `liveUrl` key on any of these five** — SP02's Research schema doesn't define the field at all; setting it fails the build via `assertNoUnknownKeys`. Each entry keeps its drafted abstract in the required `description` field and has an intentionally empty markdown body. SP04's `ResearchDetailPage` renders `description` followed by `ContentBody body`; an empty body makes `ContentBody` render nothing, so the abstract appears exactly once. `flood-event-extraction-bangladesh.md`'s abstract is quoted verbatim from PRD §4.5.4 (the one the task explicitly required); the other four are drafted below, following the identical rule (past tense, method → headline result/number → outcome), not to be re-drafted.
 
    **The `incite-labs.md` link fix, called out once here since it's easy to miss:** its `links[]` carries **only** the Website entry. The source `research.js`'s "News Coverage" link (`labiotech.eu/best-biotech/hiv-test-app-home`) is a confirmed copy-paste bug — it's actually SMARTtest's link, unrelated to INCITE Labs — and is dropped per PRD §7/§9, not carried forward and not replaced with an invented citation.
 
@@ -305,7 +305,6 @@ links:
     href: https://agu.confex.com/agu/fm20/meetingapp.cgi/Paper/766342
 date: "2020-12-01"
 ---
-Built a BERT-based classifier to extract flood events from 40,000+ tagged Bangladeshi news articles, then used the resulting time-series — validated against Sentinel satellite data — to help the Bangladesh government develop a flood-index insurance product. Presented at AGU; published as a pre-print.
 ```
 
 ```markdown
@@ -327,7 +326,6 @@ links:
     href: https://bit.ly/tejit-dvmm-lab-research-2020
 date: "2020-08-01"
 ---
-Built a phrase-grounding pipeline using YOLOv3 and BERT to extract and link images and captions from research papers, reaching 85% accuracy, then constructed a searchable knowledge graph from the results. Also classified dosage-response curves from the extracted features, reaching 92.7% accuracy with AdaBoost.
 ```
 
 ```markdown
@@ -348,7 +346,6 @@ links:
     href: https://incite.columbia.edu/measuring-liberal-arts
 date: "2020-05-01"
 ---
-Extracted syllabi and mission statements from college websites to build a quantitative measure of liberal-arts education across institutions, and developed Python scripts to streamline the project's underlying SQL database interactions.
 ```
 
 ```markdown
@@ -368,7 +365,6 @@ links:
     href: https://www.researchgate.net/publication/340528010_Pill_Detection_Prescription_Analysis
 date: "2019-05-01"
 ---
-Used Google Vision and OCR to extract pill features and prescription-bottle imprints, then built a multi-dimensional embedding from the collected data to train RandomForest and SVM classifiers for precise pill identification.
 ```
 
 ```markdown
@@ -394,7 +390,6 @@ links:
     href: https://timesofindia.indiatimes.com/education/news/two-indian-teens-among-global-finalists-at-google-science-fair/articleshow/53736020.cms
 date: "2017-05-01"
 ---
-Experimentally demonstrated that a "Liter of Light" water bottle outperforms a glass plate at illuminating low-light spaces like slums. Named a Regional Finalist at the Google Science Fair, and published and presented the research in the Journal of Basic and Applied Engineering Research.
 ```
 
    - Acceptance criteria:
@@ -402,7 +397,7 @@ Experimentally demonstrated that a "Liter of Light" water bottle outperforms a g
      2. `npm run build` succeeds with no validator error, including the negative-space check: none of the five files has a `liveUrl` key (`grep -L "liveUrl" src/content/research/*.md` lists all 5).
      3. `incite-labs.md`'s `links` array has exactly **one** entry (Website) — confirm the labiotech.eu URL does not appear anywhere in this file (`grep -c "labiotech" src/content/research/incite-labs.md` → `0`).
      4. `pill-recognition-prescription-extraction.md`'s `tags` is `[Health, Machine Learning]` (both, multi-tag); `dvmm-lab.md`'s title is spelled `DVMM Lab` (not the résumé's "DMVV," per PRD §4.4's resolved naming call).
-     5. Every file's `body` (below the frontmatter fence) is non-empty and, for each file, is textually identical to its own `description` value.
+     5. Every file's `body` (below the frontmatter fence) is empty, while its required `description` remains non-empty; this proves the SP04 detail contract renders each research abstract once (description followed by an empty `ContentBody`) without duplication.
      6. All five `image` values are byte-identical to the placeholder URL.
 
 ---
