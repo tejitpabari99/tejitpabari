@@ -66,6 +66,32 @@ describe('readLiveUrls', () => {
 
     expect(readLiveUrls(dir)).toEqual([]);
   });
+
+  // Security regression (verified finding): closeBundle fires during
+  // vite-react-ssg's client bundle step, BEFORE assertAbsoluteUrl
+  // (src/data/shared.ts) ever runs during SSR route rendering. Without its
+  // own validation, readLiveUrls would let an unvalidated liveUrl reach
+  // firebase.json's hosting.redirects — e.g. a protocol-relative
+  // "//evil.com/phish", which Firebase Hosting serves as an open redirect
+  // off tejitpabari.com. readLiveUrls must reject these itself, loudly,
+  // before anything downstream writes them out.
+  it('throws, naming the file and the offending value, for a protocol-relative liveUrl ("//evil.com/...")', () => {
+    writeMdFile(dir, 'evil.md', 'slug: evil\nliveUrl: "//evil.com/phish"');
+
+    expect(() => readLiveUrls(dir)).toThrow(/evil\.md.*liveUrl.*evil\.com\/phish/s);
+  });
+
+  it('throws for a javascript: URL liveUrl', () => {
+    writeMdFile(dir, 'xss.md', 'slug: xss\nliveUrl: "javascript:alert(1)"');
+
+    expect(() => readLiveUrls(dir)).toThrow(/xss\.md.*liveUrl.*javascript:alert\(1\)/s);
+  });
+
+  it('accepts a valid https:// liveUrl without throwing', () => {
+    writeMdFile(dir, 'ok.md', 'slug: ok\nliveUrl: https://example.com/fine');
+
+    expect(readLiveUrls(dir)).toEqual([{ slug: 'ok', liveUrl: 'https://example.com/fine' }]);
+  });
 });
 
 describe('the hosting.redirects transform used by liveRedirectsPlugin.closeBundle', () => {

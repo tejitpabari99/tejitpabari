@@ -23,15 +23,32 @@ const PROJECTS_DIR = path.resolve(__dirname, 'src/content/projects');
 // juno-landing-page's own sitemapPlugin documents: import.meta.glob is a
 // Vite *application*-build-pipeline macro, not guaranteed to resolve from
 // vite.config.ts's own lighter esbuild-based load path. This plugin does its
-// own small fs + gray-matter scan instead. It does NOT re-validate
-// frontmatter — the main build's loader (SP02) already fails loudly on bad
-// content before this plugin's closeBundle runs.
+// own small fs + gray-matter scan instead.
+//
+// It DOES validate liveUrl itself (mirroring src/data/shared.ts's
+// assertAbsoluteUrl) rather than deferring to the main build's loader
+// (SP02): closeBundle fires during vite-react-ssg's *client* bundle step,
+// while assertAbsoluteUrl only runs later, during SSR route rendering. An
+// invalid liveUrl (e.g. a protocol-relative "//evil.com/phish", which
+// Firebase Hosting would serve as an open redirect off tejitpabari.com)
+// would otherwise be written into firebase.json's hosting.redirects BEFORE
+// the SSR step ever gets a chance to reject it — leaving a corrupted
+// firebase.json on disk even though the build then aborts.
 export function readLiveUrls(dir: string): { slug: string; liveUrl: string }[] {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
-    .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data)
-    .filter((data): data is { slug: string; liveUrl: string } => typeof data.liveUrl === 'string')
-    .map(({ slug, liveUrl }) => ({ slug, liveUrl }));
+    .map((f) => ({ file: f, data: matter(readFileSync(path.join(dir, f), 'utf-8')).data }))
+    .filter((entry): entry is { file: string; data: { slug: string; liveUrl: string } } =>
+      typeof entry.data.liveUrl === 'string',
+    )
+    .map(({ file, data: { slug, liveUrl } }) => {
+      if (!/^https?:\/\//.test(liveUrl)) {
+        throw new Error(
+          `readLiveUrls: ${path.join(dir, file)}: "liveUrl" must be an absolute http(s) URL. Got ${JSON.stringify(liveUrl)}.`,
+        );
+      }
+      return { slug, liveUrl };
+    });
 }
 
 function liveRedirectsPlugin(): Plugin {
