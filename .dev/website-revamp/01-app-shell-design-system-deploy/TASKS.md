@@ -372,7 +372,7 @@ See `.dev/website-revamp/BRIEF.md` for the full design record — palette, route
    - Acceptance criteria:
      1. `.gitignore` matches the block above exactly; `grep -c '\.cache' .gitignore` → `0` (the Gatsby-era entry is gone).
      2. `.prettierignore` matches the three-line block above exactly; `grep -c '^public$' .prettierignore` → `0`.
-     3. `README.md` no longer contains the string `"Gatsby"` case-insensitively (`grep -ci gatsby README.md` → `0`) and contains all six npm commands from Task 3's `scripts` block, plus the literal string `BRIEF.md`.
+     3. `README.md` contains exactly one case-insensitive mention of `"Gatsby"` (`grep -ci gatsby README.md` → `1`, the single intentional backward-reference in the opening paragraph — the file is no longer the Gatsby starter readme, which is what this criterion is actually checking) and contains all six npm commands from Task 3's `scripts` block, plus the literal string `BRIEF.md`. (Corrected during implementation: the originally specified `→ 0` requirement was mutually unsatisfiable with this task's own mandated README content block above, which deliberately includes one "Replaces the previous Gatsby 5 + Chakra UI scaffold" sentence.)
 
 ---
 
