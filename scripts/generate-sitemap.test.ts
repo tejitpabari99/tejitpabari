@@ -128,6 +128,69 @@ describe('hostedLiveSlugs', () => {
 
     expect(() => hostedLiveSlugs(fixtureDir)).toThrow(/HOSTED_LIVE_PAGES/);
   });
+
+  // Regression coverage for the launch-blocking defect a pre-production
+  // adversarial review reproduced: after the owner deletes the sample
+  // project's HOSTED_LIVE_PAGES entry (leaving an empty object) and runs
+  // this repo's own `npm run format`, Prettier (semi: false in this repo's
+  // .prettierrc) collapses `{\n}` to `{}` with no trailing semicolon. The
+  // original regex required a literal `\n};`, so it threw
+  // "could not find ... in registry.ts" out of `prebuild`, failing
+  // `npm run build`/CI before typecheck even ran. These three cases cover
+  // every Prettier-legal empty-object shape plus a still-populated registry,
+  // to prove the fix didn't just special-case one exact string.
+  it('returns an empty array for an empty registry collapsed to `{}` on one line (Prettier\'s post-format shape)', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(
+      path.join(fixtureDir, 'registry.ts'),
+      [
+        "import type { ComponentType } from 'react';",
+        '',
+        'export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {};',
+        '',
+      ].join('\n'),
+    );
+
+    expect(hostedLiveSlugs(fixtureDir)).toEqual([]);
+  });
+
+  it('returns an empty array for an empty registry written across two lines (`{\\n}`, pre-format shape)', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(
+      path.join(fixtureDir, 'registry.ts'),
+      [
+        "import type { ComponentType } from 'react';",
+        '',
+        'export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {',
+        '};',
+        '',
+      ].join('\n'),
+    );
+
+    expect(hostedLiveSlugs(fixtureDir)).toEqual([]);
+  });
+
+  it('still resolves every slug correctly for a populated, semicolon-terminated, multi-line registry', () => {
+    fixtureDir = makeFixtureDir();
+    writeFileSync(
+      path.join(fixtureDir, 'registry.ts'),
+      [
+        "import type { ComponentType } from 'react';",
+        "import RealProjectLive from './real-project';",
+        "import AnotherProjectLive from './another-project';",
+        '',
+        'export const HOSTED_LIVE_PAGES: Record<string, ComponentType> = {',
+        "  'real-project': RealProjectLive,",
+        "  'another-project': AnotherProjectLive,",
+        '};',
+        '',
+      ].join('\n'),
+    );
+    writeFileSync(path.join(fixtureDir, 'real-project.tsx'), 'export default function RealProjectLive() { return null; }\n');
+    writeFileSync(path.join(fixtureDir, 'another-project.tsx'), 'export default function AnotherProjectLive() { return null; }\n');
+
+    expect(hostedLiveSlugs(fixtureDir)).toEqual(['real-project', 'another-project']);
+  });
 });
 
 // Defense-in-depth (non-blocking finding): collectionSlugs() reads `slug`

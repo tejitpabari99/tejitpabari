@@ -45,7 +45,18 @@ export function collectionSlugs(dir) {
 // edit fails the build loudly instead of silently mis-publishing.
 export function hostedLiveSlugs(liveDir, registryPath = path.join(liveDir, 'registry.ts')) {
   const source = readFileSync(registryPath, 'utf-8');
-  const objectMatch = source.match(/HOSTED_LIVE_PAGES\s*:\s*Record<[^>]*>\s*=\s*\{([\s\S]*?)\n\};/);
+  // Match up to the FIRST closing brace after the `= {`. The object body is
+  // always a flat list of `'slug': Identifier` entries (no nested object/
+  // array values), so the first `}` is always the real close — safe to use
+  // a non-greedy match instead of requiring a specific line-break/semicolon
+  // shape. This deliberately tolerates every Prettier-legal rendering of an
+  // empty object this repo's `npm run format` (semi: false) can produce —
+  // `{}`, `{\n}`, with or without a trailing `;` — as well as the populated,
+  // multi-line, semicolon-terminated form this regex originally required
+  // exclusively. A strict `\n\};`-only match broke the moment Prettier
+  // collapsed an emptied registry's `{\n}` to `{}`: see
+  // scripts/generate-sitemap.test.ts's "empty registry" fixtures.
+  const objectMatch = source.match(/HOSTED_LIVE_PAGES\s*:\s*Record<[^>]*>\s*=\s*\{([\s\S]*?)\}\s*;?/);
   if (!objectMatch) {
     throw new Error(
       `generate-sitemap.mjs: could not find "HOSTED_LIVE_PAGES: Record<...> = { ... }" in ` +
