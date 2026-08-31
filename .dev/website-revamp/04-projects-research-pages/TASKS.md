@@ -870,6 +870,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ## Tests
 
 ### Task 16 — `useCollectionFilter` filtering/analytics unit tests
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.test.ts` (new)
    - Changes: Cover, using fixture data (no real content) and `renderHook` wrapped in a `MemoryRouter`, with `vi.mock('@/lib/analytics')` and fake timers for the 600ms analytics timer:
      - Tag filter alone narrows correctly.
