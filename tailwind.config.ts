@@ -42,6 +42,26 @@ export default {
       maxWidth: {
         content: '72rem',
       },
+      typography: () => ({
+        DEFAULT: {
+          css: {
+            '--tw-prose-body': '#3E514D',
+            '--tw-prose-headings': '#162b26',
+            '--tw-prose-lead': '#3E514D',
+            '--tw-prose-links': '#0F4C45',
+            '--tw-prose-bold': '#162b26',
+            '--tw-prose-bullets': '#0F4C45',
+            '--tw-prose-quotes': '#162b26',
+            '--tw-prose-quote-borders': 'rgba(15,76,69,0.22)',
+            '--tw-prose-hr': 'rgba(15,76,69,0.12)',
+            '--tw-prose-th-borders': 'rgba(15,76,69,0.22)',
+            '--tw-prose-td-borders': 'rgba(15,76,69,0.12)',
+            '--tw-prose-code': '#162b26',
+            a: { textDecoration: 'none', fontWeight: '500' },
+            'a:hover': { textDecoration: 'underline' },
+          },
+        },
+      }),
     },
   },
   plugins: [typography],
