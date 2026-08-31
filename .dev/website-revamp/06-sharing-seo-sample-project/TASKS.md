@@ -102,6 +102,7 @@ export function RouteMeta({ title, description, path, image }: RouteMetaProps) {
      2. Each file is a valid TrueType font, not a corrupted/truncated download or an HTML error page saved with a `.ttf` extension — verify with `file scripts/assets/fonts/*.ttf`, confirming each reports as TrueType font data (not "ASCII text" or "HTML document").
      3. `git status` (or the repo's staging equivalent) shows these three files as regular tracked binary additions, not LFS pointers or symlinks, since a CI checkout must get the real bytes with a plain `git clone`.
      4. These files require no build step, no network access, and no owner action beyond this one-time commit (PRD §4.3: "nothing about them needs updating unless the app's font weights change").
+   - Status: Complete (sourced from Google Fonts' own Montserrat v31 latin static distribution — regular/600/700 — via the google-webfonts-helper mirror API, which packages the exact same OFL-licensed TTF bytes Google Fonts serves; verified as valid TrueType font data with `file`, non-zero, no network/build step needed at generator-run time)
 
 ---
 
@@ -273,6 +274,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
      1. Run `node scripts/generate-og-cards.mjs` directly with real content present (`src/content/projects/*.md`, `src/content/research/*.md`) and confirm it exits 0 with no unhandled errors.
      2. Merely `import`-ing this file's exports (e.g. in a Vitest test file) does **not** trigger `main()` — no PNGs get written and no font files get read as a side effect of import alone. Verify by importing only `localImageDataUri`/`cardJsx` in a scratch test and confirming `public/og/` is untouched.
      3. `npx tsc --noEmit` is **not** run against this file (it's plain `.mjs`, outside the TS project) — instead confirm `node --check scripts/generate-og-cards.mjs` reports no syntax errors.
+   - Status: Complete (`node scripts/generate-og-cards.mjs` exits 0 and writes 16 real PNGs — 10 projects + 5 research + `default.png` — each verified 1200×630 PNG image data via `file`; import-only of `localImageDataUri`/`cardJsx` leaves `public/og/` untouched; `node --check` passes. `satori`/`@resvg/resvg-js` added as devDependencies — `satori@^0.19.4` from the PRD sample doesn't exist on the registry (max 0.19.x published is 0.19.3), installed `satori@^0.19.3` instead to honor the same major/minor pin intent; `@resvg/resvg-js@^2.6.2` installed exactly as specified. `public/og/` is gitignored as build output, not committed — `public/` is copied verbatim into `dist/` by `vite-react-ssg build`, and `prebuild` always regenerates these first, so nothing needs to be committed for `dist/` to have them, matching `dist/`'s own gitignored status.)
 
 ---
 
@@ -351,6 +353,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
      2. `node --check scripts/generate-sitemap.mjs` reports no syntax errors.
      3. Merely importing this file's exports does not trigger `main()` or any filesystem write.
      4. `robots.txt`'s content is exactly `User-agent: *\nAllow: /\n\nSitemap: https://tejitpabari.com/sitemap.xml\n` — no `Disallow` lines (PRD §4.4: nothing on this portfolio site should be hidden from search).
+   - Status: Complete (`node scripts/generate-sitemap.mjs` exits 0, writes `public/sitemap.xml` with 21 `<loc>` entries — the 6 static routes + 10 project + 5 research detail pages, all absolute `https://tejitpabari.com/...` URLs off `SITE_URL` — and `public/robots.txt` byte-verified against the exact expected string. `/live` routes: zero appear, correctly — `src/pages/live/` currently holds only `registry.ts` (no hosted-mode `.tsx` page has landed yet; Task 7/8's `sample-project` is out of this task's scope) and Juno's redirect-mode `/live` (its `liveUrl` frontmatter) is structurally excluded by construction since `hostedLiveSlugs()` never reads frontmatter, matching PRD §4.4's binding decision D exactly. Import-only of the four exports triggers no `main()`/filesystem write. `public/sitemap.xml`/`public/robots.txt` gitignored as build output alongside `public/og/`, for the same reason.)
 
 ---
 
@@ -377,6 +380,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
      2. `npm run build` (not `node scripts/...` directly) regenerates every `public/og/**` file and `public/sitemap.xml`/`public/robots.txt` with no separate command needed — confirm by deleting `public/og/default.png` and `public/sitemap.xml` first, then running `npm run build`, then confirming both exist again.
      3. Every pre-existing `package.json` script (`build`, `dev`, `test`, and whatever SP02/SP04 already added — `check:launch`, `check:no-forms`) is byte-for-byte unchanged except for the new `prebuild` entry and the two new `devDependencies`.
      4. `npm ls satori @resvg/resvg-js` shows both installed at the pinned major/minor versions above.
+   - Status: Complete (`prebuild` entry added as a single new line — `"prebuild": "node scripts/generate-og-cards.mjs && node scripts/generate-sitemap.mjs"` — verbatim as specified; `devDependencies` for `satori`/`@resvg/resvg-js` were already added and installed in Task 4. Verified: deleted `public/og`, `public/sitemap.xml`, `public/robots.txt`, ran `npm run build`, and npm's lifecycle hook fired `prebuild` automatically before `build` — confirmed from real console output showing the `prebuild` script line followed by all 16 OG PNGs + sitemap/robots regenerating, then `build` proceeding to `typecheck` and `vite-react-ssg build`, producing all 27 prerendered `index.html` files (unchanged from baseline) with `public/og/**`/`sitemap.xml`/`robots.txt` copied through into `dist/`. Every other script (`dev`, `typecheck`, `build`, `preview`, `lint`, `test`, `check:launch`, `check:no-forms`, `format`) is byte-for-byte unchanged. `npm ls satori @resvg/resvg-js` reports `satori@0.19.3` (see Task 4's note on `^0.19.4` not existing on the registry) and `@resvg/resvg-js@2.6.2`. `firebase.json`'s incidental `closeBundle` rewrite (SP04's `liveRedirectsPlugin`, unrelated to this task) was reverted via `git checkout -- firebase.json` before committing, per instructions.)
 
 ---
 
