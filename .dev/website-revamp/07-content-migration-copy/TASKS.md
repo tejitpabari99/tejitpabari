@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 1/7 tasks complete
+**Progress:** 2/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -84,6 +84,7 @@ The app has been downloaded 1,000+ times and received national news coverage. Th
 ---
 
 ### Task 2 — Microsoft-era Developer Tools projects
+   - Status: Done
    - Files: `src/content/projects/fabric-maps-mcp-server.md` (new), `src/content/projects/azure-maps-ai-assistant.md` (new), `src/content/projects/qgis-plugin-azure-maps-creator.md` (new), `src/content/projects/creator-onboarding-tool.md` (new)
    - Changes: Per PRD §4.1 rows 5–8. None of these four gets a `body` — each ships `description` + `links` only, per PRD §4.1's explicit "most don't need one" framing. `qgis-plugin-azure-maps-creator.md`'s `description` is quoted verbatim from PRD §4.5.3 (the contrast example); the other three follow the identical tone/length rule (1–2 sentences, 20–40 words, present tense, leads with what it does) as a condensation of `src/pages/projects.js`'s existing prose — drafted below, not to be re-drafted.
 
