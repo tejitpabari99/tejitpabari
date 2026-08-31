@@ -388,10 +388,11 @@ Two real gaps this PRD's own design surfaced while tracing exactly which npm scr
     "test": "vitest run",
     "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\"",
     "check:no-forms": "bash scripts/check-no-forms.sh",
-    "check:launch": "tsx scripts/check-launch-content.ts && npm run check:no-forms"
+    "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts && npm run check:no-forms"
   }
 }
 ```
+(`check:launch`'s right-hand side corrected from this PRD's/SP02 §4.9's originally-planned `"tsx scripts/check-launch-content.ts"` during SP02 Task 10's implementation: `scripts/check-launch-content.ts`'s import of `src/data` pulls in loaders that call `import.meta.glob`, a Vite-only build-time macro with no runtime implementation, so bare `tsx` throws unconditionally. The gate now runs as `scripts/check-launch-content.test.ts` under `vitest run`, reusing Vite's own transform — see SP02 `02-content-pipeline/TASKS.md` Task 10 for the full explanation. Because `check:launch` no longer invokes a `tsx` binary, §4.10's Gap 2 rationale below for adding `"tsx"` to `devDependencies` no longer applies to `check:launch` specifically — flagged here, not resolved, since redesigning that gap-fix is this sub-project's own call, not SP02's.)
 
 `prebuild` (SP06 §4.3) fires automatically via npm's own lifecycle convention the instant anything runs `npm run build` — including the `Build` step in both workflows above — so neither workflow file references `prebuild` directly; it's implicit in step 5 of §4.2, exactly as SP06 designed it to be. `check:launch` already internally re-runs `check:no-forms` (SP04 §4.8's own composition) — meaning the CI job's three-gate sequence runs the no-forms check twice in total (once standalone, once inside `check:launch`). Accepted for the identical reason as the `typecheck` redundancy above: the standalone step exists so a no-forms violation names itself immediately and specifically, rather than surfacing only as a sub-line inside `check:launch`'s combined output; the cost is one extra sub-second grep per CI run.
 

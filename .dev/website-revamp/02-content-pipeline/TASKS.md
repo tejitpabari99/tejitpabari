@@ -577,11 +577,14 @@ export const featuredProjects: Project[] = computeFeatured(projects, FEATURED_PR
 ---
 
 ### Task 10 — Pre-launch content gate script
-   - Files: `scripts/check-launch-content.ts` (new), `package.json` (modify — add one npm script)
-   - Changes: Per PRD §4.9. **Deviation from the PRD's code sample, needed for testability:** factor the filtering/reporting logic into an exported `checkLaunchContent` function separate from `main()`'s `console.error`/`process.exit` side effects, so §7's "test the underlying filter/report logic directly, not the script's `process.exit` side effect" requirement is satisfiable. Guard `main()`'s invocation with an ESM-appropriate direct-execution check (`import.meta.url === file://\${process.argv[1]}`), not `require.main === module` (this project is ESM, no CommonJS `require`).
+   - Files: `scripts/check-launch-content.test.ts` (new), `package.json` (modify — add one npm script), `vite.config.ts` (modify — narrow `test.exclude`)
+   - Changes: Per PRD §4.9. **Deviation from the PRD's code sample and this task's original plan, discovered during implementation, not merely a testability preference:** the PRD's/this task's original sample wired `"check:launch": "tsx scripts/check-launch-content.ts"`. That command cannot ever work, unconditionally, regardless of content state. `scripts/check-launch-content.ts` imports `src/data`, whose loaders (`projects.ts`, `workExperience.ts`) call `import.meta.glob(...)` at module top level — a **Vite-only build-time macro** that Vite statically rewrites into real imports during its own transform pass; it has no runtime implementation of its own. `tsx` is esbuild-based and never runs a Vite transform, so importing `src/data` under `tsx` throws `TypeError: (intermediate value).glob is not a function` on the very first invocation. (`vite-node` — the usual escape hatch for "run a Vite-transformed file outside Vite" — is not an installed or transitive dependency here; vitest 4 no longer ships it, so adopting it would mean adding a new dependency, not reusing one already present.)
+
+   **Resolved by running the gate through Vitest's own transform instead**, which already runs every other `src/data`-touching suite successfully (Vite's transform is exactly what rewrites `import.meta.glob` into real imports, for `npm test` and for this gate alike). Concretely: the gate's logic — same two checks, same failure messages, same "names the offending file" behavior — is expressed as a `.test.ts` file under `scripts/`, run explicitly via `vitest run` targeting that one file, rather than as a plain script executed by `tsx`. The exported `checkLaunchContent` function (kept, per the original testability rationale below) is used directly inside the assertions rather than being wrapped in a `main()`/`process.exit` pair — `vitest run`'s own pass/fail exit code already **is** the 0-on-clean/non-zero-on-violation contract SP08's CI depends on, so no separate `process.exit` call is needed.
 
 ```ts
-// scripts/check-launch-content.ts
+// scripts/check-launch-content.test.ts
+import { describe, expect, it } from 'vitest';
 import { projects, workExperience, type Project, type WorkExperience } from '../src/data';
 
 export function checkLaunchContent(
@@ -594,37 +597,49 @@ export function checkLaunchContent(
   };
 }
 
-function main(): void {
-  const { draftDates, demoProjects } = checkLaunchContent(projects, workExperience);
-
-  if (draftDates.length > 0 || demoProjects.length > 0) {
-    console.error('Pre-launch content check FAILED:\n');
-    for (const w of draftDates) {
-      console.error(`  - src/content/work-experience/${w.id}.md still has DRAFT_DATE: true — supply real startDate/endDate and remove the marker.`);
+describe('pre-launch content gate', () => {
+  it('has no work-experience entries with DRAFT_DATE: true remaining', () => {
+    const { draftDates } = checkLaunchContent(projects, workExperience);
+    if (draftDates.length > 0) {
+      const lines = draftDates.map(
+        (w) => `  - src/content/work-experience/${w.id}.md still has DRAFT_DATE: true — supply real startDate/endDate and remove the marker.`,
+      );
+      expect.fail(`Pre-launch content check FAILED:\n\n${lines.join('\n')}`);
     }
-    for (const p of demoProjects) {
-      console.error(`  - src/content/projects/${p.slug}.md still has demo: true — delete the file before a real launch (see BRIEF §3, Sharing/SEO).`);
-    }
-    process.exit(1);
-  }
-  console.log('Pre-launch content check passed — no DRAFT_DATE or demo markers remain.');
-}
+    expect(draftDates).toEqual([]);
+  });
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
-}
+  it('has no project entries with demo: true remaining', () => {
+    const { demoProjects } = checkLaunchContent(projects, workExperience);
+    if (demoProjects.length > 0) {
+      const lines = demoProjects.map(
+        (p) => `  - src/content/projects/${p.slug}.md still has demo: true — delete the file before a real launch (see BRIEF §3, Sharing/SEO).`,
+      );
+      expect.fail(`Pre-launch content check FAILED:\n\n${lines.join('\n')}`);
+    }
+    expect(demoProjects).toEqual([]);
+  });
+});
 ```
 
    Add to `package.json` `"scripts"`:
 ```json
-"check:launch": "tsx scripts/check-launch-content.ts"
+"check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts"
 ```
-(If SP01's toolchain doesn't already have `tsx` installed, flag this — do not silently swap in a different runner without confirming, since the PRD names `tsx` specifically.)
+The `CHECK_LAUNCH=1` env var isn't the gate's own logic — it's plumbing needed because vitest's `test.exclude` (below) removes `scripts/**` from *default* test discovery so `npm test`'s file list/counts stay limited to `src/`; vitest applies `exclude` before an explicit CLI file argument narrows the result further, so a bare `vitest run scripts/check-launch-content.test.ts` would find "no test files" even with the file named on the command line. `CHECK_LAUNCH=1` lifts that one exclusion for this invocation only, so `check:launch`'s own explicit file argument can narrow discovery back down to exactly that one file.
+
+   In `vite.config.ts`, narrow `test.exclude` accordingly (additive to whatever `vitest/config`'s `configDefaults.exclude` already contains, not a replacement):
+```ts
+exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...configDefaults.exclude, 'scripts/**'],
+```
+
+   This does not use `tsx`; do not add `tsx` as a dependency for this purpose (SP08 §4.10's originally-planned "add `tsx` to devDependencies" gap-fix is accordingly moot for `check:launch` specifically — see that sub-project's own TASKS.md/PRD.md, corrected alongside this task).
 
    - Acceptance criteria:
-     1. `npm run check:launch` exits 0 and prints "Pre-launch content check passed" with zero content files present.
-     2. Negative path: temporarily add a fixture work-experience file with `DRAFT_DATE: true`; confirm `npm run check:launch` exits non-zero and its stderr names that exact file. Delete the fixture; confirm it passes again.
-     3. Negative path: temporarily add a fixture project file with `demo: true`; confirm `npm run check:launch` exits non-zero and its stderr names that exact file. Delete the fixture; confirm it passes again.
+     1. `npm run check:launch` exits 0 and reports its 2 tests passing with zero content files present.
+     2. Negative path: temporarily add a fixture work-experience file with `DRAFT_DATE: true`; confirm `npm run check:launch` exits non-zero and its output names that exact file. Delete the fixture; confirm it passes again.
+     3. Negative path: temporarily add a fixture project file with `demo: true`; confirm `npm run check:launch` exits non-zero and its output names that exact file. Delete the fixture; confirm it passes again.
+     4. `npm test` (`vitest run`, no arguments) does not discover or run `scripts/check-launch-content.test.ts` — its file list and test counts are unaffected by this task.
 
 ---
 

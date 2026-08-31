@@ -1,4 +1,3 @@
-/// <reference types="vitest/config" />
 // vite-react-ssg augments Vite's `UserConfig` (adding `ssgOptions`) via a
 // `declare module 'vite'` block in its own .d.ts. TS only applies an ambient
 // augmentation to files inside the same compiled "program" as the file that
@@ -12,6 +11,7 @@
 /// <reference types="vite-react-ssg" />
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { configDefaults } from 'vitest/config';
 import path from 'node:path';
 
 export default defineConfig({
@@ -28,5 +28,17 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/setupTests.ts'],
+    // scripts/check-launch-content.test.ts is the pre-launch content gate
+    // (SP02 Task 10), run explicitly via `npm run check:launch`
+    // (`CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts`),
+    // not as part of the default `npm test` suite. `scripts/**` is excluded
+    // here so `npm test`'s discovered file list/counts stay limited to
+    // `src/`. Vitest applies `exclude` before it applies a CLI path
+    // argument as a filter — an explicit `vitest run scripts/....test.ts`
+    // is filtered out just like a bare `vitest run` would be — so
+    // `check:launch` sets `CHECK_LAUNCH=1` to lift the exclusion for that
+    // one invocation only, letting its own explicit file argument narrow
+    // discovery back down to exactly that one file.
+    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...configDefaults.exclude, 'scripts/**'],
   },
 });

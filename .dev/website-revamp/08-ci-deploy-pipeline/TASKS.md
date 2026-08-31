@@ -37,10 +37,11 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
     "test": "vitest run",
     "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\"",
     "check:no-forms": "bash scripts/check-no-forms.sh",
-    "check:launch": "tsx scripts/check-launch-content.ts && npm run check:no-forms"
+    "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts && npm run check:no-forms"
   }
 }
 ```
+(`check:launch`'s right-hand side corrected from SP02 Task 10's originally-planned `"tsx scripts/check-launch-content.ts"` during that task's implementation: `scripts/check-launch-content.ts`'s import of `src/data` pulls in loaders that call `import.meta.glob`, a Vite-only build-time macro with no runtime implementation, so bare `tsx` throws unconditionally. The gate now runs as `scripts/check-launch-content.test.ts` under `vitest run`, reusing Vite's own transform — see SP02 `02-content-pipeline/TASKS.md` Task 10 for the full explanation. Because `check:launch` no longer invokes a `tsx` binary, this task's own rationale below for adding `"tsx"` to `devDependencies` (Gap 2) no longer applies to `check:launch` specifically — flagged here, not resolved, since redesigning that gap-fix is this sub-project's own call, not SP02's.)
 
      **Deliberately not fixed here:** `build`'s own typecheck prefix (`npm run typecheck`, i.e. `tsc -b --noEmit`) stays — trimming it would change `npm run build`'s existing, already-documented local-dev meaning for reasons that have nothing to do with CI. The resulting double-run of the typecheck per CI job (once as `Typecheck`, again inside `Build`) is accepted, not a bug (PRD §4.10).
    - Acceptance criteria:
