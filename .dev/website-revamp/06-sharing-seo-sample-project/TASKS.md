@@ -37,6 +37,7 @@ export function absoluteUrl(path: string): string {
      1. `npx tsc --noEmit` passes. The file exports exactly `SITE_URL`, `SITE_NAME`, `DEFAULT_DESCRIPTION`, `DEFAULT_OG_IMAGE`, `absoluteUrl` (verify with `grep -c "^export " src/config/site.ts` → 5).
      2. `SITE_URL` has no trailing slash (`'https://tejitpabari.com'`, not `'https://tejitpabari.com/'`) — confirms `absoluteUrl`'s string-concatenation contract holds for both `path='/'` and `path='/projects'` without a double slash. Spot-check: `absoluteUrl('/')` must equal `'https://tejitpabari.com/'`, not `'https://tejitpabari.comundefined'` or similar.
      3. This file has no runtime test of its own beyond Task 14's `absoluteUrl` unit tests — `SITE_NAME`/`DEFAULT_DESCRIPTION`/`DEFAULT_OG_IMAGE` are plain constants with nothing to assert beyond "the file compiles and exports them."
+   - Status: Complete (pulled forward ahead of phase order, out of Phase 5, to unblock SP04's `ProjectDetailPage`/`ResearchDetailPage`, which import `@/components/RouteMeta` and therefore transitively need this file)
 
 ---
 
