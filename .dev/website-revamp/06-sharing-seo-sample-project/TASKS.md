@@ -808,6 +808,7 @@ describe('RouteMeta', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all three cases. Explicitly noted: this test proves the **React component** builds the right tree — it does NOT substitute for Task 9's built-output audit, since `vite-react-ssg`'s `Head` mock here never touches the actual prerendering pipeline that writes `dist/**/index.html`.
+   - Status: Complete. `src/components/RouteMeta.test.tsx` written with 5 cases (the 3 above plus two additional ones pinning the binding contract further: width/height/type stay `"1200"`/`"630"`/`"website"` even with an explicit `image` prop, and `og:title`/`twitter:title` both carry the same `" · Tejit Pabari"` suffix as `<title>`). Assertions query `document.head`/`document.title` directly — React 19 auto-hoists `<title>`/`<meta>`/`<link>` rendered anywhere in the tree to `document.head`, the exact mechanism `src/pages/PrivacyPage.test.tsx` already documents and relies on for its own real `RouteMeta` call site — confirmed empirically here too. `npx vitest run src/components/RouteMeta.test.tsx`: 1 file, 5 tests, all passed. Full `npm test` after: 36 test files / 167 tests passed (up from the 35/162 baseline). `npm run typecheck`: clean.
 
 ---
 
