@@ -10,7 +10,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/05-legal-analyt
 - SP04 lands `scripts/check-no-forms.sh` / `npm run check:no-forms` and the `src/pages/live/registry.ts` convention (PRD §4.7, §9). Task 11 below writes a code comment that *names* this command — the comment is valid and useful before that script exists (SP05 is Phase 2, parallel with SP02; SP04 lands later), but the command itself won't run successfully until SP04's task lands. This is a documentation forward-reference, not a build-breaking dependency.
 - SP03 and SP04 are the main callers of `trackEvent` — they compile against the exact `AnalyticsEventName` union and the exact `'content_external_link'` context string this sub-project ships (Task 3). Changing either after SP03/SP04 land breaks their call sites; do not rename either casually.
 
-**Progress:** 19/20 tasks complete (Tasks 1–19). Task 20 (`dist/` build audit) not started — deliberately deferred, since it requires a full `npm run build` with no concurrent agents. Full detail: see `../code-2026-08-31-0420.md`.
+**Progress:** 20/20 tasks complete. Task 20 (`dist/` build audit) ran with no concurrent agents in the repo; all five acceptance checks passed against a real `npm run build`. Full detail: see `../code-2026-08-31-0420.md`.
 
 ---
 
@@ -835,7 +835,7 @@ export function TermsPage() {
 ---
 
 ### Task 20 — `dist/` build audit — email absence and prerendered legal routes
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — — (verification-only task; produces no commit of its own). Ran `npm run build` with no concurrent agents in the repo (typecheck, then `vite-react-ssg build`); all five acceptance checks below passed. See `../code-2026-08-31-0420.md` for the full command/output log and two findings worth tracking: (1) the literal `grep -rln "mailto:" dist/` check as written returns one file — the minified JS chunk `dist/assets/app-*.js` — because `useContactMailto`'s runtime-constructed template literal (`` `mailto:${getContactEmailAddress()}` ``) necessarily appears in client JS; zero `*.html` files contain the string, which is what the check is actually protecting against (a server-rendered `mailto:` href), so this is a criterion-wording gap, not a defect. (2) SP08 (the CI pipeline that fails the build loudly when `VITE_GA_MEASUREMENT_ID` is unset) hasn't landed yet, so nothing enforced that guard on this local build — the build simply proceeded with GA disabled via `shouldLoadGa()`'s own guard 2, exactly as designed for a missing ID; no hardcoded GA script tag or measurement ID reached `dist/` either way.
    - Files: none (verification checkpoint only — produces no code diff to commit, per the same pattern SP02's Task 6 used for its manual QA pass)
    - Changes: Per PRD §4.1, §7's "the one check that actually proves the obfuscation works end-to-end." Run, in order, after Tasks 1–13 are all merged:
      1. `npm run build`

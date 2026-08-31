@@ -853,7 +853,7 @@ describe('validateNavAndFooterLinks', () => {
 ---
 
 ### Task 15 — Pre-launch gate logic tests
-   **Status:** ✅ Done — 74f78a7
+   **Status:** ✅ Done — 63a2a08
    - Files: `scripts/check-launch-content.test.ts` (new)
    - Changes: Per PRD §7, fourth bullet. Test `checkLaunchContent` (exported by Task 10) directly with in-memory fixtures — never invoke `main()` or assert on `process.exit`.
 
