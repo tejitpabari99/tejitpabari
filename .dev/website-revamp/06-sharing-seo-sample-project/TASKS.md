@@ -102,6 +102,7 @@ export function RouteMeta({ title, description, path, image }: RouteMetaProps) {
      2. Each file is a valid TrueType font, not a corrupted/truncated download or an HTML error page saved with a `.ttf` extension — verify with `file scripts/assets/fonts/*.ttf`, confirming each reports as TrueType font data (not "ASCII text" or "HTML document").
      3. `git status` (or the repo's staging equivalent) shows these three files as regular tracked binary additions, not LFS pointers or symlinks, since a CI checkout must get the real bytes with a plain `git clone`.
      4. These files require no build step, no network access, and no owner action beyond this one-time commit (PRD §4.3: "nothing about them needs updating unless the app's font weights change").
+   - Status: Complete (sourced from Google Fonts' own Montserrat v31 latin static distribution — regular/600/700 — via the google-webfonts-helper mirror API, which packages the exact same OFL-licensed TTF bytes Google Fonts serves; verified as valid TrueType font data with `file`, non-zero, no network/build step needed at generator-run time)
 
 ---
 
