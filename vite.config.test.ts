@@ -15,6 +15,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readLiveUrls } from './vite.config';
+import viteConfig from './vite.config';
 
 function writeMdFile(dir: string, filename: string, frontmatter: string, body = 'Some body.'): void {
   writeFileSync(path.join(dir, filename), `---\n${frontmatter}\n---\n${body}\n`);
@@ -121,5 +122,21 @@ describe('the hosting.redirects transform used by liveRedirectsPlugin.closeBundl
     expect((fixtureConfig.hosting as { redirects: unknown }).redirects).toEqual([
       { source: '/projects/juno/live', destination: 'https://app.meetjuno.health', type: 302 },
     ]);
+  });
+});
+
+describe('liveRedirectsPlugin build-only guard', () => {
+  // Regression test: closeBundle's firebase.json write is a build-only side
+  // effect. Without `apply: 'build'` on the plugin object, Vitest's own
+  // config loading resolves the plugin pipeline and closeBundle fires on
+  // every `npm test` / `npx vitest run`, silently rewriting the real,
+  // committed firebase.json. Asserting `apply: 'build'` here is what keeps
+  // that regression from coming back unnoticed.
+  it('declares apply: "build" on the live-redirects plugin, so it never runs under Vitest or `vite dev`', () => {
+    const plugins = (viteConfig.plugins ?? []).flat(Infinity) as { name?: string; apply?: unknown }[];
+    const liveRedirects = plugins.find((p) => p?.name === 'live-redirects');
+
+    expect(liveRedirects).toBeDefined();
+    expect(liveRedirects?.apply).toBe('build');
   });
 });

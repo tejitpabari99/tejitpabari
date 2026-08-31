@@ -37,6 +37,14 @@ export function readLiveUrls(dir: string): { slug: string; liveUrl: string }[] {
 function liveRedirectsPlugin(): Plugin {
   return {
     name: 'live-redirects',
+    // Build-only: closeBundle otherwise also fires as a side effect of
+    // Vitest's own config loading (Vitest resolves/loads vite.config.ts and
+    // runs the plugin pipeline even though it never performs a real bundle),
+    // which would silently rewrite the real firebase.json on every `npm
+    // test` / `npx vitest run`. `apply: 'build'` scopes this plugin (and
+    // therefore its closeBundle hook) to `vite build` only, leaving `vite
+    // dev` and Vitest untouched, without changing any build-time behavior.
+    apply: 'build',
     closeBundle() {
       const entries = readLiveUrls(PROJECTS_DIR);
       const firebaseJsonPath = path.resolve(__dirname, 'firebase.json');
