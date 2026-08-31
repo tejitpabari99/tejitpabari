@@ -1,0 +1,46 @@
+// src/routes.tsx
+import type { RouteRecord } from 'vite-react-ssg';
+import { PageShell } from '@/layout/PageShell';
+import { HomePage } from '@/pages/HomePage';
+import { ProjectsPage } from '@/pages/ProjectsPage';
+import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
+import { ProjectLivePage } from '@/pages/ProjectLivePage';
+import { WorkExperiencePage } from '@/pages/WorkExperiencePage';
+import { ResearchPage } from '@/pages/ResearchPage';
+import { ResearchDetailPage } from '@/pages/ResearchDetailPage';
+import { PrivacyPage } from '@/pages/PrivacyPage';
+import { TermsPage } from '@/pages/TermsPage';
+import { NotFoundPage } from '@/pages/NotFoundPage';
+import { projectSlugs } from '@/content/projects';
+import { researchSlugs } from '@/content/research';
+
+export const routes: RouteRecord[] = [
+  {
+    path: '/',
+    element: <PageShell />,
+    children: [
+      { index: true, element: <HomePage /> },
+      { path: 'projects', element: <ProjectsPage /> },
+      {
+        path: 'projects/:slug',
+        element: <ProjectDetailPage />,
+        getStaticPaths: () => projectSlugs.map((slug) => `projects/${slug}`),
+      },
+      {
+        path: 'projects/:slug/live',
+        element: <ProjectLivePage />,
+        getStaticPaths: () => projectSlugs.map((slug) => `projects/${slug}/live`),
+      },
+      { path: 'work-experience', element: <WorkExperiencePage /> },
+      { path: 'research', element: <ResearchPage /> },
+      {
+        path: 'research/:slug',
+        element: <ResearchDetailPage />,
+        getStaticPaths: () => researchSlugs.map((slug) => `research/${slug}`),
+      },
+      { path: 'privacy', element: <PrivacyPage /> },
+      { path: 'terms', element: <TermsPage /> },
+      { path: '*', element: <NotFoundPage /> },
+    ],
+  },
+];
