@@ -9,7 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/03-landing-page
 - Any component-level test that needs project/work-experience data must use **in-memory fixtures**, never the real loaded `projects`/`workExperience` arrays.
 - Where a task's manual/dev-server check would show an empty grid or a timeline with zero entries because content hasn't landed yet, that is expected and not a defect — note it, don't "fix" it by inventing placeholder content.
 
-**Progress:** 5/16 tasks complete.
+**Progress:** 6/16 tasks complete.
 
 ---
 
@@ -560,6 +560,7 @@ The headline "Where I've worked and what I've built." is real, shipped copy per 
 ---
 
 ### Task 6 — `WorkExperiencePage`
+   - Status: Complete
    - Files: `src/pages/WorkExperiencePage.tsx` (modify — replaces SP01's placeholder)
    - Changes: Per PRD §4.6. Depends on Task 4.
 
