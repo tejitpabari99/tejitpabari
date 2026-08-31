@@ -54,6 +54,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 ---
 
 ### Task 2 — `firebase-hosting-pull-request.yml` — preview-channel workflow
+   - Status: Complete
    - Files: `.github/workflows/firebase-hosting-pull-request.yml` (new)
    - Changes: Per PRD §4.2/§4.3/§4.7/§4.8/§4.9 exactly. One job, sequential steps through the build, diverging only at the deploy step; fork-PR guard on the deploy step alone; `concurrency` keyed on `github.workflow`+`github.ref` with `cancel-in-progress: true`; `expires: 7d`; no `VITE_GA_MEASUREMENT_ID` failure guard (deliberate asymmetry, §4.6). Complete file content:
 
@@ -130,6 +131,7 @@ jobs:
 ---
 
 ### Task 3 — `firebase-hosting-merge.yml` — live-channel workflow
+   - Status: Complete
    - Files: `.github/workflows/firebase-hosting-merge.yml` (new)
    - Changes: Per PRD §4.2/§4.4/§4.6/§4.8 exactly. Same shared shape as Task 2 through the build, plus the one step unique to this workflow — the loud `VITE_GA_MEASUREMENT_ID` guard — and `channelId: live` instead of a preview channel. No fork-PR guard needed (a `push` to `main` never runs against a fork). Complete file content:
 
