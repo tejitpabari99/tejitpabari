@@ -1,16 +1,9 @@
 // src/pages/PrivacyPage.tsx
 import type { ReactNode } from 'react';
-import { Head } from 'vite-react-ssg';
+import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
 import { useConsent } from '@/context/ConsentContext';
-// SP06 hasn't landed `@/components/RouteMeta` yet (see TASKS.md's own
-// sequencing note: "SP06 lands RouteMeta ... assumed shape"). Using
-// vite-react-ssg's `Head` directly here, with the same title/description
-// this page would hand to `RouteMeta`, so the prerendered <head> is correct
-// today. When SP06 ships `RouteMeta`, swap this for
-// `<RouteMeta title description path="/privacy" />` — everything else about
-// this page is unaffected.
 
 const LAST_UPDATED = '2026-08-30'; // placeholder — owner confirms the real ship date
 
@@ -29,13 +22,11 @@ export function PrivacyPage() {
 
   return (
     <div className="mx-auto max-w-content px-4 py-16 sm:px-6 lg:px-8">
-      <Head>
-        <title>Privacy Policy</title>
-        <meta
-          name="description"
-          content="This is Tejit Pabari's personal portfolio — no company, no accounts, no forms today. Here is what this site (and everything hosted under it) collects, and what your choices are."
-        />
-      </Head>
+      <RouteMeta
+        title="Privacy Policy"
+        description="This is Tejit Pabari's personal portfolio — no company, no accounts, no forms today. Here is what this site (and everything hosted under it) collects, and what your choices are."
+        path="/privacy"
+      />
       <div className="mx-auto max-w-2xl space-y-8">
         <header className="space-y-1">
           <h1 className="text-3xl font-semibold text-ink">Privacy Policy</h1>
