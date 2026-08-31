@@ -964,6 +964,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 25 — `check-no-forms.sh` automated regression test
+   - Status: Complete
    - Files: `scripts/check-no-forms.test.ts` (new) — a small Vitest test that shells out to the script (Node's `child_process.execFileSync` or equivalent), per PRD §7's "a small shell-invocation test... acceptable given the script's own small surface"
    - Changes: In a `beforeEach`/`afterEach`, create and remove a fixture temp directory shaped like `src/pages/live/` (do **not** touch the real `src/pages/live/` directory from this automated test — that manual/reverted check already happened in Task 15's acceptance criteria 3). If the script's target path is hardcoded to the real `src/pages/live/` (as written in Task 15), this test's simplest reliable form is: (a) confirm the script exits 0 today against the real, clean directory, and (b) reproduce the exact manual steps from Task 15 acceptance criterion 3 programmatically — write a temp file into the real `src/pages/live/` inside the test, assert nonzero exit and the file's name in the output, then delete the temp file in a `finally`/`afterEach` regardless of test outcome, so a failed assertion never leaves the fixture behind to break every subsequent `check:no-forms` run.
    - Acceptance criteria: `npm test` passes; running the full suite twice in a row leaves zero stray files under `src/pages/live/` (confirm by diffing `git status --porcelain src/pages/live/` before and after the test run — must be identical).
