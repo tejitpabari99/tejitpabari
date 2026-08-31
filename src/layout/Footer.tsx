@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { FOOTER_LINKS } from '@/config/links';
 import { isExternalUrl } from '@/lib/isExternalUrl';
+import { trackEvent } from '@/lib/analytics'; // SP05 add
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -11,7 +12,18 @@ export function Footer() {
         <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-4 text-[0.78rem] font-semibold text-teal-secondary">
           {FOOTER_LINKS.map((item) =>
             isExternalUrl(item.href) ? (
-              <a key={item.href} href={item.href} target="_blank" rel="noreferrer" className="hover:text-teal">
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-teal"
+                onClick={
+                  item.label === 'Résumé'
+                    ? () => trackEvent('resume_click', { source: 'footer', url: item.href })
+                    : undefined
+                }
+              >
                 {item.label}
               </a>
             ) : (
