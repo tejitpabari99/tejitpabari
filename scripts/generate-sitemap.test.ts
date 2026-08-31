@@ -20,7 +20,7 @@ import { afterEach, describe, it, expect } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildSitemapUrls, hostedLiveSlugs, STATIC_ROUTES } from './generate-sitemap.mjs';
+import { buildSitemapUrls, hostedLiveSlugs, escapeXml, STATIC_ROUTES } from './generate-sitemap.mjs';
 
 describe('buildSitemapUrls', () => {
   it('includes every static route, project slug, research slug, and hosted /live slug', () => {
@@ -127,5 +127,27 @@ describe('hostedLiveSlugs', () => {
     writeFileSync(path.join(fixtureDir, 'registry.ts'), "export const NOTHING_HERE = 42;\n");
 
     expect(() => hostedLiveSlugs(fixtureDir)).toThrow(/HOSTED_LIVE_PAGES/);
+  });
+});
+
+// Defense-in-depth (non-blocking finding): collectionSlugs() reads `slug`
+// from frontmatter with no validation of its own, and main() interpolates
+// it, unescaped, into raw <loc> XML text. escapeXml() closes that off
+// regardless of what a slug (or any other value threaded through it)
+// contains.
+describe('escapeXml', () => {
+  it('escapes all five XML-significant characters', () => {
+    expect(escapeXml(`&<>"'`)).toBe('&amp;&lt;&gt;&quot;&apos;');
+  });
+
+  it('leaves an ordinary URL unchanged', () => {
+    expect(escapeXml('https://tejitpabari.com/projects/juno')).toBe('https://tejitpabari.com/projects/juno');
+  });
+
+  it('neutralizes a slug value that would otherwise break out of <loc> (e.g. "]]></loc><script>")', () => {
+    const malicious = 'https://tejitpabari.com/projects/x"><script>alert(1)</script>';
+    const escaped = escapeXml(malicious);
+    expect(escaped).not.toContain('<script>');
+    expect(escaped).toContain('&lt;script&gt;');
   });
 });

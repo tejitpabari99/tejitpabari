@@ -69,6 +69,23 @@ export function hostedLiveSlugs(liveDir, registryPath = path.join(liveDir, 'regi
   return slugs;
 }
 
+// Defense-in-depth, not a fix for a proven exploit: collectionSlugs() below
+// reads `slug` from frontmatter with no validation of its own (unlike
+// scripts/generate-og-cards.mjs's readCollection, fixed separately to
+// reject path-traversal/mismatched slugs for its own writeFileSync use).
+// The real build's loader (src/data/shared.ts's assertSlugMatchesFilename)
+// does validate every slug, but only later, during SSR route rendering —
+// same ordering gap as SP02/SP04's other findings. An odd slug value could
+// otherwise be interpolated into this file's raw <loc> text unescaped.
+export function escapeXml(value) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 /** Pure URL-list builder — no filesystem access, easy to unit-test directly. */
 export function buildSitemapUrls(staticRoutes, projectSlugs, researchSlugs, hostedLiveSlugList) {
   return [
@@ -90,7 +107,7 @@ function main() {
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...urls.map((u) => `  <url><loc>${SITE_URL}${u}</loc></url>`),
+    ...urls.map((u) => `  <url><loc>${escapeXml(SITE_URL + u)}</loc></url>`),
     '</urlset>',
     '',
   ].join('\n');
