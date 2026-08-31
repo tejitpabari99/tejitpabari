@@ -871,6 +871,8 @@ export function HomePage() {
 
 ### Task 11 — `ProjectCard` unit tests
    - Files: `src/components/ProjectCard.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added five behavioral tests covering title routing, optional status and external links, and isolated card/external click callbacks; targeted test and typecheck pass.
    - Changes: Per PRD §7, first bullet. Depends on Task 1. Use `@testing-library/react` + a `MemoryRouter` wrapper (the component renders a react-router `<Link>`).
 
 ```tsx
