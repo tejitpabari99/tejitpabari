@@ -800,6 +800,7 @@ function liveRedirectsPlugin(): Plugin {
 ---
 
 ### Task 14 — `routes.tsx`: narrow `/live` `getStaticPaths` (SP01-owned file, edited)
+   - Status: Complete
    - Files: `src/routes.tsx` (modified — SP01-owned)
    - Changes: Implement per PRD §4.7. SP01 shipped `getStaticPaths: () => projectSlugs.map((slug) => \`projects/${slug}/live\`)` for the `/projects/:slug/live` route — every project, unconditionally. This task narrows it to Task 8's `projectLiveSlugs`, the actual resolvable set. **Only the `getStaticPaths` line and its import change on this route entry; nothing else moves.**
 
