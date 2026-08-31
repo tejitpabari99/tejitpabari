@@ -63,7 +63,7 @@ This sub-project produces no real page content — hero copy, project cards, the
 - The work-experience timeline CSS, hero, About prose, Contact section — SP03's scope.
 - Sitemap/`robots.txt` generation — `juno-landing-page`'s `vite.config.ts` has a working `sitemapPlugin`; porting it is a natural SP06 task (it needs the real per-collection slug/date data SP02 produces), not built here.
 - CI/CD — deploy is a manual `firebase deploy` command, matching `juno-landing-page`'s own "no CI for a solo builder" decision.
-  > **Amended 2026-08-31 (owner action):** superseded — the owner installed the Firebase Hosting GitHub Action integration on the repo, and it is adopted rather than removed. Deploy is now (once the workflows land, §4.9) driven by pushes/PRs, not a manual `firebase deploy`. See §4.9's "Deploy pipeline" subsection, §9, and brief §4's matching amendment.
+  > **Amended 2026-08-31 (owner action):** superseded — the owner decided to adopt CI, and it is adopted rather than removed. Deploy is now driven by pushes/PRs, not a manual `firebase deploy`. **The concrete workflow design is SP08's scope (`08-ci-deploy-pipeline`), not this sub-project's** — SP01 owns the `package.json` scripts and `firebase.json` those workflows invoke (§4.2, §4.9 below) and nothing further; see §4.9's short pointer and SP08 §1–§4 for the actual pipeline. (An earlier version of this note, and of §4.9 below, stated that the owner had already installed Firebase's GitHub Action integration and scaffolded both workflow files — verified false, SP08 §1: no `.github/workflows/` exists on any branch, no service-account secret, no repository variable. That belief is corrected here and in §4.9/§9; the underlying decision to adopt CI is unaffected.)
 - Dark mode, a CMS, a backend, a contact form (brief §4, unchanged here).
 
 ---
@@ -124,6 +124,7 @@ This sub-project produces no real page content — hero copy, project cards, the
   "bugs": { "url": "https://github.com/tejitpabari99/tejitpabari/issues" },
   "scripts": {
     "dev": "vite-react-ssg dev",
+    "typecheck": "tsc --noEmit",
     "build": "tsc --noEmit && vite-react-ssg build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -158,6 +159,7 @@ This sub-project produces no real page content — hero copy, project cards, the
     "postcss": "^8.5.26",
     "prettier": "^3.8.1",
     "tailwindcss": "^3.4.19",
+    "tsx": "^4.19.2",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.67.0",
     "vite": "^8.2.2",
@@ -165,6 +167,8 @@ This sub-project produces no real page content — hero copy, project cards, the
   }
 }
 ```
+
+Two additions beyond the `juno-landing-page` mirror, both closing gaps SP08's design surfaced while tracing exactly which scripts its CI workflows invoke (SP08 §4.10), not new decisions of SP01's own: **`"typecheck": "tsc --noEmit"`** — a standalone script distinct from `build`'s own bundled `tsc --noEmit && vite-react-ssg build`, so a CI step (or a developer) can run type-checking alone and get a result that names itself as "typecheck failed," not "build failed, could be either the type check or the bundler." **`"tsx": "^4.19.2"`** — SP02 §4.9 wires `"check:launch": "tsx scripts/check-launch-content.ts"`, invoking a binary named `tsx` that no sibling PRD, this one included, previously declared as an installable dependency; without it, a clean `npm ci` checkout has no `tsx` to run, and `npm run check:launch` fails immediately with "command not found" for a reason having nothing to do with content correctness. Both gaps only became visible once something (SP08's CI pipeline) actually needed to run these scripts against a clean, non-developer-machine checkout — see SP08 §4.10 for the full reasoning.
 
 Note on `react-router-dom` pinning: `^6.14.1`, not the npm-`latest` v7 — `vite-react-ssg@0.9.2` targets React Router v6 (confirmed in its own README: "vite-react-ssg will continue to maintain SSG functionality for React Router v6 users"), and `juno-landing-page`'s real `package.json` (not just its planning doc) ships exactly this pin. An unpinned install would silently grab v7 and break.
 
@@ -296,7 +300,9 @@ tejitpabari/
     │   │   └── index.ts         (SP01 stub — §4.7)
     │   ├── work-experience/     (empty — SP02/SP07)
     │   └── legal/               (empty — SP05/SP07)
-    ├── config/                  (empty — SP02's featured.ts, SP05's contact.ts land here)
+    ├── config/
+    │   └── links.ts              (SP01 — NAV_LINKS, FOOTER_LINKS, RESUME_URL; binding ownership, §4.6/§9)
+    │                             (otherwise empty — SP02's featured.ts, SP05's contact.ts land here)
     ├── layout/
     │   ├── PageShell.tsx
     │   ├── Nav.tsx
@@ -522,16 +528,38 @@ export function Nav() {
 }
 ```
 
-**Data-driven, per SP02 §4.5.4/§9's cross-check.** `NAV_LINKS` is no longer a local array inside `Nav.tsx` — it's imported from `src/config/links.ts` (SP03-owned, §4.6 below), the same file `FOOTER_LINKS` and `RESUME_URL` live in, so SP02's build-time validator can check every nav/footer href against `KNOWN_STATIC_ROUTES` in one place. `Nav.tsx` itself is otherwise unchanged — same scroll logic, same markup, same four items, just no longer the place that array is defined.
+**Data-driven, per SP02 §4.5.4/§9's cross-check.** `NAV_LINKS` is no longer a local array inside `Nav.tsx` — it's imported from `src/config/links.ts`, the same file `FOOTER_LINKS` and `RESUME_URL` live in, so SP02's build-time validator can check every nav/footer href against `KNOWN_STATIC_ROUTES` in one place. **`src/config/links.ts` is SP01-owned and created here** (binding, §9): SP01 lands first (Phase 1) and `Nav`/`Footer` cannot render without this file existing, so any other owner would create a forward dependency from Phase 1 into a later phase. SP02 and SP03 are consumers only — SP02's validator checks its entries against `KNOWN_STATIC_ROUTES`, and SP03's Hero imports `RESUME_URL` from it. Its exports are exactly `NAV_LINKS` (the four nav entries below), `FOOTER_LINKS`, and `RESUME_URL` — see the `Footer` section below for the full file contents. `Nav.tsx` itself is otherwise unchanged — same scroll logic, same markup, same four items, just no longer the place that array is defined.
 
 No mobile hamburger (brief §3, locked) — four items at this pill's font sizes reflow within the pill's own `w-fit` sizing at any viewport width; techfolio ships the identical nav with no breakpoint-specific menu logic.
+
+**`src/config/links.ts`** — SP01-owned and created here (binding, §9), the single source of truth for `NAV_LINKS`, `FOOTER_LINKS`, and `RESUME_URL`. All three exports are specified together since they're one file with one reason to exist — centralizing every link target the app shell needs, so a URL like the Résumé Drive link is quoted in exactly one place:
+
+```ts
+// src/config/links.ts
+export const RESUME_URL =
+  'https://drive.google.com/file/d/1HcqZCkdxfU73PUHmFSKqJGIG7_yG3mGS/view?usp=sharing';
+
+export const NAV_LINKS: { label: string; href: string }[] = [
+  { label: 'Projects', href: '/#projects' },
+  { label: 'Work Experience', href: '/#work-experience' },
+  { label: 'About', href: '/#about' },
+  { label: 'Contact', href: '/#contact' },
+];
+
+export const FOOTER_LINKS: { label: string; href: string }[] = [
+  { label: 'Research', href: '/research' },
+  { label: 'Privacy', href: '/privacy' },
+  { label: 'Terms', href: '/terms' },
+  { label: 'Résumé', href: RESUME_URL },
+];
+```
 
 **`Footer`** (`src/layout/Footer.tsx`) — consumed by `PageShell` only. **Contents, resolved (§9): Research, Privacy, Terms, Résumé, then the techfolio credit line, then copyright.** Brief §2/§3's literal enumeration ("Research, Résumé, techfolio credit line, copyright") predates `/privacy`/`/terms` being locked into the same brief's route table, and the nav deliberately carries no home/logo affordance — so built exactly as literally enumerated, the two legal routes would be reachable only by typing the URL. A privacy policy that can't be found doesn't do the job a privacy policy exists to do, so both links ship in the footer:
 
 ```tsx
 // src/layout/Footer.tsx
 import { Link } from 'react-router-dom';
-import { FOOTER_LINKS } from '@/config/links'; // SP03-owned — see §9
+import { FOOTER_LINKS } from '@/config/links';
 import { isExternalUrl } from '@/lib/isExternalUrl';
 
 export function Footer() {
@@ -573,7 +601,7 @@ export function Footer() {
 
 The credit line's exact wording ("Portfolio template adapted from Brittne Valdivia: https://github.com/brittnebaila/techfolio") is the reference repo's own README-recommended text (`_reference-techfolio/README.md`, "Recommended Credit" section), reworded minimally to read as a sentence rather than a code block, and pointed at the exact repo path.
 
-**`FOOTER_LINKS` is imported, not hardcoded here (§9), for two independent reasons.** First, per SP02 §4.5.4/§9: SP02's build-time validator checks every nav/footer href against `KNOWN_STATIC_ROUTES`, which requires the hrefs to exist as data, not JSX literals — `Footer` renders whatever `FOOTER_LINKS` says (Research, Privacy, Terms internal; Résumé external, distinguished via `isExternalUrl`, the same SP01-owned utility SP02 §4.8 already assumes) rather than hardcoding four separate elements. Second, per SP01 §9/SP03 §9: the Résumé entry's `href` (the Drive link) is quoted in exactly one place, `src/config/links.ts`'s `FOOTER_LINKS` array — so when the owner resolves the Drive-vs-local-PDF open item (§8), it's a one-line change in one file rather than a find-and-replace. `src/config/links.ts` is SP03-owned (see SP03's PRD §4 for its full contents, including `NAV_LINKS` and `RESUME_URL`); SP01 only consumes `FOOTER_LINKS` from it here.
+**`FOOTER_LINKS` is imported, not hardcoded here (§9), for two independent reasons.** First, per SP02 §4.5.4/§9: SP02's build-time validator checks every nav/footer href against `KNOWN_STATIC_ROUTES`, which requires the hrefs to exist as data, not JSX literals — `Footer` renders whatever `FOOTER_LINKS` says (Research, Privacy, Terms internal; Résumé external, distinguished via `isExternalUrl`, the same SP01-owned utility SP02 §4.8 already assumes) rather than hardcoding four separate elements. Second, per §9: the Résumé entry's `href` (the Drive link) is quoted in exactly one place, `src/config/links.ts`'s `FOOTER_LINKS` array — so when the owner resolves the Drive-vs-local-PDF open item (§8), it's a one-line change in one file rather than a find-and-replace. `src/config/links.ts` is SP01-owned and created above; SP03's Hero (its own PRD §4.2) and SP02's validator (§4.5.4) consume it, not the other way around.
 
 **`PageShell`** (`src/layout/PageShell.tsx`) — the router's layout element:
 
@@ -954,14 +982,11 @@ Hosting site ID is `tejitpabari-99` (matches the project ID — Firebase's defau
 
 Steps 3–5 require Firebase console/DNS-registrar access only the owner has — tracked in §8, not designed further here (brief §5 already calls this "the single hard launch blocker"). Step 1 is resolved (§9); the remaining owner action narrows to completing the DNS cutover and waiting for the "Connected" status.
 
-**Deploy pipeline (GitHub Actions)**
+**Deploy pipeline (GitHub Actions) — owned by SP08, not designed here**
 
-The owner installed the Firebase Hosting GitHub integration on `github.com/tejitpabari99/tejitpabari`, which scaffolds two workflows — typically `.github/workflows/firebase-hosting-merge.yml` (deploys on push to `main`) and `.github/workflows/firebase-hosting-pull-request.yml` (deploys PRs to preview channels) — plus a `FIREBASE_SERVICE_ACCOUNT_*` repository secret the integration creates for itself. **As of this PRD, neither workflow file, nor the service-account secret, nor any repository variable is present on `origin` (checked directly: `git ls-tree -r origin/main`, `gh secret list`, `gh variable list`, and all three branches on the remote — none show it)** — the integration install evidently hasn't pushed its scaffold yet, or the owner ran it against a different checkout. Regardless, brief §4's "no CI" non-goal is superseded by fact once these workflows do land (this PRD's job is to specify how they get reconciled, not to gate on their exact current push state):
+The owner decided to adopt CI (brief §4's amendment). **The concrete design — both workflow files, the service-account auth flow, the `VITE_GA_MEASUREMENT_ID` passthrough, the fork-PR guard, concurrency, and preview-channel expiry — is entirely SP08's scope (`08-ci-deploy-pipeline`).** SP01's own contract with that design is narrow and already satisfied by what's specified elsewhere in this section: `firebase.json`'s `"public": "dist"` (confirmed matching SP08's workflows, which read this same file directly rather than duplicating the value — SP08 §4.2) and the `package.json` scripts SP08's workflows invoke (`typecheck`, `build`, and — via SP02/SP04/SP06 — `check:launch`, `check:no-forms`, `prebuild`, §4.2 above).
 
-- **The scaffolded build step is wrong for this rewrite and must be reconciled.** The Firebase integration generates its workflow against whatever repo state exists at install time — the current Gatsby repo — so its default build command and output directory target Gatsby, not this rewrite. Once the workflow files exist (on `main` or in a PR), they must be edited to: `npm ci`, `npm run build` (§4.2's `tsc --noEmit && vite-react-ssg build`), and Firebase's `public` set to **`dist`**, matching `firebase.json` above. Node version: **20** (the actions runner should use `actions/setup-node@v4` with `node-version: 20`, matching the machine's installed `v20.20.1`).
-- **The workflow must pass `VITE_GA_MEASUREMENT_ID` into the build environment** (SP05 §4.3) — sourced from a repository variable or secret (`vars.VITE_GA_MEASUREMENT_ID` or `secrets.VITE_GA_MEASUREMENT_ID`; either works since it isn't sensitive, §SP05 §4.3), exported as `env:` on the build step. Without this, GA silently no-ops in the production build (SP05 §4.3's dev-mode/missing-ID guards apply equally in CI) — a deploy that "succeeds" while quietly shipping with no analytics.
-- **Operational consequence — read this before merging `website-revamp` into `main`:** the merge workflow deploys to Hosting's live channel on every push to `main`. There is no separate "deploy" step distinct from the merge — **merging `website-revamp` into `main` IS the production cutover.** `main` must not be pushed to (directly, or by merging this branch) before the rewrite is actually ready to go live, because doing so deploys a broken/incomplete build over whatever is currently live at that moment (which, per the DNS cutover state above, may already be the new `tejitpabari-99` site rather than Netlify).
-- **The pull-request workflow's preview-channel deploys are genuinely useful here**, beyond the integration's generic value: they give a real, shareable Hosting URL to check OG/share-preview rendering and the prerendered `<head>` output (SP06's concern) before merging, rather than trusting `vite preview` locally.
+**One correction to the earlier version of this section, stated directly:** it previously said the owner had already installed Firebase's GitHub Action integration and that both workflow files existed but hadn't pushed yet. That was checked again while writing SP08 and found to be false — no `.github/workflows/` exists on any branch, no `FIREBASE_SERVICE_ACCOUNT_*` secret, no repository variable, and no CI-shaped service account anywhere in the `tejitpabari-99` project's IAM (SP08 §1, verified three independent ways). There was no scaffold to reconcile; SP08 hand-authors both workflow files from nothing. The operational consequence this section previously stated — **merging `website-revamp` into `main` IS the production cutover, with no separate deploy step** — is unaffected by that correction and remains exactly true once SP08's workflows land; see SP08 §4.4 for the full statement of it, and SP08 §4.12 for the one concrete near-term consequence: the first successful merge-workflow run replaces the hand-deployed holding page currently serving `tejitpabari-99`'s live channel.
 
 ---
 
@@ -988,6 +1013,7 @@ N/A. This is a fully static site — every route is prerendered HTML at build ti
 | Layout | `PageShell` | `src/layout/PageShell.tsx` | Wraps every route: `ScrollManager` + `Nav` + `<Outlet/>` + `Footer`. SP05 wraps this in `ConsentProvider` + adds `AnalyticsListener`/`ConsentBanner` |
 | Component | `Nav` | `src/layout/Nav.tsx` | Floating pill, 4 anchor items, route-aware scroll-based active-section highlight, no mobile menu |
 | Component | `Footer` | `src/layout/Footer.tsx` | Research, Privacy, Terms, Résumé (Drive, via `RESUME_URL` from `@/config/links`) links, then techfolio credit, then copyright — no social icons |
+| Config | `NAV_LINKS`, `FOOTER_LINKS`, `RESUME_URL` | `src/config/links.ts` | SP01-owned and created here (binding, §9); consumed by `Nav`/`Footer` above, SP02's build-time link validator, and SP03's Hero |
 | Utility | `ScrollManager` | `src/lib/ScrollManager.tsx` | Anchor-scroll + scroll-to-top on route change; ported verbatim from `juno-landing-page` |
 | Hook | `useDebouncedValue` | `src/hooks/useDebouncedValue.ts` | Four-line generic debounce hook, ported verbatim from `juno-landing-page`; consumed by SP04's `useCollectionFilter` (`/projects`, `/research` search) |
 | Component | `Button` | `src/components/Button.tsx` | Solid/outline variants; renders `<a>` or `<button>`, never router-aware |
@@ -1054,11 +1080,13 @@ Sized the same way `juno-landing-page`'s 01 sized its own testing scope — wort
 - `[RESOLVED: 404 has no true HTTP status]` — direct, inherited consequence of the SPA-rewrite hosting model (§4.7); not a regression versus `juno-landing-page`'s own production behavior, which has no catch-all route at all.
 - `[RESOLVED: Nav's scroll-listener is re-keyed on pathname, departing from techfolio's mount-once version]` — required because this site has multiple routes sharing one persistent `Nav`, which techfolio (a true single-page site) never has to handle. See §4.6.
 - `[RESOLVED: the favicon is the existing cat silhouette from `src/images/cat.png`, shipped as `public/favicon.png`]` — **supersedes the earlier `[RESOLVED: ship a plain placeholder favicon — a "TP" monogram]` decision below, rather than leaving two contradictory entries.** That earlier resolution mischaracterized `cat.png` as the unrelated Gatsby-starter mascot and specified deleting it. The owner overrode this directly: verified, `src/images/cat.png` is a 512×512 solid black walking-cat silhouette PNG on a transparent background — a clean, high-contrast silhouette that reads correctly at 16×16, exactly what a favicon needs. It's copied to `public/favicon.png` before `src/` is demolished (the one file surviving that step, §4.1's carve-out) and shipped as-is, in black — which renders correctly against both light and dark browser chrome, unlike a teal version. See §4.5.
+- `[RESOLVED: `src/config/links.ts` is SP01-owned and created in this sub-project, not SP03's]` — binding architect decision, resolving a three-way ownership collision (SP01's `Nav`/`Footer` consume it, SP02's build-time validator checks its entries against `KNOWN_STATIC_ROUTES`, and SP03's PRD had also defined it). SP01 lands first (Phase 1) and `Nav`/`Footer` cannot render without this file existing, so any other owner creates a forward dependency from Phase 1 into a later phase; SP02 and SP03 are consumers only. Its exports are exactly `NAV_LINKS`, `FOOTER_LINKS`, `RESUME_URL` — see §4.6. SP03 §4.2/§9 and SP02 §4.5.4 are updated to match.
+- `[RESOLVED: identity constants (email, LinkedIn, GitHub) live in SP05's `src/config/contact.ts`; navigation constants (`NAV_LINKS`, `FOOTER_LINKS`, `RESUME_URL`) live in this sub-project's `src/config/links.ts`; no `src/config/social.ts` is created]` — binding architect decision, resolving a `GITHUB_URL` collision surfaced by SP03's task generation (claimed by both a proposed `src/config/social.ts` and SP05's `contact.ts`). Brief §2/§3 "Contact facts" already groups the email, LinkedIn, and GitHub together as one ported concern from `juno-landing-page/src/config/contact.ts`, including the "not obfuscated, and here is why" reasoning for LinkedIn/GitHub living in that same file's comments — splitting the socials into a third file would orphan that reasoning. The résumé is a nav/footer destination, not an identity handle, so it stays here in `links.ts`. See SP05 §4.1/§9 and SP03 §4.2/§4.8/§9.
 - `[RESOLVED: the Footer carries `/privacy` and `/terms` links]` — brief §2/§3's literal enumeration ("Research, Résumé, techfolio credit line, copyright") predates the legal routes being locked into the same brief's route table, and the nav deliberately carries no home/logo affordance — so as literally enumerated, `/privacy` and `/terms` would be reachable only by typing the URL. That's an oversight, not a design choice: a privacy policy that can't be found doesn't do the job a privacy policy exists to do. The footer ships as Research · Privacy · Terms · Résumé, then the techfolio credit line, then copyright. Closes SP05 §9's matching expectation that SP05 resolve the footer question. See §4.6.
 - `[SUPERSEDED — see the resolved favicon entry above] ship a plain placeholder favicon — a "TP" monogram, teal `#043439` on cream `#F7F1E8`` — this was the prior resolution: a hand-written `public/favicon.svg` monogram, reasoned as the minimum honest placeholder given `cat.png` was (incorrectly) understood to be deleted Gatsby-starter mascot artwork. The owner's direct override (above) replaces this outright — no monogram ships; the favicon is the existing cat.
 - `[RESOLVED: Firebase project is `tejitpabari-99`; `.firebaserc` ships the real ID]` — the owner created the project directly; `.firebaserc`'s `default` is `tejitpabari-99`, the Hosting site ID is the same, and the default Hosting URL is `https://tejitpabari-99.web.app` (§4.9).
 - `[DEFERRED: owner-only — DNS cutover completion and certificate provisioning]` — in flight, not blocked: `tejitpabari.com`/`www.tejitpabari.com` are being moved from Cloudflare-proxied DNS to Firebase's targets (`A → 199.36.158.100`, `TXT hosting-site=tejitpabari-99`, records set DNS-only). No agent can complete a DNS cutover or wait out certificate provisioning (up to ~24h) — this remains the single hard launch blocker per brief §5, tracked in §8 (items 2, 5).
-- `[RESOLVED: CI deploy via the Firebase Hosting GitHub Action is adopted, superseding the brief's §4 "no CI" non-goal — the pipeline already exists and removing it would be net-negative]` — the owner installed the integration on `github.com/tejitpabari99/tejitpabari`. As inspected directly (`git ls-tree -r origin/main`, `gh secret list`, `gh variable list`, all three remote branches), neither the scaffolded workflow files nor the `FIREBASE_SERVICE_ACCOUNT_*` secret are present on the repo yet — the install hasn't pushed its scaffold as of this writing. Adopting rather than removing it anyway is the right call once it lands: it's free CI a solo builder would otherwise have to build by hand, the PR-preview channel is a genuinely useful check for OG/share-preview rendering (§4.9), and reconciling its build step (`npm ci && npm run build`, `public: "dist"`, Node 20, `VITE_GA_MEASUREMENT_ID` passed through — §4.9) is a small, one-time fix versus deleting working infrastructure. The operational tradeoff — merging `website-revamp` into `main` becomes the literal production cutover, with no separate deploy step — is accepted and called out explicitly in §4.9 and §3's amendment note so it isn't discovered the hard way.
-- `[RESOLVED: the résumé link is the Google Drive URL; the local PDF is not served]` — the owner confirmed this directly, rather than leaving it as a five-minute pre-launch comparison. `src/files/tejitpabari_resume.pdf` is deleted along with the rest of `src/` (§4.1) — it is not moved to `public/`, since it's never served. A Drive link is only ever trackable as an outbound click, never as a completed download (unchanged note from the original open item). `RESUME_URL` lives in exactly one place, `src/config/links.ts` (SP03-owned; SP01's `Footer.tsx` imports it, §4.6), so a future swap is still a one-line change in one file if the owner ever revisits this.
+- `[RESOLVED: CI is adopted, superseding the brief's §4 "no CI" non-goal — designed and owned entirely by SP08 (`08-ci-deploy-pipeline`), not this sub-project]` — **corrected entry: the earlier version of this line stated the owner had already installed a Firebase-scaffolded GitHub Action integration on the repo, pending a push.** That was false, verified independently while writing SP08 (§1 there): no `.github/workflows/`, no `FIREBASE_SERVICE_ACCOUNT_*` secret, no repository variable, and no CI-shaped service account exist anywhere for this project. There was never a scaffold to reconcile — SP08 hand-authors both workflow files from nothing. The underlying decision to adopt CI is unaffected by this correction and stands for the reasons this entry originally gave: it mechanizes gates SP02 §9 and SP05 §8 both already flagged as manual-and-easy-to-forget, and the PR-preview channel is a genuinely useful check for OG/share-preview rendering (§4.9). The operational tradeoff — merging `website-revamp` into `main` becomes the literal production cutover, with no separate deploy step — stands unchanged; see SP08 §4.4 for the authoritative statement of it and §4.9 above for SP01's now-narrow pointer to SP08's design.
+- `[RESOLVED: the résumé link is the Google Drive URL; the local PDF is not served]` — the owner confirmed this directly, rather than leaving it as a five-minute pre-launch comparison. `src/files/tejitpabari_resume.pdf` is deleted along with the rest of `src/` (§4.1) — it is not moved to `public/`, since it's never served. A Drive link is only ever trackable as an outbound click, never as a completed download (unchanged note from the original open item). `RESUME_URL` lives in exactly one place, `src/config/links.ts` (SP01-owned and created here; `Footer.tsx` imports it, §4.6), so a future swap is still a one-line change in one file if the owner ever revisits this.
 - `[DEFERRED]` **`LICENSE` file replacement.** Currently orphaned Gatsby-starter 0BSD text; harmless, purely a taste call, revisit whenever convenient.
 - `[DEFERRED]` **A `LinkButton` (router-aware button-styled internal link) component**, if a real use case shows up in SP03/SP04 beyond what plain `<Link className="...">` composition already covers. Not built speculatively (§4.6).

@@ -86,27 +86,7 @@ export function HomePage() {
 
 ### 4.2 Hero
 
-**`src/config/links.ts` — resolved as the single source of truth for `RESUME_URL`, `NAV_LINKS`, and `FOOTER_LINKS` (§9).** This sub-project introduces the file for `RESUME_URL` (Hero's résumé CTA, below); SP01's `Nav`/`Footer` also import from it rather than hardcoding their own arrays (SP01 §4.6/§9), and SP02's build-time validator checks every internal href here against `KNOWN_STATIC_ROUTES` (SP02 §4.5.4/§9). All three exports are specified together since they're one file with one reason to exist — centralizing every link target the app shell needs, so a URL like the Résumé Drive link is quoted in exactly one place:
-
-```ts
-// src/config/links.ts
-export const RESUME_URL =
-  'https://drive.google.com/file/d/1HcqZCkdxfU73PUHmFSKqJGIG7_yG3mGS/view?usp=sharing';
-
-export const NAV_LINKS: { label: string; href: string }[] = [
-  { label: 'Projects', href: '/#projects' },
-  { label: 'Work Experience', href: '/#work-experience' },
-  { label: 'About', href: '/#about' },
-  { label: 'Contact', href: '/#contact' },
-];
-
-export const FOOTER_LINKS: { label: string; href: string }[] = [
-  { label: 'Research', href: '/research' },
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Terms', href: '/terms' },
-  { label: 'Résumé', href: RESUME_URL },
-];
-```
+**`src/config/links.ts` — SP01-owned and created there (binding, §9), consumed here for `RESUME_URL`.** SP01 lands first (Phase 1) and its `Nav`/`Footer` cannot render without this file existing, so SP01 owns and creates it (`NAV_LINKS`, `FOOTER_LINKS`, `RESUME_URL` — see SP01 PRD §4.6 for the full file contents); this sub-project consumes `RESUME_URL` for Hero's résumé CTA below, and SP02's build-time validator checks every internal href in it against `KNOWN_STATIC_ROUTES` (SP02 §4.5.4/§9). Nothing in this sub-project creates or extends `src/config/links.ts`.
 
 ```tsx
 // src/sections/Hero.tsx
@@ -115,9 +95,8 @@ import { Button } from '@/components/Button';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LinkedInIcon } from '@/components/icons/LinkedInIcon';
 import { HeroPortrait } from './HeroPortrait';
-import { GITHUB_URL } from '@/config/social';
-import { LINKEDIN_URL } from '@/config/contact'; // SP05-owned, see §4.8
-import { RESUME_URL } from '@/config/links';
+import { GITHUB_URL, LINKEDIN_URL } from '@/config/contact'; // SP05-owned, see §4.8
+import { RESUME_URL } from '@/config/links'; // SP01-owned, see §9
 import { trackEvent } from '@/lib/analytics'; // SP05-owned, see §4.9
 
 export function Hero() {
@@ -752,9 +731,8 @@ import { Button } from '@/components/Button';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LinkedInIcon } from '@/components/icons/LinkedInIcon';
 import { EmailIcon } from '@/components/icons/EmailIcon';
-import { CONTACT_EMAIL_DISPLAY, LINKEDIN_URL } from '@/config/contact'; // SP05-owned
+import { CONTACT_EMAIL_DISPLAY, LINKEDIN_URL, GITHUB_URL } from '@/config/contact'; // SP05-owned
 import { useContactMailto } from '@/hooks/useContactMailto'; // SP05-owned
-import { GITHUB_URL } from '@/config/social';
 import { trackEvent } from '@/lib/analytics';
 
 // No location constant — resolved (§9): the Contact aside ships with no
@@ -875,16 +853,7 @@ The reasoning, stated precisely for this sub-project's components:
 
 This sub-project consumes `useContactMailto` and `contact.ts` exactly as SP05 is expected to port them (brief §2/§3, citing `juno-landing-page/src/config/contact.ts` and `src/hooks/useContactMailto.ts` directly) — it does not reimplement or modify either.
 
-**`GITHUB_URL` is a new, small SP03-owned constant, not added to SP05's `contact.ts`:**
-
-```ts
-// src/config/social.ts
-// GitHub is intentionally unobfuscated — brief §2/§3 ("Contact facts"): a
-// profile URL isn't harvested/spammed the way an email address is.
-export const GITHUB_URL = 'https://github.com/tejitpabari99';
-```
-
-Kept out of `contact.ts` deliberately — that file's whole reason to exist is the obfuscation mechanism for the one thing that actually needs it (email); GitHub needs none of that machinery, so bundling it into the same file would blur what `contact.ts` is actually for. `LINKEDIN_URL` continues to be imported from SP05's `contact.ts`, unchanged.
+**`GITHUB_URL` is SP05-owned, imported from `contact.ts` alongside `LINKEDIN_URL` (binding, §9) — no `src/config/social.ts` is created.** Brief §2/§3's "Contact facts" already groups the email, LinkedIn, and GitHub together as one ported concern from `juno-landing-page/src/config/contact.ts`, including the "not obfuscated, and here is why" reasoning for LinkedIn/GitHub living in that same file's comments — a separate `social.ts` would orphan that reasoning. GitHub needs none of the email-obfuscation machinery `contact.ts` otherwise exists for, but that's not reason enough to split it into a third file when `contact.ts`'s scope is "identity constants," not narrowly "obfuscated identity constants." `LINKEDIN_URL` and `GITHUB_URL` are both imported from SP05's `contact.ts`, unchanged.
 
 **Responsive collapse:** `grid-cols-1` below `lg` — the "Connect" aside renders below the left column's heading/paragraph/button on mobile, identical stacking order to techfolio's own contact section.
 
@@ -998,13 +967,12 @@ N/A. This sub-project builds React components consuming already-validated, build
 | New | `AboutSection` | `src/sections/AboutSection.tsx` | Plain prose, no card wrapper. |
 | New | `ContactSection` | `src/sections/ContactSection.tsx` | Two-column; consumes SP05's `useContactMailto`/`contact.ts`. |
 | New | `useSectionScrollDepth` | `src/hooks/useSectionScrollDepth.ts` | IntersectionObserver-based scroll-depth analytics hook. |
-| New | `GITHUB_URL` | `src/config/social.ts` | Unobfuscated GitHub profile URL. |
-| New | `RESUME_URL`, `NAV_LINKS`, `FOOTER_LINKS` | `src/config/links.ts` | Single source of truth for the Drive résumé link and every Nav/Footer link target — resolved (§9); SP01's `Nav`/`Footer` and SP02's build-time validator both consume this file. |
 | Consumed, not modified | `featuredProjects` | `@/config/featured` (SP02) | |
 | Consumed, not modified | `workExperience`, `WorkExperience` type | `@/data` (SP02) | |
 | Consumed, not modified | `markdownComponents` | `@/data/markdownComponents` (SP02) | Reused for work-experience blurb rendering. |
 | Consumed, not modified | `Nav`, `Footer`, `PageShell`, `Button`, `TagPill`, `BackButton`, icon set | SP01 | |
-| Consumed, not modified | `CONTACT_EMAIL_DISPLAY`, `LINKEDIN_URL`, `useContactMailto` | SP05 | |
+| Consumed, not modified | `RESUME_URL`, `NAV_LINKS`, `FOOTER_LINKS` | `@/config/links` (SP01, binding — no longer created by this sub-project, see §9) | |
+| Consumed, not modified | `CONTACT_EMAIL_DISPLAY`, `LINKEDIN_URL`, `GITHUB_URL`, `GITHUB_USERNAME`, `useContactMailto` | `@/config/contact` (SP05, binding — no `src/config/social.ts` is created, see §9) | |
 | Consumed, not modified | `trackEvent`, `AnalyticsEventName` | `@/lib/analytics` (SP05, confirmed contract, see §9) | |
 
 ---
@@ -1039,8 +1007,7 @@ Sized the same way SP01/SP02 sized their own testing scope — targeted, not exh
 1. **Approve or edit SP07's already-drafted Hero, About, and Contact copy** (quoted in full in §4.2/§4.7/§4.8) — this sub-project renders it as-is; SP07's own §8 already flags it as a first draft pending your read-through, unchanged by this PRD.
 2. **Edit or approve the three headline slots this sub-project drafts directly** (§4.10, resolved — no longer routed through SP07): the Featured Projects section headline, the Work Experience section headline, and the `/work-experience` page's own `h1`. These ship as real copy, not placeholder text — treat them the same as SP07's other first-draft fields for the purposes of your read-through.
 3. **Supply a real hero portrait/photo or commissioned illustration whenever ready** — not blocking; the monogram placeholder (§4.2) ships at launch and the swap is a one-line prop change (`<HeroPortrait src="/hero-portrait.jpg" />`) with no other file touched.
-4. **Confirm the landing timeline's `LANDING_TIMELINE_LIMIT = 2`** (§4.5) is the right call, or say you'd prefer 3 — the brief itself says "top 2–3," not a fixed value. At today's 2-role launch content the exact number is moot either way (the "See all" stub only renders once `workExperience.length > LANDING_TIMELINE_LIMIT`, which isn't true yet regardless of whether the limit is 2 or 3), but it becomes relevant again the moment a third role is added.
-5. **Nothing else in this sub-project is owner-blocked.** The DNS/Firebase open items are tracked in SP01's own "Manual Intervention" section already — this sub-project only consumes whatever values eventually land there, and renders correctly regardless of when they arrive. (The contact location string, the work-experience dates, and the Drive-vs-local résumé decision are all already resolved — see §9 — nothing further needed from you on any of them.)
+4. **Nothing else in this sub-project is owner-blocked.** The DNS/Firebase open items are tracked in SP01's own "Manual Intervention" section already — this sub-project only consumes whatever values eventually land there, and renders correctly regardless of when they arrive. (The contact location string, the work-experience dates, and the Drive-vs-local résumé decision are all already resolved — see §9 — nothing further needed from you on any of them.)
 
 ---
 
@@ -1051,12 +1018,14 @@ Sized the same way SP01/SP02 sized their own testing scope — targeted, not exh
 - `[RESOLVED: after:content-[''] added to ProjectCard's stretched-link title, correcting an omission in the juno-landing-page PRD's own equivalent snippet]` — without it, Tailwind never generates the `::after` pseudo-element at all, and the stretched-link technique silently doesn't work. See §4.3.
 - `[RESOLVED: status pill gets one uniform color treatment, not per-value color-coding]` — diverges from `juno-landing-page`'s five-color status-dot system on purpose; that system doesn't map onto this project's three-value vocabulary or techfolio's (status-free) card precedent. See §4.3.
 - `[RESOLVED: TimelineSeeAllStub and TimelineEntry are role="listitem" divs inside a role="list" div, not literal <ol>/<li>]` — satisfies both the brief's literal "a final stub div" wording and HTML validity (an `<ol>` cannot directly contain a bare `<div>` child). See §4.5.
-- `[RESOLVED: LANDING_TIMELINE_LIMIT = 2, not 3]` — the brief's "top 2–3" wording doesn't pin an exact number; flagged for owner confirmation in §8. At today's 2-role launch content (after the owner dropped the Programming for Entrepreneurs and Social Good role, SP07 §4.3/§9) the exact number no longer determines whether the "See all" stub is meaningful — see the binding decision below, which supersedes this entry's original reasoning (it argued the limit had to be 2, not 3, specifically to keep the stub meaningful; that reasoning no longer applies now that the stub's visibility is gated on role count, not tuned via the limit).
+- `[RESOLVED: LANDING_TIMELINE_LIMIT = 2, not 3]` — binding architect decision, no longer an owner confirmation item (§8's matching item is removed). With the Programming for Entrepreneurs role dropped (SP07 §4.3/§9), only two roles exist today, so both 2 and 3 render identically right now — the choice is entirely about what happens at the third role. At a limit of 2, adding a third role makes the landing show two and the "See all" spine stub appear, which is the first moment `/work-experience` stops duplicating the landing section and starts earning its place in the route table (§4.6). At a limit of 3, the landing would swallow all three and the sub-page would stay redundant even longer. Brief §2 permits "top 2–3 entries," so both values comply; 2 is chosen because it makes the dedicated route meaningful sooner. The `hasMore = workExperience.length > LANDING_TIMELINE_LIMIT` stub condition is unchanged by this — see the binding decision below, which supersedes this entry's now-superseded original reasoning (it argued the limit had to be 2 specifically to keep the stub meaningful; that reasoning no longer applies now that the stub's visibility is gated on role count, not tuned via the limit).
 - `[RESOLVED: the landing timeline's "See all" stub renders only when there are more roles than the landing shows; with two roles it does not render]` — binding architect decision, propagated from the owner's decision to drop the Programming for Entrepreneurs and Social Good role (SP07 §4.3/§9). The `/work-experience` route stays (it's in the brief's route table and scales for free as roles are added), but the "See all" stub is an explicit condition — `hasMore = workExperience.length > LANDING_TIMELINE_LIMIT` — not an ambient assumption tied to a specific role count. With today's 2 real roles, the landing page shows both and the stub does not render; the spine simply ends after the last entry. See §4.5, §4.6.
 - `[RESOLVED: work-experience blurbs render via a hand-styled react-markdown call, not SP02's shared <ContentBody>]` — `ContentBody`'s `prose` typography plugin is sized for a full write-up, not the tighter "Brittne's type scale" 2–3 line rhythm the timeline needs; SP02's own PRD anticipates this exact reuse-with-different-styling need for a hypothetical future work-experience detail page. See §4.5.
 - `[DEFERRED]` **Index-0-as-"current" could theoretically mismatch if a future past role were added with a more recent `startDate` than the current `Present` role's** — a data shape the brief's own non-goals (no multi-role/overlap complexity) don't anticipate. Not solved speculatively; revisit only if such a role is ever actually added. See §4.5.
 - `[RESOLVED: `trackEvent(name: string, params?: Record<string, unknown>): void`, imported from `@/lib/analytics`]` — confirmed against SP05 §4.3/§4.4, which now exists and defines exactly this (as `trackEvent(name: AnalyticsEventName, params?: Record<string, string | number | boolean>): void`, `AnalyticsEventName` a fixed five-value union). SP05's actual event-name catalogue differs from what this PRD's original §4.9 call sites assumed: five call sites used names outside SP05's union (`outbound_link_click`, `cta_click`, `see_all_projects_click`, `see_all_work_experience_click`, `email_click`). Fixed in §4.2/§4.4/§4.5/§4.8/§4.9 to match SP05 exactly — `outbound_link_click` renamed to `outbound_click` throughout, and the four events with no SP05 equivalent are no longer tracked (none is part of the brief's own six tracked-event categories, so nothing brief-mandated is lost). SP05 itself was not changed.
-- `[RESOLVED: `RESUME_URL` lives only in `src/config/links.ts`; SP01's `Footer.tsx` imports it]` — the follow-up this PRD recommended is adopted, not deferred, since it's a one-line import and the owner has an outstanding decision to switch that URL (SP01 §9). SP01's §4.6 and §9 are updated in the same pass to match. `src/config/links.ts` also now carries `NAV_LINKS` and `FOOTER_LINKS` per SP02 §4.5.4's validator cross-check, so this PRD's `src/config/links.ts` spec (§4.2) defines all three exports, not just `RESUME_URL`.
+- `[RESOLVED: `RESUME_URL` lives only in `src/config/links.ts`; SP01's `Footer.tsx` and this sub-project's `Hero.tsx` both import it]` — `src/config/links.ts` also carries `NAV_LINKS` and `FOOTER_LINKS` per SP02 §4.5.4's validator cross-check, so all three exports are defined together, not just `RESUME_URL`.
+- `[RESOLVED: `src/config/links.ts` is SP01-owned and created there, not by this sub-project]` — binding architect decision, resolving a three-way ownership collision (SP01's `Nav`/`Footer` consume it, SP02's build-time validator checks its entries against `KNOWN_STATIC_ROUTES`, and this PRD had also proposed defining it). SP01 lands first (Phase 1) and its `Nav`/`Footer` cannot render without this file existing, so any other owner creates a forward dependency from Phase 1 into a later phase — this sub-project and SP02 are consumers only. See SP01 §4.6/§9, and §4.2 above (updated to consume rather than create).
+- `[RESOLVED: identity constants (email, LinkedIn, GitHub) live in SP05's `src/config/contact.ts`; navigation constants live in SP01's `src/config/links.ts`; no `src/config/social.ts` is created]` — binding architect decision, resolving the `GITHUB_URL` collision this PRD's own task generation surfaced (claimed by both a proposed `src/config/social.ts` and SP05's `contact.ts`). Brief §2/§3 "Contact facts" already groups the email, LinkedIn, and GitHub together as one ported concern from `juno-landing-page/src/config/contact.ts`, including the "not obfuscated, and here is why" reasoning for LinkedIn/GitHub living in that same file's comments — splitting the socials into a third file would orphan that reasoning. The résumé is a nav/footer destination, not an identity handle, so it stays in `links.ts`. See §4.2/§4.8 above (updated to import `GITHUB_URL` from `@/config/contact`) and SP05 §4.1/§9.
 - `[RESOLVED: the headline copy drafted in this PRD's §4.4/§4.5/§4.6 ships as the real copy, not as placeholder]` — three section headings are page design, which is this PRD's own scope, and routing them through SP07 for three short strings would add a handoff for no gain. §4.4/§4.5/§4.6/§4.10 no longer frame these three strings as placeholder or as a visible TODO; the owner may edit them like any other copy (§8).
 - `[DEFERRED]` **Background color alternation** (cream/sage/cream/sage/cream across the five sections, §4.1) is a cosmetic judgment call mirroring techfolio's own rhythm, not a brief-mandated sequence — easy to adjust visually during implementation with no contract impact on any other sub-project.
 - `[RESOLVED: HeroPortrait's placeholder monogram is a new UI element, not ported from either reference]` — techfolio always has a real avatar illustration; the current Gatsby site has no hero image at all. Neither reference offers a "no image yet" pattern to copy, so this PRD designs one: a swappable `src?` prop, monogram fallback, capped small size. See §4.2.

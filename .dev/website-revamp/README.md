@@ -6,13 +6,14 @@ This folder plans the rewrite of `tejitpabari.com` from its current half-finishe
 
 | Folder | Title | Scope | Depends on |
 |---|---|---|---|
-| `01-app-shell-design-system-deploy` | App Shell, Design System & Deploy | Vite + `vite-react-ssg` + TypeScript toolchain; Tailwind design tokens ported from Brittne Valdivia's techfolio (palette, radii, shadows, Montserrat); the full route skeleton (`routes.tsx`, `getStaticPaths` seam); shared components (`Nav`, `Footer`, `PageShell`, `Button`, `TagPill`, `BackButton`, icon set, `useDebouncedValue`); Firebase Hosting config. | None (first sub-project) |
+| `01-app-shell-design-system-deploy` | App Shell, Design System & Deploy | Vite + `vite-react-ssg` + TypeScript toolchain; Tailwind design tokens ported from Brittne Valdivia's techfolio (palette, radii, shadows, Montserrat); the full route skeleton (`routes.tsx`, `getStaticPaths` seam); shared components (`Nav`, `Footer`, `PageShell`, `Button`, `TagPill`, `BackButton`, icon set, `useDebouncedValue`); `src/config/links.ts` (`RESUME_URL`, `NAV_LINKS`, `FOOTER_LINKS`); Firebase Hosting config. | None (first sub-project) |
 | `02-content-pipeline` | Content Pipeline | Four content collections (Projects, Research, Work Experience, Legal) — on-disk layout, frontmatter contracts, `import.meta.glob` + `gray-matter` loaders, hand-rolled build-time validation (including the Nav/Footer href cross-check), `src/config/featured.ts`, the `DRAFT_DATE` placeholder mechanism, and the `/projects/<slug>/live` redirect-vs-hosted signal. | SP01 |
-| `03-landing-page-timeline` | Landing Page & Work-Experience Timeline | Hero, Featured Projects, work-experience timeline (gbose-style border-left spine), About, and Contact sections on `/`; the `/work-experience` page; `ProjectCard` (shared verbatim with SP04); `src/config/links.ts` (`RESUME_URL`, `NAV_LINKS`, `FOOTER_LINKS`). | SP01, SP02 |
+| `03-landing-page-timeline` | Landing Page & Work-Experience Timeline | Hero, Featured Projects, work-experience timeline (gbose-style border-left spine), About, and Contact sections on `/`; the `/work-experience` page; `ProjectCard` (shared verbatim with SP04). Consumes SP01's `src/config/links.ts` and SP05's `src/config/contact.ts`; creates neither. | SP01, SP02 |
 | `04-projects-research-pages` | Projects & Research Pages | `/projects` and `/research` listing pages (shared search + tag-filter hook, Fuse.js); one data-driven detail template per collection; the resolved `/projects/<slug>/live` dual-mode contract (real HTTP redirect vs. hosted mini-project registry); `scripts/check-no-forms.sh`. | SP01, SP02, SP03 |
 | `05-legal-analytics` | Legal Pages & Analytics | Obfuscated-email contact pattern; `ConsentContext` + consent banner; GA4 (`trackEvent`, the five-event `AnalyticsEventName` catalogue); `/privacy` and `/terms` drafted copy. | SP01 |
 | `06-sharing-seo-sample-project` | Sharing, SEO & Sample Project | `RouteMeta` per-route OG/Twitter meta; build-time OG card generation; sitemap/robots; the deletable `sample-project` demo. | SP01, SP02, SP04 |
 | `07-content-migration-copy` | Content Migration & Copy | Migration plan for all 17 content items (10 projects, 5 research, 2 work-experience roles) from the old Gatsby site into SP02's frontmatter contract, with per-item date-confidence tiering; drafted first-pass copy for hero, About, Contact, project/research descriptions, and work-experience blurbs. | SP02 |
+| `08-ci-deploy-pipeline` | CI & Deploy Pipeline | Two hand-authored GitHub Actions workflows (PR-preview channel, merge-to-`main` live deploy) running SP02's/SP04's mechanical content gates plus a typecheck before every build; dedicated GCP service-account auth; `VITE_GA_MEASUREMENT_ID` as a repository variable with a fail-loud production guard; fork-PR guard; concurrency control; 7-day preview-channel expiry. | SP01, SP02, SP04, SP06 |
 
 ## Dependency graph / phase ordering
 
@@ -23,16 +24,20 @@ This is the build order downstream implementation tooling (`dev-tasks`/`dev-code
 - **Phase 3:** SP07 and SP03 in parallel (SP07 authors `src/content/**`; SP03 builds landing + timeline components — disjoint files)
 - **Phase 4:** SP04 (depends on SP03's `ProjectCard`)
 - **Phase 5:** SP06 (depends on SP04's `/live` registry convention)
+- **Phase 6 (last):** SP08 (depends on SP01, SP02, SP04, SP06) — every npm script its two CI workflows invoke (`typecheck`, `check:no-forms`, `check:launch`, `prebuild`, `build`) must already exist before its design does anything useful, which is exactly why it can't build sooner than everything else.
 
 ## Status
 
-All seven PRDs are settled — no open decisions remain in any of them. `TASKS.md` generation (per-sub-project implementation task lists) is the next step.
+All eight PRDs are settled — no open decisions remain in any of them. `TASKS.md` generation (per-sub-project implementation task lists) is the next step.
 
 ## Still requires the owner
 
-These are the items no agent can resolve — tracked in each PRD's own `§9`/`§8`, aggregated here for one-glance visibility:
+These are the items no agent can resolve — tracked in each PRD's own `§9`/`§8`, aggregated here for one-glance visibility. Firebase project creation and the DNS cutover, previously the top items here, are now **done**; the new CI setup steps below (SP08) are new owner-or-agent-with-access setup steps, not blockers to anything else.
 
-- **SP01 — Complete the tejitpabari.com DNS cutover and wait for certificate provisioning.** Firebase project creation is done (project `tejitpabari-99`, §SP01 4.9/§9); the remaining owner action is completing the in-flight Cloudflare→Firebase DNS cutover and waiting for Firebase to report the custom domain "Connected" with a provisioned certificate (up to ~24h). Still the single hard launch blocker; `npm run build` and local preview work fully without it.
+- **SP08 — Run the six-command service-account provisioning sequence (or `firebase init hosting:github` interactively instead) to create `FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99`.** A dedicated GCP service account (`roles/firebasehosting.admin` + `roles/firebase.viewer` only) has to actually be created, keyed, and uploaded as a GitHub repository secret by someone with real `gcloud`/`gh` access — SP08 §4.5 gives the exact commands. Not launch-blocking (the site still builds and can still be deployed by hand without it), but blocks CI from being able to deploy at all until done.
+- **SP08 — Run `gh variable set VITE_GA_MEASUREMENT_ID --body "G-9NLS3NG63M"`** so the CI-built production site actually ships with analytics — SP08 §4.6. The merge workflow fails loudly if this is missing, so the gap can't ship silently, but someone still has to set it once.
+- **SP08 — Add the two workflow files to the repo** (`.github/workflows/firebase-hosting-pull-request.yml`, `.github/workflows/firebase-hosting-merge.yml`) with the exact content SP08 §4.3/§4.4 specifies — a design document doesn't create files on disk by itself.
+- **SP08 — Read §4.4's operational-consequence framing before merging `website-revamp` into `main`.** Once the two workflows and the secret/variable above exist, that merge deploys straight to the live channel — there is no separate "deploy" step to review beforehand, and it overwrites the current hand-deployed holding page (SP08 §4.12) as intended, not as an accident to investigate.
 - **SP05 — Read every word of the drafted `/privacy` and `/terms` copy and edit or approve it**, including the "This isn't professional or medical advice" framing on `/terms`. Not lawyer-reviewed; must not ship unread.
 - **SP07 — Confirm or correct the four low-confidence project dates** (Juno, Med-Doc Tracker, Crunchy Filler, Clip-Verse). A wrong guess silently reorders `/projects` and changes what `featured.ts` backfills, with no build-time signal.
 - **SP07 — Decide whether Med-Doc Tracker or any other body-less project should get a short `body`**, once the owner reviews the drafted card descriptions. Default is no body; the site is complete either way.
