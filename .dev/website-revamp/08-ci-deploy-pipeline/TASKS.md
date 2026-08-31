@@ -322,6 +322,11 @@ git -C /root/projects/tejitpabari ls-tree -r website-revamp --name-only | grep '
 
 ### Task 7 — Open a validation PR and confirm the preview workflow end to end
    - Status: Blocked — owner-only. Requires Tasks 4/5's real GCP/GitHub provisioning to exist first (neither was run, see Tasks 4/5), and requires pushing a real branch/PR to `tejitpabari99/tejitpabari` and observing live GitHub Actions runs — nothing here is simulable locally, and mutating the real repo is out of scope for this implementation pass (SCOPE BOUNDARY). Not attempted.
+   - **Precondition — delete the sample project before opening this PR (found during the 08-ci-deploy-pipeline review, `review-2026-08-31-0930.md`):** `check:launch` is a blocking gate step in *both* workflows, and it fails unconditionally today — `src/content/projects/sample-project.md` still has `demo: true` in its frontmatter, which the pre-launch content gate is correctly designed to reject. That means this validation PR (and every PR after it, including one that only touches an unrelated file) will fail its own `Check — pre-launch content gate` step for a reason that has nothing to do with the PR's actual content, unless the sample project is removed first. Per `sample-project.md`'s own header comment and SP06 PRD §8, delete together, as one unit:
+     - `src/content/projects/sample-project.md`
+     - `src/pages/live/sample-project.tsx`
+     - its one entry in `HOSTED_LIVE_PAGES` in `src/pages/live/registry.ts`
+     - `src/pages/live/sample-project.test.tsx`
    - Files: none — this task exercises the pipeline against a real, trivial, reviewable PR (e.g. a comment or whitespace tweak on a non-critical file); revert or keep the PR open per the outcome, do not merge it as part of this task
    - Changes: Per PRD §7's manual-QA checklist, items 1–4 and 6. This is the first real proof the two workflow files (Tasks 2–3) and the provisioned secret/variable (Tasks 4–5) actually compose correctly — nothing in GitHub Actions' secret-scoping, concurrency, or PR-comment behavior can be faithfully simulated locally.
      1. Push a trivial, reviewable commit to a feature branch off `website-revamp` and open a PR. Confirm `Deploy to Firebase Hosting on PR` fires automatically.
