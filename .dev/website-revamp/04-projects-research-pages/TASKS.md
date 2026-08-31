@@ -834,6 +834,7 @@ import { projectLiveSlugs } from '@/pages/live/registry';
 ---
 
 ### Task 15 — `check:no-forms` mechanical check
+   - Status: Complete
    - Files: `scripts/check-no-forms.sh` (new), `package.json` (modified — add the `check:no-forms` script and chain it into `check:launch`)
    - Changes: Implement per PRD §4.8. Closes SP05 §9's previously open mechanical-check item, made possible specifically because hosted mini-projects live exclusively under `src/pages/live/` (Task 8's convention) — a scoped grep against that one directory has zero false positives.
 
