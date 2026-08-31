@@ -287,6 +287,7 @@ gh variable set VITE_GA_MEASUREMENT_ID \
 ---
 
 ### Task 6 — Verify provisioning end-to-end (read-only)
+   - Status: Partial — only the fourth (pure local `git ls-tree`) command was run; the three `gh`/`gcloud` commands authenticate to the real remote GitHub repo/GCP project and are out of scope for this implementation pass (SCOPE BOUNDARY treats any authenticating gh/gcloud call as off-limits, even read-only ones). Local check result: `git ls-tree -r website-revamp --name-only | grep '^\.github/workflows'` → "none yet" (Tasks 2/3's workflow files live on branch `sp08-b1`, not yet merged into `website-revamp`); the same check against `sp08-b1` itself shows both files present. Remote verification (secret, variable, IAM roles) not attempted — genuinely not provable from this session; see run report.
    - Files: none — read-only verification task
    - Changes: Per PRD §4.13. Run once Tasks 1–5 have landed, as the mechanical proof the setup actually happened and matches the PRD's design, rather than trusting it from memory. All four commands are read-only/safe to run any time, including months later as a standing sanity check:
 
