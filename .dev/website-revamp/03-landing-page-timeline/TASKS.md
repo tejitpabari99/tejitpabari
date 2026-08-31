@@ -9,7 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/03-landing-page
 - Any component-level test that needs project/work-experience data must use **in-memory fixtures**, never the real loaded `projects`/`workExperience` arrays.
 - Where a task's manual/dev-server check would show an empty grid or a timeline with zero entries because content hasn't landed yet, that is expected and not a defect — note it, don't "fix" it by inventing placeholder content.
 
-**Progress:** 3/16 tasks complete.
+**Progress:** 6/16 tasks complete.
 
 ---
 
@@ -334,6 +334,7 @@ The headline "Selected work, in health tech and beyond." is real, shipped copy p
 ---
 
 ### Task 4 — Timeline primitives: `formatWorkDate`, `TimelineEntry`, `TimelineSeeAllStub`, `Timeline`
+   - Status: Complete
    - Files: `src/components/timeline/formatWorkDate.ts` (new), `src/components/timeline/TimelineEntry.tsx` (new), `src/components/timeline/TimelineSeeAllStub.tsx` (new), `src/components/timeline/Timeline.tsx` (new)
    - Changes: Per PRD §4.5. This is the most visually-specified component set in the PRD — implement the CSS exactly as given, it is not an approximation.
 
@@ -502,6 +503,7 @@ export function Timeline({ entries, showSeeAll = false }: TimelineProps) {
 ---
 
 ### Task 5 — `WorkExperienceSection` (landing variant)
+   - Status: Complete
    - Files: `src/sections/WorkExperienceSection.tsx` (new)
    - Changes: Per PRD §4.5. Depends on Task 4.
 
@@ -558,6 +560,7 @@ The headline "Where I've worked and what I've built." is real, shipped copy per 
 ---
 
 ### Task 6 — `WorkExperiencePage`
+   - Status: Complete
    - Files: `src/pages/WorkExperiencePage.tsx` (modify — replaces SP01's placeholder)
    - Changes: Per PRD §4.6. Depends on Task 4.
 
