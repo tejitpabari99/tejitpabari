@@ -561,6 +561,7 @@ export function hasLiveRoute(slug: string): boolean {
 ---
 
 ### Task 9 — `ProjectDetailPage` (data-driven template, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectDetailPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.5. Depends on Tasks 6–8, SP02's `ContentBody`/`projects`, SP06's `RouteMeta`, SP01's `NotFoundPage`. **The `image` prop passed to `RouteMeta` is the generated OG card path (`/og/projects/<slug>.png`), NOT `project.image`** — this is a decision that was caught and fixed once already in this PRD (§4.5/§9): passing the raw frontmatter placeholder image straight to `RouteMeta` would make every project's share preview render as the identical stock photo. `DetailHeader`'s own `image` prop is unaffected and still reads `project.image` directly — only the `RouteMeta` call site differs.
 
