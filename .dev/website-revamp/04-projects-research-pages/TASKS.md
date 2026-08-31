@@ -619,6 +619,7 @@ export function ProjectDetailPage() {
 ---
 
 ### Task 10 — `ResearchDetailPage` (data-driven template, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ResearchDetailPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.5. Identical shape to Task 9, with **no `liveHref` concept at all** — no import from `./live/registry`, no conditional to get wrong, since Research has no `/live` route. Same OG-path-not-frontmatter-image rule for `RouteMeta` as Task 9.
 
