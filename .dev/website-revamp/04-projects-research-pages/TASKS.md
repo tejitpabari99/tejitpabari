@@ -14,6 +14,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/04-projects-res
 ---
 
 ### Task 1 — `useCollectionFilter` shared hook
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.ts` (new)
    - Changes: Implement exactly per PRD §4.2 — the one place Fuse.js, tag filtering, URL state, and the debounced `search_query` analytics call all live.
 
