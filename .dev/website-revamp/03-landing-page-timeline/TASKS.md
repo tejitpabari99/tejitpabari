@@ -1196,6 +1196,8 @@ describe('useSectionScrollDepth', () => {
 
 ### Task 16 — `HomePage` smoke test
    - Files: `src/pages/HomePage.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added two smoke tests for no-throw rendering and five-section composition. The supplied id assertion was reconciled to include Hero’s intentional empty id before the four anchored ids; targeted tests and typecheck pass.
    - Changes: Per PRD §7, sixth bullet. Depends on Task 10 (and transitively on every section task). Renders the real composed `HomePage` — if `@/config/featured`/`@/data` throw because content hasn't landed yet (per the phase-ordering hazard noted at the top of this file), this test will fail for reasons outside this task's own code; if that happens, note it and do not attempt to work around it by mocking `@/data` in a way that diverges from how `HomePage` actually consumes it in production.
 
 ```tsx
