@@ -51,6 +51,19 @@ describe('TermsPage', () => {
     expect(allHeadings).not.toContain('Governing Law');
   });
 
+  // Coverage-audit addendum (folded into gap E's commit): the heading list
+  // above only proves the section exists, not that its body copy still
+  // states the substantive "no forms" claim check-no-forms.sh's shipped
+  // behavior backs (scripts/check-no-forms.test.ts). Assert the actual
+  // sentence, so the copy can't silently drift out from under that script.
+  it('the "No forms, today" section body actually states there are no forms', () => {
+    renderTermsPage();
+    const heading = screen.getByRole('heading', { level: 2, name: 'No forms, today' });
+    expect(heading.parentElement?.textContent).toContain(
+      'this site has no forms, accounts, or logins anywhere, and',
+    );
+  });
+
   it('never renders a literal mailto: string or the bare email address when useContactMailto is mocked to return null', () => {
     const { container } = renderTermsPage();
     expect(container.textContent).not.toContain('mailto:tejitpabari99@gmail.com');

@@ -24,8 +24,11 @@
 // `main()` is guarded behind `import.meta.url === file://process.argv[1]`,
 // so importing it here never triggers a real render or writes to disk.
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync, readdirSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import satori from 'satori';
+import { Resvg } from '@resvg/resvg-js';
 import { localImageDataUri, cardJsx, readCollection } from './generate-og-cards.mjs';
 
 const UNSPLASH_PLACEHOLDER = 'https://images.unsplash.com/photo-1572177812156-58036aae439c';
@@ -156,4 +159,129 @@ describe('readCollection slug validation', () => {
 
     expect(readCollection(fixtureDirName)).toEqual([{ slug: 'valid-slug', title: 'Valid' }]);
   });
+});
+
+// Coverage-audit gap A / PRD §7's fifth bullet — "A real rendered-output
+// smoke test": main() run once against the real src/content/{projects,research}
+// directories should produce exactly one PNG per content file plus
+// default.png, each readable and reporting 1200x630 when its own header
+// bytes are parsed. Every test above this point covers only the pure
+// helpers (localImageDataUri, cardJsx, readCollection) — satori/resvg never
+// actually run, so nothing before this test proves the pipeline produces a
+// real, correctly-sized image.
+//
+// `main()` and `renderCard()` are NOT exported (only readCollection,
+// localImageDataUri, and cardJsx are — see this file's header comment), and
+// `main()` hardcodes its output path to `path.join(ROOT, 'public/og', ...)`
+// — the real repo's own public/og/ — with no parameter to redirect it
+// elsewhere. Calling the real main() here would therefore overwrite the
+// repo's real, committed OG assets on every test run, which the task
+// explicitly rules out. So this test reproduces main()'s own render loop by
+// hand: the same satori -> Resvg -> PNG-bytes call renderCard() makes
+// internally (scripts/generate-og-cards.mjs:167-173), fed by the exact same
+// exported helpers main() itself calls (readCollection, cardJsx,
+// localImageDataUri) against the real content directories, writing PNGs to
+// a throwaway directory under os.tmpdir() instead. The only thing this
+// doesn't exercise that a real main() run would is main()'s own
+// mkdirSync/writeFileSync/assertWithinOgRoot plumbing — three lines of
+// direct fs calls with no interesting logic of their own; the actual
+// interesting proof (does readCollection's real data survive a genuine
+// satori render into a correctly-sized PNG) is exactly what this test runs
+// for real.
+describe('real rendered-output smoke test (main()\'s pipeline, redirected to a temp dir)', () => {
+  const CARD_WIDTH = 1200;
+  const CARD_HEIGHT = 630;
+  const SITE_NAME = 'Tejit Pabari'; // duplicated from generate-og-cards.mjs's own SITE_NAME — see that file's comment on why this one-string duplication is accepted.
+
+  const repoRoot = path.resolve(import.meta.dirname, '..');
+  const fontDir = path.join(repoRoot, 'scripts/assets/fonts');
+  const fonts = [
+    { name: 'Montserrat', weight: 700 as const, style: 'normal' as const, data: readFileSync(path.join(fontDir, 'Montserrat-Bold.ttf')) },
+    { name: 'Montserrat', weight: 600 as const, style: 'normal' as const, data: readFileSync(path.join(fontDir, 'Montserrat-SemiBold.ttf')) },
+    { name: 'Montserrat', weight: 400 as const, style: 'normal' as const, data: readFileSync(path.join(fontDir, 'Montserrat-Regular.ttf')) },
+  ];
+
+  let outDir: string;
+
+  beforeAll(() => {
+    outDir = path.join(os.tmpdir(), `og-card-smoke-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+    mkdirSync(path.join(outDir, 'projects'), { recursive: true });
+    mkdirSync(path.join(outDir, 'research'), { recursive: true });
+  });
+
+  afterAll(() => {
+    if (outDir && existsSync(outDir)) rmSync(outDir, { recursive: true, force: true });
+  });
+
+  async function renderCardToTemp(
+    props: { title: string; tags: string[]; status: string | undefined; imageDataUri: string | null },
+    outPath: string,
+  ) {
+    // Mirrors renderCard() in generate-og-cards.mjs verbatim (minus its
+    // assertWithinOgRoot call, which is specific to the real public/og/
+    // path this test deliberately avoids writing into).
+    const svg = await satori(cardJsx(props), { width: CARD_WIDTH, height: CARD_HEIGHT, fonts });
+    const png = new Resvg(svg, { fitTo: { mode: 'width', value: CARD_WIDTH } }).render().asPng();
+    writeFileSync(outPath, png);
+  }
+
+  /** Parses a PNG's own IHDR chunk (bytes 16-23: width, then height, each a
+   *  big-endian uint32) rather than shelling out to `file` or trusting a
+   *  library — the literal header bytes are the actual proof of size. */
+  function readPngDimensions(filePath: string): { width: number; height: number } {
+    const buf = readFileSync(filePath);
+    expect(buf.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a'); // PNG signature
+    expect(buf.subarray(12, 16).toString('ascii')).toBe('IHDR');
+    return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+  }
+
+  it(
+    'renders exactly one real PNG per content file plus default.png, each reporting 1200x630 from its own header bytes',
+    async () => {
+      const collections: { dirName: 'projects' | 'research'; outSubdir: string }[] = [
+        { dirName: 'projects', outSubdir: 'projects' },
+        { dirName: 'research', outSubdir: 'research' },
+      ];
+
+      let expectedCount = 1; // default.png
+      for (const { dirName, outSubdir } of collections) {
+        const items = readCollection(dirName);
+        expect(items.length).toBeGreaterThan(0); // sanity: the real content dir isn't empty
+        expectedCount += items.length;
+
+        for (const item of items) {
+          const outPath = path.join(outDir, outSubdir, `${item.slug}.png`);
+          await renderCardToTemp(
+            {
+              title: item.title,
+              tags: Array.isArray(item.tags) ? item.tags : [],
+              status: typeof item.status === 'string' ? item.status : undefined,
+              imageDataUri: localImageDataUri(item.image),
+            },
+            outPath,
+          );
+        }
+      }
+      await renderCardToTemp({ title: SITE_NAME, tags: [], status: undefined, imageDataUri: null }, path.join(outDir, 'default.png'));
+
+      const allPngs = [
+        ...readdirSync(path.join(outDir, 'projects')).map((f) => path.join(outDir, 'projects', f)),
+        ...readdirSync(path.join(outDir, 'research')).map((f) => path.join(outDir, 'research', f)),
+        path.join(outDir, 'default.png'),
+      ];
+
+      expect(allPngs).toHaveLength(expectedCount);
+
+      for (const pngPath of allPngs) {
+        expect(existsSync(pngPath)).toBe(true);
+        const { width, height } = readPngDimensions(pngPath);
+        expect({ file: path.basename(pngPath), width, height }).toEqual({
+          file: path.basename(pngPath),
+          width: CARD_WIDTH,
+          height: CARD_HEIGHT,
+        });
+      }
+    },
+    60_000, // generous: a real font-rendering satori + resvg pass per content file, not a mocked call
+  );
 });

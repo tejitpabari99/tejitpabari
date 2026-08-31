@@ -72,6 +72,19 @@ describe('PrivacyPage', () => {
     expect(filtered).toEqual(EXPECTED_HEADINGS);
   });
 
+  // Coverage-audit addendum (folded into gap E's commit): the heading list
+  // above only proves the section exists, not that its body copy still
+  // states the substantive "no forms" claim check-no-forms.sh's shipped
+  // behavior backs (scripts/check-no-forms.test.ts). Assert the actual
+  // sentence, so the copy can't silently drift out from under that script.
+  it('the "What this site does not do" section body actually states there are no forms', () => {
+    renderPrivacyPage();
+    const heading = screen.getByRole('heading', { level: 2, name: 'What this site does not do' });
+    expect(heading.parentElement?.textContent).toContain(
+      'No forms of any kind, anywhere on the domain, as of the date above',
+    );
+  });
+
   it('"Clear my choice" calls the mocked clearConsent()', () => {
     renderPrivacyPage();
     fireEvent.click(screen.getByRole('button', { name: 'Clear my choice' }));
