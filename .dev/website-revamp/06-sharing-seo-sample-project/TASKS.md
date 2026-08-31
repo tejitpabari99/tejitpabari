@@ -880,6 +880,7 @@ describe('localImageDataUri', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all four cases, including the "missing local file degrades to text-only, does not throw and does not fail the build" case PRD §7 calls out explicitly.
+   - Status: Complete. `scripts/generate-og-cards.test.ts` written with 5 cases (the 4 above plus an `undefined`/empty-string defensive case). **Not run by plain `npm test`** — `vite.config.ts`'s `test.exclude` contains `scripts/**`, and per that file's own comment, Vitest applies `exclude` before a CLI path argument filters anything, so even an explicit `npx vitest run scripts/generate-og-cards.test.ts` finds zero files (confirmed empirically — same behavior verified against the existing `scripts/check-no-forms.test.ts`, whose own header comment claiming a bare `npx vitest run scripts/check-no-forms.test.ts` works is stale/inaccurate). Run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-og-cards.test.ts` — the same lever `check:launch` already uses to lift the `scripts/**` exclusion for one invocation. Result: 1 file, 5 tests, all passed. Full `npm test` (unaffected by this file, as expected): 37 test files / 171 tests passed (unchanged from Task 14's count, since `scripts/**` stays excluded). `npm run typecheck`: clean.
 
 ---
 
