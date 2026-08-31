@@ -566,6 +566,7 @@ export function hasLiveRoute(slug: string): boolean {
 ---
 
 ### Task 9 — `ProjectDetailPage` (data-driven template, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectDetailPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.5. Depends on Tasks 6–8, SP02's `ContentBody`/`projects`, SP06's `RouteMeta`, SP01's `NotFoundPage`. **The `image` prop passed to `RouteMeta` is the generated OG card path (`/og/projects/<slug>.png`), NOT `project.image`** — this is a decision that was caught and fixed once already in this PRD (§4.5/§9): passing the raw frontmatter placeholder image straight to `RouteMeta` would make every project's share preview render as the identical stock photo. `DetailHeader`'s own `image` prop is unaffected and still reads `project.image` directly — only the `RouteMeta` call site differs.
 
@@ -623,6 +624,7 @@ export function ProjectDetailPage() {
 ---
 
 ### Task 10 — `ResearchDetailPage` (data-driven template, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ResearchDetailPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.5. Identical shape to Task 9, with **no `liveHref` concept at all** — no import from `./live/registry`, no conditional to get wrong, since Research has no `/live` route. Same OG-path-not-frontmatter-image rule for `RouteMeta` as Task 9.
 
@@ -666,6 +668,7 @@ export function ResearchDetailPage() {
 ---
 
 ### Task 11 — `LiveRedirectFallback` component
+   - Status: Complete
    - Files: `src/components/LiveRedirectFallback.tsx` (new)
    - Changes: Implement per PRD §4.6. Client-side redirect UI, defense-in-depth only (not the primary redirect mechanism — that's Task 13's HTTP-level redirect). Fires the single `live_redirect` tracking call regardless of how the visitor got here.
 
@@ -706,6 +709,7 @@ export function LiveRedirectFallback({ to, label }: LiveRedirectFallbackProps) {
 ---
 
 ### Task 12 — `ProjectLivePage` (dual-mode dispatch, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectLivePage.tsx` (rewritten)
    - Changes: Implement per PRD §4.6, directly implementing SP02's `liveMode()` contract. Depends on Task 8's `HOSTED_LIVE_PAGES`, Task 11's `LiveRedirectFallback`, SP01's `NotFoundPage`.
 
