@@ -91,4 +91,53 @@ describe('check-no-forms.sh', () => {
     expect(output).toContain('check:no-forms passed');
     expect(existsSync(FIXTURE_FILE)).toBe(false);
   });
+
+  // Security regression (verified finding): the original pattern
+  // `<(input|form|textarea)[ >]` required a space or ">" immediately after
+  // the tag name, and grep matched line-by-line — so it missed both a bare
+  // self-closing tag (no space before "/") and a Prettier-wrapped
+  // multi-line tag (nothing follows "input" on its own line). This check
+  // backs a factual "no forms on this site" claim in /privacy and /terms,
+  // so a silent bypass here makes shipped legal copy false.
+  it('exits nonzero and names the file for a bare self-closing tag ("<input/>", no space before "/")', () => {
+    writeFileSync(
+      FIXTURE_FILE,
+      `export function CheckNoFormsTestFixture() {\n  return <input/>;\n}\n`,
+    );
+
+    let result: { status: number; output: string };
+    try {
+      result = runScript();
+    } finally {
+      rmSync(FIXTURE_FILE);
+    }
+
+    expect(result.status).not.toBe(0);
+    expect(result.output).toContain('FRAGILITY GUARD FAILED');
+    expect(result.output).toContain('__check-no-forms-test-fixture__.tsx');
+  });
+
+  it('exits nonzero and names the file for a Prettier-wrapped multi-line self-closing tag', () => {
+    writeFileSync(
+      FIXTURE_FILE,
+      `export function CheckNoFormsTestFixture() {\n  return (\n    <input\n      type="text"\n    />\n  );\n}\n`,
+    );
+
+    let result: { status: number; output: string };
+    try {
+      result = runScript();
+    } finally {
+      rmSync(FIXTURE_FILE);
+    }
+
+    expect(result.status).not.toBe(0);
+    expect(result.output).toContain('FRAGILITY GUARD FAILED');
+    expect(result.output).toContain('__check-no-forms-test-fixture__.tsx');
+  });
+
+  it('still exits 0 against the real src/pages/live/ contents (registry.ts, sample-project.tsx, and their tests) after the pattern broadened', () => {
+    const { status, output } = runScript();
+    expect(status).toBe(0);
+    expect(output).toContain('check:no-forms passed');
+  });
 });
