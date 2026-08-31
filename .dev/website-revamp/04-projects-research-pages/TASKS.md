@@ -744,6 +744,7 @@ export function ProjectLivePage() {
 ---
 
 ### Task 13 — `vite.config.ts`: `liveRedirectsPlugin` (SP01-owned file, edited)
+   - Status: Complete
    - Files: `vite.config.ts` (modified — SP01-owned)
    - Changes: Implement per PRD §4.6. Adds one plugin to SP01's existing `plugins` array; nothing else in the file changes. Mirrors `juno-landing-page`'s `sitemapPlugin` precedent: an independent filesystem + `gray-matter` scan, not `import.meta.glob`, because `vite.config.ts` loads via a lighter esbuild-based path that doesn't guarantee resolving Vite application-build-pipeline macros. Does **not** re-validate frontmatter — SP02's loader already fails loudly on bad content before this plugin's `closeBundle` runs.
    - **Testability deviation, noted so the test in Task 24 isn't fighting the file system:** `readLiveUrls` takes a `dir` parameter (the real call site passes the module's own `PROJECTS_DIR` constant) rather than closing over it, so a test can point it at a fixture temp directory directly.
@@ -799,6 +800,7 @@ function liveRedirectsPlugin(): Plugin {
 ---
 
 ### Task 14 — `routes.tsx`: narrow `/live` `getStaticPaths` (SP01-owned file, edited)
+   - Status: Complete
    - Files: `src/routes.tsx` (modified — SP01-owned)
    - Changes: Implement per PRD §4.7. SP01 shipped `getStaticPaths: () => projectSlugs.map((slug) => \`projects/${slug}/live\`)` for the `/projects/:slug/live` route — every project, unconditionally. This task narrows it to Task 8's `projectLiveSlugs`, the actual resolvable set. **Only the `getStaticPaths` line and its import change on this route entry; nothing else moves.**
 
@@ -832,6 +834,7 @@ import { projectLiveSlugs } from '@/pages/live/registry';
 ---
 
 ### Task 15 — `check:no-forms` mechanical check
+   - Status: Complete
    - Files: `scripts/check-no-forms.sh` (new), `package.json` (modified — add the `check:no-forms` script and chain it into `check:launch`)
    - Changes: Implement per PRD §4.8. Closes SP05 §9's previously open mechanical-check item, made possible specifically because hosted mini-projects live exclusively under `src/pages/live/` (Task 8's convention) — a scoped grep against that one directory has zero false positives.
 

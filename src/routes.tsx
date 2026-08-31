@@ -13,6 +13,7 @@ import { TermsPage } from '@/pages/TermsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { projectSlugs } from '@/content/projects';
 import { researchSlugs } from '@/content/research';
+import { projectLiveSlugs } from '@/pages/live/registry';
 
 export const routes: RouteRecord[] = [
   {
@@ -29,7 +30,7 @@ export const routes: RouteRecord[] = [
       {
         path: 'projects/:slug/live',
         element: <ProjectLivePage />,
-        getStaticPaths: () => projectSlugs.map((slug) => `projects/${slug}/live`),
+        getStaticPaths: () => projectLiveSlugs.map((slug) => `projects/${slug}/live`),
         // FRAGILITY GUARD (see /privacy, /terms — "no forms"): every hosted (i.e.
         // non-redirect) /projects/<slug>/live page must currently accept ZERO user
         // input. Both legal pages state plainly that this domain has no forms as

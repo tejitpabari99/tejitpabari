@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "vitest run",
-    "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts",
+    "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts && npm run check:no-forms",
+    "check:no-forms": "bash scripts/check-no-forms.sh",
     "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\""
   },
   "dependencies": {
