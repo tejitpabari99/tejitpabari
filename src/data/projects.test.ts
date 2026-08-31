@@ -1,3 +1,13 @@
+// tsconfig.app.json (which covers all of src/, including this file) scopes
+// "types" to just ["vite/client"] — a deliberate browser-only default for
+// application code — so @types/node's ambient 'node:*' module declarations
+// aren't pulled in automatically here. This file's "duplicate slug guard"
+// block below needs real node:fs/node:path/node:child_process (to spawn a
+// real nested vitest process against real fixture files — see that
+// block's own comment for why). Pull in just @types/node's declarations
+// for this one file, the same targeted-reference technique vite.config.ts
+// already uses for vite-react-ssg's types.
+/// <reference types="node" />
 import { describe, it, expect, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -49,15 +59,15 @@ describe('migrated project links', () => {
 // exactly like scripts/check-no-forms.test.ts's real-directory fixture
 // pattern, so it's never present for the outer suite's own file discovery.
 describe('duplicate slug guard', () => {
-  const REPO_ROOT = path.resolve(__dirname, '../..');
+  const REPO_ROOT = path.resolve(import.meta.dirname, '../..');
   const VITEST_BIN = path.join(REPO_ROOT, 'node_modules/.bin/vitest');
-  const CONTENT_DIR = path.resolve(__dirname, '../content/projects');
+  const CONTENT_DIR = path.resolve(import.meta.dirname, '../content/projects');
   const fixtureA = path.join(CONTENT_DIR, '__dup-slug-fixture-a__.md');
   const fixtureB = path.join(CONTENT_DIR, '__dup-slug-fixture-b__.md');
   // Distinct filename from research.test.ts's identical block — Vitest runs
   // different test files in parallel workers, so a shared filename here
   // risks both suites writing/deleting the same path concurrently.
-  const helperFile = path.join(__dirname, '__dup-slug-nested-check-projects__.test.ts');
+  const helperFile = path.join(import.meta.dirname, '__dup-slug-nested-check-projects__.test.ts');
 
   function makeFixture(slug: string) {
     return `---\nslug: ${slug}\ntitle: Dup\ndescription: d\nimage: /x.png\ntags: [Others]\nlinks: []\ndate: "2024-01-01"\n---\nbody\n`;

@@ -1,3 +1,8 @@
+// See projects.test.ts's identical reference comment: tsconfig.app.json
+// scopes "types" to just ["vite/client"], so @types/node's ambient
+// 'node:*' declarations need pulling in explicitly for this file's
+// "duplicate slug guard" block below.
+/// <reference types="node" />
 import { describe, expect, it, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -66,15 +71,15 @@ describe('migrated research corpus', () => {
 // assertSlugMatchesFilename, and why that bypass must run in a genuinely
 // fresh OS process rather than a same-process dynamic re-import).
 describe('duplicate slug guard', () => {
-  const REPO_ROOT = path.resolve(__dirname, '../..');
+  const REPO_ROOT = path.resolve(import.meta.dirname, '../..');
   const VITEST_BIN = path.join(REPO_ROOT, 'node_modules/.bin/vitest');
-  const CONTENT_DIR = path.resolve(__dirname, '../content/research');
+  const CONTENT_DIR = path.resolve(import.meta.dirname, '../content/research');
   const fixtureA = path.join(CONTENT_DIR, '__dup-slug-fixture-a__.md');
   const fixtureB = path.join(CONTENT_DIR, '__dup-slug-fixture-b__.md');
   // Distinct filename from projects.test.ts's identical block — Vitest runs
   // different test files in parallel workers, so a shared filename here
   // risks both suites writing/deleting the same path concurrently.
-  const helperFile = path.join(__dirname, '__dup-slug-nested-check-research__.test.ts');
+  const helperFile = path.join(import.meta.dirname, '__dup-slug-nested-check-research__.test.ts');
 
   function makeFixture(slug: string) {
     return `---\nslug: ${slug}\ntitle: Dup\ndescription: d\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\n---\nbody\n`;
