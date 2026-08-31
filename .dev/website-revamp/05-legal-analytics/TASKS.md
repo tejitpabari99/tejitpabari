@@ -10,9 +10,12 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/05-legal-analyt
 - SP04 lands `scripts/check-no-forms.sh` / `npm run check:no-forms` and the `src/pages/live/registry.ts` convention (PRD §4.7, §9). Task 11 below writes a code comment that *names* this command — the comment is valid and useful before that script exists (SP05 is Phase 2, parallel with SP02; SP04 lands later), but the command itself won't run successfully until SP04's task lands. This is a documentation forward-reference, not a build-breaking dependency.
 - SP03 and SP04 are the main callers of `trackEvent` — they compile against the exact `AnalyticsEventName` union and the exact `'content_external_link'` context string this sub-project ships (Task 3). Changing either after SP03/SP04 land breaks their call sites; do not rename either casually.
 
+**Progress:** 19/20 tasks complete (Tasks 1–19). Task 20 (`dist/` build audit) not started — deliberately deferred, since it requires a full `npm run build` with no concurrent agents. Full detail: see `../code-2026-08-31-0420.md`.
+
 ---
 
 ### Task 1 — `src/config/contact.ts` — identity constants
+   **Status:** ✅ Done — fcfb0a5
    - Files: `src/config/contact.ts` (new)
    - Changes: Per PRD §4.1. Ported near-verbatim from `juno-landing-page/src/config/contact.ts`, with `LINKEDIN_URL`/`GITHUB_USERNAME`/`GITHUB_URL` added (new to this site). **Exactly five exports, no more, no fewer:** `CONTACT_EMAIL_DISPLAY`, `getContactEmailAddress`, `LINKEDIN_URL`, `GITHUB_USERNAME`, `GITHUB_URL`. **No `LOCATION` constant.** This file does not create or re-export anything from a `social.ts` — no such file exists in this project (PRD §9's resolved architect decision).
 
@@ -49,6 +52,7 @@ export const GITHUB_URL = 'https://github.com/tejitpabari99';
 ---
 
 ### Task 2 — `src/hooks/useContactMailto.ts` — hydration-safe mailto hook
+   **Status:** ✅ Done — e03fc01
    - Files: `src/hooks/useContactMailto.ts` (new)
    - Changes: Per PRD §4.1. Identical to `juno-landing-page`, unchanged. Depends on Task 1.
 
@@ -82,6 +86,7 @@ export function useContactMailto(): string | null {
 ---
 
 ### Task 3 — `src/lib/analytics.ts` — `loadGa()`, pageview helper, `trackEvent`
+   **Status:** ✅ Done — 9e11c45
    - Files: `src/lib/analytics.ts` (new)
    - Changes: Per PRD §4.3, §5, §9. Ported verbatim from `juno-landing-page/src/lib/analytics.ts`. **Two independent dev guards in `shouldLoadGa()`** — `import.meta.env.DEV` and a missing-measurement-ID check — each sufficient alone to block dev traffic. **No `firebase` npm package import anywhere in this file or this sub-project** (binding decision, PRD §4.3/§9: no `initializeApp`/`getAnalytics` — only the bare measurement-ID string, loaded through a plain `<script>` tag). `AnalyticsEventName` is a typed union, not a bare `string` parameter — this is deliberate (per the house rule that SP03/SP04's call sites should fail `tsc --noEmit` on an unknown event name rather than silently emit one) and must include `'search_query'` and support the `outbound_click` context value `'content_external_link'` (the renamed value — never `'project_external_link'`, which SP04's PRD independently confirms is stale).
 
@@ -182,6 +187,7 @@ export function trackEvent(
 ---
 
 ### Task 4 — `src/context/ConsentContext.tsx` — `ConsentProvider` / `useConsent`
+   **Status:** ✅ Done — 2d60517
    - Files: `src/context/ConsentContext.tsx` (new)
    - Changes: Per PRD §4.2. Depends on Task 3 (`loadGa`). Ported in shape from `juno-landing-page`, with the storage key namespaced to `'tejitpabari:consent'` (PRD §9 — deliberately distinct from `juno-landing-page`'s `'juno:consent'`).
 
@@ -288,6 +294,7 @@ export function useConsent(): ConsentContextShape {
 ---
 
 ### Task 5 — `src/components/ConsentBanner.tsx`
+   **Status:** ✅ Done — 7590a9e
    - Files: `src/components/ConsentBanner.tsx` (new)
    - Changes: Per PRD §4.2. Depends on Task 4. Re-skinned from `juno-landing-page`'s raw token names to SP01's actual Tailwind tokens. **Flag if SP01's tokens differ** (see sequencing note at top of this file) rather than guessing new names.
 
@@ -343,6 +350,7 @@ export function ConsentBanner() {
 ---
 
 ### Task 6 — `src/lib/AnalyticsListener.tsx`
+   **Status:** ✅ Done — d67990d
    - Files: `src/lib/AnalyticsListener.tsx` (new)
    - Changes: Per PRD §4.3. Depends on Task 3, Task 4. Sends a `page_view` on every route change (including hash-only anchor navigation, load-bearing for this site's anchor-based nav) once consent is granted.
 
@@ -377,6 +385,7 @@ export function AnalyticsListener() {
 ---
 
 ### Task 7 — `src/lib/useSectionViewTracking.ts`
+   **Status:** ✅ Done — 340fcf9
    - Files: `src/lib/useSectionViewTracking.ts` (new)
    - Changes: Per PRD §4.4. Depends on Task 3. IntersectionObserver-based, dedupes per section per page load. **Dependency, not built here:** SP01's `HomePage` must have four `<section id="…">` elements with exactly the ids `projects`, `work-experience`, `about`, `contact` (SP01 §4.7) — this hook only observes elements that already exist by those ids; it does not create them.
 
@@ -425,6 +434,7 @@ export function useSectionViewTracking(): void {
 ---
 
 ### Task 8 — Edit `src/layout/PageShell.tsx` (SP01-owned file) — wire consent + analytics
+   **Status:** ✅ Done — 63b9773
    - Files: `src/layout/PageShell.tsx` (modified — SP01-owned)
    - Changes: Per PRD §4.2, the exact hand-off SP01's own PRD documents (SP01 §4.6). **This task makes exactly three additions to the existing file and touches nothing else:** (1) wrap the existing children in `<ConsentProvider>...</ConsentProvider>`, (2) mount `<AnalyticsListener />` alongside the existing `<ScrollManager />`, (3) render `<ConsentBanner />` as the last child, after `<Footer />`. Do not alter `Nav`, `Outlet`, `Footer`, `ScrollManager`, or any layout/spacing markup already in the file.
 
@@ -462,6 +472,7 @@ export function PageShell() {
 ---
 
 ### Task 9 — Edit `src/layout/Footer.tsx` (SP01-owned file) — wire `resume_click` tracking
+   **Status:** ✅ Done — 565d0fa
    - Files: `src/layout/Footer.tsx` (modified — SP01-owned)
    - Changes: Per PRD §4.4, §4.6. SP01/SP02 already resolved the footer gap by shipping `FOOTER_LINKS` (data-driven, including Research/Privacy/Terms/Résumé entries) — **SP05 does not add any links here.** The only change is adding an `onClick` handler on the Résumé entry that calls `trackEvent('resume_click', { source: 'footer', url: item.href })`, matching the `resume_click` row in the event catalogue (PRD §4.4).
 
@@ -518,6 +529,7 @@ export function Footer() {
 ---
 
 ### Task 10 — `.env.example`
+   **Status:** ✅ Done — af0d596
    - Files: `.env.example` (new, repo root)
    - Changes: Per PRD §4.3, §9. Committed with the real, public measurement ID and an explanatory comment. `.env.local` (gitignored per SP01's `.gitignore`) is not created or touched by this task — it's a per-developer local override, out of scope here.
 
@@ -537,6 +549,7 @@ VITE_GA_MEASUREMENT_ID=G-9NLS3NG63M
 ---
 
 ### Task 11 — Edit `src/routes.tsx` (SP01-owned file) — "no forms" fragility-guard comment
+   **Status:** ✅ Done — 0f6ff59
    - Files: `src/routes.tsx` (modified — SP01-owned)
    - Changes: Per PRD §4.7. **This task adds one comment block; it changes no routing logic, no `getStaticPaths`, no route entries.** Placed at the `/projects/:slug/live` route registration(s) SP01 already ships.
 
@@ -572,6 +585,7 @@ VITE_GA_MEASUREMENT_ID=G-9NLS3NG63M
 ---
 
 ### Task 12 — `src/pages/PrivacyPage.tsx`
+   **Status:** ✅ Done — 5b2bce9
    - Files: `src/pages/PrivacyPage.tsx` (rewritten — replaces SP01's placeholder)
    - Changes: Per PRD §4.5. Hand-written TSX (not markdown — SP02's resolved decision). Depends on Tasks 1, 2, 4 (contact constants, `useContactMailto`, `useConsent`), and SP06's `RouteMeta`. Implement the **full drafted copy from PRD §4.5 "Proposed `/privacy` text" verbatim** — every heading, paragraph, and list item, converted from the PRD's blockquoted markdown into JSX using the `Section({title, children})` helper below (duplicated locally in this file, not shared with `TermsPage.tsx` — matches `juno-landing-page`'s own choice not to extract a two-consumer component). Section headings, in order: "The short version", "What this covers", "What this site does not do", "What this site does collect" (containing sub-`Section`s or `<h3>`s for "Analytics (Google Analytics) — only if you accept", "Hosting logs", "Your consent choice"), "Cookies, in full", "Outbound links", "Children", "Changes to this policy", "Contact".
 
@@ -674,6 +688,7 @@ export function PrivacyPage() {
 ---
 
 ### Task 13 — `src/pages/TermsPage.tsx`
+   **Status:** ✅ Done — 4a69e5f
    - Files: `src/pages/TermsPage.tsx` (rewritten — replaces SP01's placeholder)
    - Changes: Per PRD §4.5. Same shape as Task 12 (its own local `Section` copy, its own `LAST_UPDATED`, its own `useContactMailto()` call for its Contact section) — not a shared component, matching `juno-landing-page`'s precedent. Implement the **full drafted copy from PRD §4.5 "Proposed `/terms` text" verbatim**. Section headings, in order: "This isn't professional or medical advice", "What this covers", "No forms, today", "No warranty", "Individual projects may carry their own licence", "Links to other sites aren't endorsements", "My views are my own", "Changes", "Contact". **No "Governing Law" clause** (PRD §4.5's explicit note, carried forward from `juno-landing-page`).
 
@@ -749,6 +764,7 @@ export function TermsPage() {
 ## Tests
 
 ### Task 14 — `analytics.ts` unit tests
+   **Status:** ✅ Done — 8caf71c
    - Files: `src/lib/analytics.test.ts` (new)
    - Changes: Per PRD §7. Mock `window.gtag`/`document.createElement`/`import.meta.env` as needed (`vi.stubEnv`). Cover, as separate `it()` blocks:
      - `shouldLoadGa()`'s behavior is exercised indirectly through `loadGa()`: with `import.meta.env.DEV = true` and a valid measurement ID present, `loadGa()` does not inject a script and `isGaLoaded()` stays `false` (guard 1, independent of guard 2).
@@ -763,6 +779,7 @@ export function TermsPage() {
 ---
 
 ### Task 15 — `ConsentContext` / `ConsentBanner` — decline-zero-cookies test
+   **Status:** ✅ Done — 4a5f6f2
    - Files: `src/context/ConsentContext.test.tsx` (new)
    - Changes: Per PRD §7, the test explicitly called "the one test that matters most here." Render `ConsentProvider` wrapping `ConsentBanner` (and a way to read `useConsent()`'s state, e.g. a small test consumer component) under a fresh/mocked `localStorage`. Cover, as separate `it()` blocks:
      - Clicking "Decline" results in `localStorage.getItem('tejitpabari:consent') === 'denied'`, `isGaLoaded() === false`, and — the actual proof — `document.head.querySelector('script[src*="googletagmanager"]')` is `null` (no such script element exists anywhere in `document.head`).
@@ -774,6 +791,7 @@ export function TermsPage() {
 ---
 
 ### Task 16 — `AnalyticsListener` consent-gating test
+   **Status:** ✅ Done — 8a9c0ea
    - Files: `src/lib/AnalyticsListener.test.tsx` (new)
    - Changes: Per PRD §7. Render `AnalyticsListener` under a `MemoryRouter` + a mocked `useConsent`/`isGaLoaded`/`trackPageView`. Cover:
      - With `consent: 'unset'` or `consent: 'denied'`, simulating a route change results in zero calls to `trackPageView`.
@@ -784,6 +802,7 @@ export function TermsPage() {
 ---
 
 ### Task 17 — `useContactMailto` hydration-safety test
+   **Status:** ✅ Done — 65c7e94
    - Files: `src/hooks/useContactMailto.test.ts` (new)
    - Changes: Per PRD §7. Using `renderHook`, assert:
      - On the very first render (before any effect flush), the hook returns `null`.
@@ -793,6 +812,7 @@ export function TermsPage() {
 ---
 
 ### Task 18 — `useSectionViewTracking` dedupe test
+   **Status:** ✅ Done — cda133c
    - Files: `src/lib/useSectionViewTracking.test.ts` (new)
    - Changes: Per PRD §7. Mock `IntersectionObserver` (a minimal fake that captures the callback passed to its constructor and lets the test invoke it manually), mock `trackEvent`, and stub `document.getElementById` to return fake elements for the four known section ids. Cover:
      - Triggering an intersecting entry for `id: 'projects'` twice in a row calls `trackEvent('section_view', { section: 'projects' })` exactly once (dedupe).
@@ -803,6 +823,7 @@ export function TermsPage() {
 ---
 
 ### Task 19 — Legal pages smoke test + heading/`RouteMeta` assertions
+   **Status:** ✅ Done — ad6930e
    - Files: `src/pages/PrivacyPage.test.tsx` (new), `src/pages/TermsPage.test.tsx` (new)
    - Changes: Per PRD §7's "both legal pages render without throwing" bullet, extended to also pin the structural claims Tasks 12/13 make (redundant with the `dist/` grep in Task 20, but this layer catches a regression at component-test speed rather than requiring a full build). Render each page under a `MemoryRouter` with `ConsentProvider` (Privacy only needs it; Terms doesn't use `useConsent`). Cover:
      - The page renders without throwing.
@@ -814,6 +835,7 @@ export function TermsPage() {
 ---
 
 ### Task 20 — `dist/` build audit — email absence and prerendered legal routes
+   **Status:** ⬜ Not started
    - Files: none (verification checkpoint only — produces no code diff to commit, per the same pattern SP02's Task 6 used for its manual QA pass)
    - Changes: Per PRD §4.1, §7's "the one check that actually proves the obfuscation works end-to-end." Run, in order, after Tasks 1–13 are all merged:
      1. `npm run build`

@@ -6,9 +6,12 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 
 **Reference repos used for "copied verbatim" tasks below, read directly rather than re-derived from the PRD's prose summary:** `/root/projects/juno-projects/juno-landing-page` (the proven working `vite-react-ssg` app the PRD mirrors dependency-for-dependency) and `/root/projects/_reference-techfolio` (Brittne Valdivia's `app/page.tsx`, the source of the icon SVG path data in Task 14).
 
+**Progress:** 26/26 tasks complete. Two additional corrective commits landed alongside this sub-project's tasks — `97c6bc7` (a real lint defect in Task 18's `Nav.tsx`, caught by Task 26's lint gate) and `857e5a8` (the typecheck gate was a no-op; see Task 26's status note) — neither is a task commit in its own right. Full detail: see `../code-2026-08-31-0420.md`.
+
 ---
 
 ### Task 1 — Rescue the favicon before touching anything else
+   **Status:** ✅ Done — b7a41a1
    - Files: `public/favicon.png` (new)
    - Changes: Per PRD §4.1's carve-out and §4.5. **This task must run, and must be verified complete, before Task 2 (demolition) starts.** Copy the existing cat silhouette out of the tree that Task 2 is about to delete:
      ```bash
@@ -24,6 +27,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 ---
 
 ### Task 2 — Demolish the old Gatsby application
+   **Status:** ✅ Done — 73c03d3
    - Files: deletes `src/` (entire tree), `gatsby-config.js`, `gatsby-node.js`, `gatsby-browser.js`, `gatsby-ssr.js`, `_redirects`, `package-lock.json`. Does **not** delete or modify `package.json` (overwritten wholesale in Task 3), `LICENSE`, `.prettierrc`, or `.dev/` (all preserved unchanged per PRD §4.1).
    - Changes: Per PRD §4.1. **This is destructive and irreversible in the working tree. Run every safety check below before deleting anything, and do not skip them because Task 1 "obviously" already ran.**
 
@@ -74,6 +78,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 ---
 
 ### Task 3 — `package.json` and dependency install
+   **Status:** ✅ Done — b5ee7a8
    - Files: `package.json` (overwritten in place)
    - Changes: Per PRD §4.2. Replace the entire file with the exact block below — a dependency-for-dependency mirror of `juno-landing-page`'s proven-working `package.json`, plus `prettier` (already a stated preference via the surviving `.prettierrc`) and the two additions PRD §4.2 calls out by name: the standalone `"typecheck"` script and the `"tsx"` devDependency (both exist specifically so SP08's CI pipeline and SP02's `check:launch` script have something to run against — binding, do not omit either). (`"typecheck"`/`"build"` corrected during implementation: the root `tsconfig.json` is solution-style (`"files": []` + `references`), so a plain `tsc --noEmit` checks zero files and always exits 0 — a silent no-op that would also make SP08's CI gate, which runs a typecheck before every build, gate on nothing. `tsc -b --noEmit` walks the project references and actually typechecks.)
 
@@ -150,6 +155,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 ---
 
 ### Task 4 — TypeScript project config
+   **Status:** ✅ Done — 76c3863
    - Files: `tsconfig.json` (new), `tsconfig.app.json` (new), `tsconfig.node.json` (new)
    - Changes: Per PRD §4.2 — "copied verbatim from `juno-landing-page` (generic Vite+TS project config, nothing project-specific to change)". Confirmed directly against `juno-landing-page`'s actual files (not re-derived from the PRD's prose description).
 
@@ -230,6 +236,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/01-app-shell-de
 ---
 
 ### Task 5 — Vite, PostCSS, and ESLint config
+   **Status:** ✅ Done — 51213ec
    - Files: `vite.config.ts` (new), `postcss.config.js` (new), `eslint.config.js` (new)
    - Changes: Per PRD §4.2. (The `/// <reference types="vite-react-ssg" />` line was added during implementation: `vite-react-ssg` types `ssgOptions` by augmenting Vite's `UserConfig` via `declare module 'vite'` in its own `.d.ts`, but this project splits config into `tsconfig.node.json` (only `include`s `vite.config.ts`) and `tsconfig.app.json`, and TS only applies an ambient augmentation within the compiled program that includes the declaring file. Since nothing else in `vite.config.ts` imports from `vite-react-ssg`, the augmentation was invisible here once the typecheck gate was made real (see Task 3), and `ssgOptions` failed to typecheck. The reference pulls in those types for this file at zero runtime cost — the same defect exists unfixed in `juno-landing-page`'s `vite.config.ts`, confirmed by running `tsc -b --noEmit` there for real.)
 
@@ -315,6 +322,7 @@ export default defineConfig([
 ---
 
 ### Task 6 — `.gitignore`, `.prettierignore`, and `README.md`
+   **Status:** ✅ Done — 367e3cd
    - Files: `.gitignore` (overwritten), `.prettierignore` (overwritten), `README.md` (overwritten)
    - Changes: Per PRD §4.1's "Updated, not simply preserved" table.
 
@@ -388,6 +396,7 @@ See `.dev/website-revamp/BRIEF.md` for the full design record — palette, route
 ---
 
 ### Task 7 — Tailwind design tokens
+   **Status:** ✅ Done — d9fb13e
    - Files: `tailwind.config.ts` (new)
    - Changes: Per PRD §4.4. All hex values grepped directly from `_reference-techfolio/app/page.tsx` and `app/projects/[slug]/page.tsx` by the PRD — reproduced exactly, not approximated.
 
@@ -454,6 +463,7 @@ export default {
 ---
 
 ### Task 8 — `index.html`: Montserrat, favicon, title
+   **Status:** ✅ Done — a731696
    - Files: `index.html` (new)
    - Changes: Per PRD §4.5. Montserrat loaded once via Google Fonts link tags (not `next/font`, not self-hosted, not duplicated per-page — brief §3 locks this mechanism); favicon linked per the carve-out in Task 1. Since `RouteMeta` doesn't exist yet (SP06's scope), this file ships one static `<title>`/description sufficient for every route until SP06 wires per-route meta (PRD §3 non-goals) — the copy below is a reasonable draft, not binding text; SP06/the owner may revise it.
 
@@ -495,6 +505,7 @@ export default {
 ---
 
 ### Task 9 — Pre-scaffold empty content directories
+   **Status:** ✅ Done — aeb0168
    - Files: `src/content/work-experience/.gitkeep` (new), `src/content/legal/.gitkeep` (new)
    - Changes: Per PRD §4.3's directory structure and its "judgment call — `content/`, `config/` pre-scaffolded empty" note, mirroring `juno-landing-page`'s own precedent of pre-creating empty folders so downstream sub-projects have one settled place to add files. `src/content/projects/` and `src/content/research/` are created by Task 21 (which populates them with `index.ts` immediately, so they need no separate empty-placeholder here); `src/config/` is created by Task 11.
    - Acceptance criteria:
@@ -505,6 +516,7 @@ export default {
 ---
 
 ### Task 10 — `src/lib/isExternalUrl.ts`
+   **Status:** ✅ Done — ae6f851
    - Files: `src/lib/isExternalUrl.ts` (new)
    - Changes: A small, generic utility Task 19's `Footer` needs to distinguish `FOOTER_LINKS`' one external entry (Résumé) from its three internal ones (Research, Privacy, Terms) — PRD §4.6 names this as "the same SP01-owned utility SP02 §4.8 already assumes." Not explicitly spelled out in the PRD's own code samples, so implemented here to match the exact pattern `juno-landing-page` already ships (confirmed directly, not guessed) and the same regex SP02's `assertAbsoluteUrl` validator uses, so the two stay consistent about what counts as "external":
 
@@ -551,6 +563,7 @@ describe('isExternalUrl', () => {
 ---
 
 ### Task 11 — `src/config/links.ts`
+   **Status:** ✅ Done — 58ceca4
    - Files: `src/config/links.ts` (new)
    - Changes: Per PRD §4.6/§9 — binding architect decision. This file is **SP01-owned**, not SP03's, because `Nav`/`Footer` (Tasks 18/19) cannot render without it existing, and SP01 lands in Phase 1 before SP03 exists. Exports exactly three names — `RESUME_URL`, `NAV_LINKS`, `FOOTER_LINKS` — no more, no fewer.
 
@@ -587,6 +600,7 @@ export const FOOTER_LINKS: { label: string; href: string }[] = [
 ---
 
 ### Task 12 — `src/hooks/useDebouncedValue.ts`
+   **Status:** ✅ Done — b030a5f
    - Files: `src/hooks/useDebouncedValue.ts` (new)
    - Changes: Per PRD §4.6/§4.3 — a **PRD-mandated SP01 deliverable**, not incidental scaffolding: "It's a four-line hook with no reason to differ between projects, and SP01 owns `src/hooks/`, so it lands here rather than being created ad hoc by whichever page happens to need it first." Ported verbatim from `juno-landing-page`.
 
@@ -613,6 +627,7 @@ export function useDebouncedValue<T>(value: T, delayMs: number): T {
 ---
 
 ### Task 13 — `src/lib/ScrollManager.tsx`
+   **Status:** ✅ Done — a5f0d35
    - Files: `src/lib/ScrollManager.tsx` (new)
    - Changes: Per PRD §4.6/§4.8. Ported verbatim from `juno-landing-page` — the mechanism that makes cross-page anchor-scroll navigation work (§4.8's "one genuinely non-trivial interaction in this site").
 
@@ -652,6 +667,7 @@ export function ScrollManager() {
 ---
 
 ### Task 14 — Icon set
+   **Status:** ✅ Done — aa58f1f
    - Files: `src/components/icons/GitHubIcon.tsx`, `src/components/icons/LinkedInIcon.tsx`, `src/components/icons/EmailIcon.tsx`, `src/components/icons/ExternalLinkIcon.tsx`, `src/components/icons/ArrowIcon.tsx` (all new)
    - Changes: Per PRD §4.6. `GitHubIcon`, `LinkedInIcon`, `EmailIcon` are ported **verbatim** — real SVG path data pulled directly from `_reference-techfolio/app/page.tsx` (generic geometric glyphs — GitHub's octocat mark, a generic envelope shape — not "personal content" under the MIT/content split in the brief's Attribution decisions). `ExternalLinkIcon` and `ArrowIcon` are newly authored, matching `EmailIcon`'s outline stroke style for visual consistency, since techfolio has no equivalent for either. **No `LocationIcon`** — the Contact aside ships no location line (brief §2 amendment), so it has no consumer; do not port it even though it exists in the reference file. This makes five icon files total, not six — the PRD's own §2 Goals text says "six hand-inlined icons," which is a stale count from before the Contact-location line (and its icon) was dropped; the directory structure in PRD §4.3 and this task's file list are the authoritative, current count.
 
@@ -730,6 +746,7 @@ export function ArrowIcon({ className = 'h-4 w-4' }: { className?: string }) {
 ---
 
 ### Task 15 — `src/components/Button.tsx`
+   **Status:** ✅ Done — cad75fd
    - Files: `src/components/Button.tsx` (new)
    - Changes: Per PRD §4.6. Solid/outline variants, class values taken directly from techfolio's hero CTAs.
 
@@ -788,6 +805,7 @@ export function Button({ variant = 'solid', className = '', children, ...rest }:
 ---
 
 ### Task 16 — `src/components/TagPill.tsx`
+   **Status:** ✅ Done — d3c2ff2
    - Files: `src/components/TagPill.tsx` (new)
    - Changes: Per PRD §4.6. Static display styling ported from the reference; the `active`/`onClick` filter-chip mode is a new addition (techfolio's tags are always static) needed for SP04's `/projects`/`/research` tag filter.
 
@@ -824,6 +842,7 @@ export function TagPill({ children, active = false, onClick, className = '' }: T
 ---
 
 ### Task 17 — `src/components/BackButton.tsx`
+   **Status:** ✅ Done — 6bc6059
    - Files: `src/components/BackButton.tsx` (new)
    - Changes: Per PRD §4.6. Depends on Task 14's `ArrowIcon`. Always targets `/`, per the brief's explicit reasoning: the nav bar has no "home" affordance once you're off the landing page (no logo to click), so an explicit back button is the only way back.
 
@@ -853,6 +872,7 @@ export function BackButton({ className = '' }: { className?: string }) {
 ---
 
 ### Task 18 — `src/layout/Nav.tsx`
+   **Status:** ✅ Done — 8e97e51 (a `react-hooks/set-state-in-effect` defect in this commit's `Nav.tsx` was caught by Task 26's lint gate and fixed separately in `97c6bc7` — see the progress note above)
    - Files: `src/layout/Nav.tsx` (new)
    - Changes: Per PRD §4.6. Depends on Task 11's `NAV_LINKS`. Ports techfolio's floating-pill markup and scroll-listener active-section logic, with three deliberate departures the PRD calls out explicitly: **no "Home" item** (four items only); **nothing in the nav's top-left corner**, satisfied structurally (the `<header>`'s only child is one `mx-auto w-fit` centered pill — there's no logo-left/nav-center/actions-right grid to begin with); and **route-aware re-scanning**, which techfolio's true single-page reference never needs — this site has multiple routes sharing one persistent `Nav` (react-router's layout-route pattern keeps `PageShell` mounted across sibling-route navigation), so the effect is keyed on `isHome` (derived from `location.pathname`), re-queries `document.getElementById` inside the handler itself (not cached outside it), and the rendered `activeSection` is derived at render time as `null` whenever `pathname !== '/'` (the block below was originally written with a synchronous `setActiveSection(null)` inside the effect body for this non-home case; that violated `react-hooks/set-state-in-effect`, caught by Task 26's `npm run lint` gate, and was corrected during implementation to the derived-at-render-time form shown here).
 
@@ -948,6 +968,7 @@ export function Nav() {
 ---
 
 ### Task 19 — `src/layout/Footer.tsx`
+   **Status:** ✅ Done — 6dbf4d3
    - Files: `src/layout/Footer.tsx` (new)
    - Changes: Per PRD §4.6/§9. Depends on Task 11's `FOOTER_LINKS` and Task 10's `isExternalUrl`. **Contents, resolved:** Research, Privacy, Terms, Résumé, then the techfolio credit line, then copyright — the brief's original literal enumeration ("Research, Résumé, techfolio credit line, copyright") predates `/privacy`/`/terms` being locked into the route table; shipping exactly as literally enumerated would leave both legal pages reachable only by typing the URL.
 
@@ -1006,6 +1027,7 @@ export function Footer() {
 ---
 
 ### Task 20 — `src/layout/PageShell.tsx`
+   **Status:** ✅ Done — fdb3261
    - Files: `src/layout/PageShell.tsx` (new)
    - Changes: Per PRD §4.6. The router's layout element — depends on Tasks 13, 18, 19.
 
@@ -1040,6 +1062,7 @@ export function PageShell() {
 ---
 
 ### Task 21 — Content seam stubs
+   **Status:** ✅ Done — 2ceb4ce
    - Files: `src/content/projects/index.ts` (new), `src/content/research/index.ts` (new)
    - Changes: Per PRD §4.7. **Named seam for SP02.** `vite-react-ssg` only prerenders a `:param` route for the concrete paths its `getStaticPaths()` function returns — Task 23's `routes.tsx` needs `projectSlugs`/`researchSlugs` arrays to exist at these exact import paths *today*, before SP02's real markdown loader exists, so the app can build now.
 
@@ -1063,6 +1086,7 @@ export const researchSlugs: string[] = [];
 ---
 
 ### Task 22 — Placeholder page components
+   **Status:** ✅ Done — 4d2b8de
    - Files: `src/pages/HomePage.tsx`, `src/pages/ProjectsPage.tsx`, `src/pages/ProjectDetailPage.tsx`, `src/pages/ProjectLivePage.tsx`, `src/pages/WorkExperiencePage.tsx`, `src/pages/ResearchPage.tsx`, `src/pages/ResearchDetailPage.tsx`, `src/pages/PrivacyPage.tsx`, `src/pages/TermsPage.tsx`, `src/pages/NotFoundPage.tsx` (all new)
    - Changes: Per PRD §4.7. Following `juno-landing-page`'s own 01 precedent of shipping **minimal real content, not truly empty files**, so routing/anchor-scroll/`Nav` can be proven end-to-end before SP02–SP06 build on top. Depends on Task 17 (`BackButton`).
 
@@ -1184,6 +1208,7 @@ export function NotFoundPage() {
 ---
 
 ### Task 23 — `src/routes.tsx`, `src/main.tsx`, `src/index.css`
+   **Status:** ✅ Done — d33f40f
    - Files: `src/routes.tsx` (new), `src/main.tsx` (new), `src/index.css` (new)
    - Changes: Per PRD §4.7. Depends on Tasks 20, 21, 22. The full brief §3 route table, registered as `vite-react-ssg`'s `RouteRecord[]` shape.
 
@@ -1268,6 +1293,7 @@ export const createRoot = ViteReactSSG({
 ---
 
 ### Task 24 — Vitest setup and smoke tests
+   **Status:** ✅ Done — a6180b9, c5e6c2d
    - Files: `src/setupTests.ts` (new), `src/routes.smoke.test.tsx` (new), `src/layout/Nav.test.tsx` (new), `src/components/Button.test.tsx` (new)
    - Changes: Per PRD §4.2/§7. `setupTests.ts` copied verbatim from `juno-landing-page` (needed the moment any page renders `<Head>`, which SP06 will do — setting this up now means SP03–SP06 don't each have to rediscover why a bare component test crashes on `<Head>`):
 
@@ -1384,6 +1410,7 @@ describe('content seam placeholders', () => {
 ---
 
 ### Task 25 — `firebase.json` and `.firebaserc`
+   **Status:** ✅ Done — 91e8b58
    - Files: `firebase.json` (new), `.firebaserc` (new)
    - Changes: Per PRD §4.9. Single-site config (no multi-site `target`, unlike `juno-landing-page`'s multi-site GCP project) — this is its own standalone Firebase project. The real project ID, `tejitpabari-99`, already exists (created by the owner, confirmed in this PRD's §9) — do not ship a placeholder.
 
@@ -1437,6 +1464,7 @@ describe('content seam placeholders', () => {
 ---
 
 ### Task 26 — Full build & prerendering verification
+   **Status:** ✅ Done — — (verification-only task; produces no commit of its own). This task's gate run also surfaced that the root `tsconfig.json` is solution-style, so a plain `tsc --noEmit` checked zero files and always passed silently — fixed separately in `857e5a8` (`typecheck` is now `tsc -b --noEmit`; see the progress note above).
    - Files: none new — this task runs and inspects the output of everything Tasks 1–25 built. This is the proof that the entire toolchain, design system, components, routes, and hosting config actually work together, and specifically that prerendering works (the entire architecture exists so crawlers get real HTML, not a JS-only SPA shell) — verified against `dist/` output files, not just a dev server.
    - Changes: none — verification only.
    - Acceptance criteria, run in order:

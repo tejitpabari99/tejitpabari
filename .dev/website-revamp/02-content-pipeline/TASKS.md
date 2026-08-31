@@ -4,9 +4,12 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/02-content-pipe
 
 **Toolchain assumption, confirmed from SP01's PRD, not re-derived here:** `gray-matter@^4.0.3`, `react-markdown@^10.1.0`, `remark-gfm@^4.0.1`, `@tailwindcss/typography@^0.5.20`, and `vitest@^4.1.11` (`npm test` → `vitest run`) are already installed by SP01's `package.json`. No task below installs a dependency. `src/content/` and `src/config/` already exist as empty directories per SP01's scaffold; `src/data/` does not exist yet and is created by Task 1.
 
+**Progress:** 10/15 tasks complete (Tasks 1–10). Tasks 11–15 (validator/unit test suites) not started — deliberately deferred, not blocked. Full detail: see `../code-2026-08-31-0420.md`.
+
 ---
 
 ### Task 1 — Shared content types & validators
+   **Status:** ✅ Done — ce2d7f6
    - Files: `src/data/shared.ts` (new)
    - Changes: Create the file exactly as specified in PRD §4.3. Export the `Link` type and every validator helper: `assertNoUnknownKeys`, `assertSlugMatchesFilename`, `assertRequiredString`, `assertTags`, `assertOptionalStatus`, `assertLinks`, `normalizeDateField`, `assertAbsoluteUrl`, `assertImagePath`.
 
@@ -112,6 +115,7 @@ export function assertImagePath(path: string, value: unknown): string {
 ---
 
 ### Task 2 — Projects collection: type, loader, validation, `liveMode`
+   **Status:** ✅ Done — d9fddaa
    - Files: `src/data/projects.ts` (new), `src/content/projects/` (new empty directory, e.g. via a `.gitkeep`)
    - Changes: Implement per PRD §4.2, §4.4.1, §4.4.2, §4.5.1, §4.5.2, §4.7. Export `parseProject` (not just used internally) so Task 11's tests can exercise the full per-file parse path directly with an in-memory raw string, and export `liveMode`/`LiveMode` so Task 12 can test it directly.
 
@@ -208,6 +212,7 @@ export function liveMode(project: Project): LiveMode {
 ---
 
 ### Task 3 — Research collection: type, loader, validation
+   **Status:** ✅ Done — c5add37
    - Files: `src/data/research.ts` (new), `src/content/research/` (new empty directory, e.g. via a `.gitkeep`)
    - Changes: Implement per PRD §4.4.3. Same mechanism as Task 2, with two deliberate differences from Projects: **no `liveUrl` field** and **no `demo` field** — `ALLOWED_KEYS` omits both, so setting either on a research file fails the build via `assertNoUnknownKeys` (this is the enforcement mechanism for the PRD's `[RESOLVED]` decision that Research doesn't get `liveUrl`, §4.4.3/§9). Export `parseResearch` for Task 11's tests.
 
@@ -288,6 +293,7 @@ for (const r of research) {
 ---
 
 ### Task 4 — Work Experience collection: type, loader, `DRAFT_DATE`
+   **Status:** ✅ Done — cfaf7c9
    - Files: `src/data/workExperience.ts` (new), `src/content/work-experience/` (new empty directory, e.g. via a `.gitkeep`)
    - Changes: Implement per PRD §4.4.4 and §4.9. No `slug`/filename check (no route ever addresses a role by slug). `body` is required and non-empty here — unlike Projects/Research, there is no separate `description` field to fall back on. Export `parseWorkExperience` for Task 11's tests.
 
@@ -349,6 +355,7 @@ export const workExperience: WorkExperience[] = Object.entries(files)
 ---
 
 ### Task 5 — Shared markdown link renderer
+   **Status:** ✅ Done — e21e4a8
    - Files: `src/data/markdownComponents.tsx` (new)
    - Changes: Per PRD §4.8. Depends on `@/lib/isExternalUrl` (SP01-owned; PRD flags this as an assumption — if the import fails because the file doesn't exist yet, stop and confirm with the orchestrator rather than inlining a substitute, since a silent substitute would diverge from every other consumer of the real utility).
 
@@ -374,6 +381,7 @@ export const markdownComponents: Components = {
 ---
 
 ### Task 6 — Shared body-render helper
+   **Status:** ✅ Done — 2ed2a0e
    - Files: `src/data/ContentBody.tsx` (new)
    - Changes: Per PRD §4.5.3. Depends on Task 5.
 
@@ -403,6 +411,7 @@ export function ContentBody({ body }: { body: string }): React.JSX.Element | nul
 ---
 
 ### Task 7 — Palette-matched prose typography tokens
+   **Status:** ✅ Done — 57336d2
    - Files: `tailwind.config.ts` (modify — SP01-owned file; this is an additive change, not a rewrite)
    - Changes: Per PRD §4.8. **Note on file path:** the PRD's own code sample says `tailwind.config.js`; SP01's actual delivered config is TypeScript (`tailwind.config.ts`, `export default { ... } satisfies Config`, `plugins: [typography]` already registered). Add the block below to the existing `theme.extend` object — do not touch `colors`, `fontFamily`, `borderRadius`, `boxShadow`, or `maxWidth`, which SP01 already owns.
 
@@ -435,6 +444,7 @@ typography: () => ({
 ---
 
 ### Task 8 — Aggregator: cross-collection link validation and Nav/Footer link validation
+   **Status:** ✅ Done — 1d06756
    - Files: `src/data/index.ts` (new)
    - Changes: Per PRD §4.5.4. This is the single module every consumer must import from (`@/data`, not `@/data/projects` directly) so validation always runs as a side effect of the first import. **Deviation from the PRD's code sample, needed for testability:** `validateInternalLinks` and `validateNavAndFooterLinks` are written as exported, parameterized functions (taking the collections/link arrays as arguments) rather than closures over the module-level `projects`/`research`/`workExperience` bindings — PRD §7 requires `src/data/index.test.ts` to exercise this logic "using in-memory fixtures," which is only possible if the functions accept fixture data as arguments instead of always reading the real, loaded content. The real-data call at the bottom of the file is what preserves the "runs once, eagerly, on first import" behavior the PRD specifies.
    - **Dependency, flag before starting:** this task imports `NAV_LINKS`/`FOOTER_LINKS` from `@/config/links` and `isExternalUrl` from `@/lib/isExternalUrl`. `src/config/links.ts` is SP01-owned (binding architect decision, resolving what was previously a three-way ownership collision with SP03; SP01's PRD §4.6/§9 creates it, SP03's PRD §4.2/§9 was updated to consume it only — see SP01 PRD §9). SP01 lands in Phase 1, before this sub-project's Phase 2 tasks run, so `src/config/links.ts` is expected to already exist when this task is picked up. If it doesn't, **stop and confirm with the orchestrator** whether SP01 is genuinely behind schedule, rather than authoring a placeholder version of a file this sub-project doesn't own.
@@ -520,6 +530,7 @@ validateNavAndFooterLinks(NAV_LINKS, FOOTER_LINKS);
 ---
 
 ### Task 9 — Featured projects config
+   **Status:** ✅ Done — 1cbc059
    - Files: `src/config/featured.ts` (new)
    - Changes: Per PRD §4.6. **Deviation from the PRD's code sample, needed for testability:** `computeFeatured` is exported (the PRD's sample leaves it as a private function), since §7 requires `src/config/featured.test.ts` to call it directly against an in-memory `Project[]` fixture rather than only through the real, loaded `projects` array.
 
@@ -577,6 +588,7 @@ export const featuredProjects: Project[] = computeFeatured(projects, FEATURED_PR
 ---
 
 ### Task 10 — Pre-launch content gate script
+   **Status:** ✅ Done — b8d00f3
    - Files: `scripts/check-launch-content.test.ts` (new), `package.json` (modify — add one npm script), `vite.config.ts` (modify — narrow `test.exclude`)
    - Changes: Per PRD §4.9. **Deviation from the PRD's code sample and this task's original plan, discovered during implementation, not merely a testability preference:** the PRD's/this task's original sample wired `"check:launch": "tsx scripts/check-launch-content.ts"`. That command cannot ever work, unconditionally, regardless of content state. `scripts/check-launch-content.ts` imports `src/data`, whose loaders (`projects.ts`, `workExperience.ts`) call `import.meta.glob(...)` at module top level — a **Vite-only build-time macro** that Vite statically rewrites into real imports during its own transform pass; it has no runtime implementation of its own. `tsx` is esbuild-based and never runs a Vite transform, so importing `src/data` under `tsx` throws `TypeError: (intermediate value).glob is not a function` on the very first invocation. (`vite-node` — the usual escape hatch for "run a Vite-transformed file outside Vite" — is not an installed or transitive dependency here; vitest 4 no longer ships it, so adopting it would mean adding a new dependency, not reusing one already present.)
 
@@ -644,6 +656,7 @@ exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...co
 ---
 
 ### Task 11 — Validator unit tests
+   **Status:** ⬜ Not started
    - Files: `src/data/shared.test.ts` (new)
    - Changes: Per PRD §7, first bullet. Using `vitest`, construct malformed raw frontmatter strings in-memory and call `parseProject`/`parseResearch`/`parseWorkExperience` (from Tasks 2–4) directly — not through `import.meta.glob` — asserting each throws with a message containing the offending file path and field name. Cover every case the PRD names explicitly:
 
@@ -696,6 +709,7 @@ describe('parseProject', () => {
 ---
 
 ### Task 12 — `liveMode` unit test
+   **Status:** ⬜ Not started
    - Files: `src/data/projects.test.ts` (new)
    - Changes: Per PRD §7, `liveMode` bullet. Not given an explicit filename in the PRD's §7 list (only `shared.test.ts`, `featured.test.ts`, `index.test.ts` are named there) — placed here, colocated with `projects.ts`, following the same `<file>.test.ts` convention.
 
@@ -724,6 +738,7 @@ describe('liveMode', () => {
 ---
 
 ### Task 13 — Featured-backfill unit tests
+   **Status:** ⬜ Not started
    - Files: `src/config/featured.test.ts` (new)
    - Changes: Per PRD §7, second bullet. Use an in-memory `Project[]` fixture — never real content files — calling `computeFeatured` (exported by Task 9) directly. Cover every case the PRD names:
 
@@ -781,6 +796,7 @@ describe('computeFeatured', () => {
 ---
 
 ### Task 14 — Cross-collection and Nav/Footer link validation tests
+   **Status:** ⬜ Not started
    - Files: `src/data/index.test.ts` (new)
    - Changes: Per PRD §7, third bullet. Use in-memory fixtures for all three collections, calling `validateInternalLinks`/`validateNavAndFooterLinks` (exported, parameterized per Task 8) directly rather than relying on the real loaded content.
 
@@ -837,6 +853,7 @@ describe('validateNavAndFooterLinks', () => {
 ---
 
 ### Task 15 — Pre-launch gate logic tests
+   **Status:** ⬜ Not started
    - Files: `scripts/check-launch-content.test.ts` (new)
    - Changes: Per PRD §7, fourth bullet. Test `checkLaunchContent` (exported by Task 10) directly with in-memory fixtures — never invoke `main()` or assert on `process.exit`.
 
