@@ -38,4 +38,31 @@ describe('parseProject', () => {
     const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "x"}]\ndate: "2024-01-01"\n---\n`;
     expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/links\[0\]\.href/);
   });
+
+  // Coverage-audit gap C: assertImagePath's and assertAbsoluteUrl's throw
+  // paths (src/data/shared.ts) were never exercised — only their
+  // pass-through behavior was, via every real content file's valid
+  // "/images/..." image and absolute liveUrl. Exercised here through
+  // parseProject since that's the only real loader that calls both
+  // validators (parseResearch only calls assertImagePath).
+  it('throws on an "image" missing its leading slash (not root-relative, not absolute)', () => {
+    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: images/no-leading-slash.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
+      /foo\.md.*"image" must be a root-relative path/is,
+    );
+  });
+
+  it('throws on a "liveUrl" that is not a URL at all', () => {
+    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nliveUrl: not-a-url\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
+      /foo\.md.*"liveUrl" must be an absolute http\(s\) URL/is,
+    );
+  });
+
+  it('throws on a "liveUrl" using a non-http(s) protocol', () => {
+    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nliveUrl: ftp://x\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
+      /foo\.md.*"liveUrl" must be an absolute http\(s\) URL/is,
+    );
+  });
 });
