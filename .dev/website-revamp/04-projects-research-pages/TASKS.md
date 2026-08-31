@@ -912,6 +912,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 19 — `DetailHeader` and `LinksRow` component tests
+   - Status: Complete
    - Files: `src/components/DetailHeader.test.tsx` (new), `src/components/LinksRow.test.tsx` (new)
    - Changes: `DetailHeader` — status pill renders only when `status` is provided, and confirms no extra DOM node/spacing exists when it's absent (same claim SP03's own `ProjectCard` test already pins, per PRD §7). `LinksRow` — renders `null` when both `links` is empty and `liveHref` is undefined; renders the "Open Live" CTA only when `liveHref` is provided, pointing at that exact path; clicking an external link fires `trackEvent('outbound_click', ...)` with `context: 'content_external_link'` and the correct `label`/`url`.
    - Acceptance criteria: `npm test` passes; `LinksRow`'s test explicitly asserts the `context` value is the string `'content_external_link'` (not the old `'project_external_link'`), since this is the one field a copy-paste from an older draft would most easily get wrong.
@@ -919,6 +920,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 20 — Detail-page empty-`body` rendering tests
+   - Status: Complete
    - Files: `src/pages/ProjectDetailPage.test.tsx` (new), `src/pages/ResearchDetailPage.test.tsx` (new)
    - Changes: Per PRD §4.5's "verified by construction" claim — given a fixture item (mock `@/data`'s `projects`/`research` export) with `body: ''`, `description` set, and a non-empty `links[]`, the page renders the header, the description paragraph, and the links row, but **nothing** from `ContentBody` — assert directly on the DOM that no stray empty wrapper element exists where the body would have gone (e.g. query for `ContentBody`'s known wrapper class/testid and assert it's absent, not just present-but-empty).
    - Acceptance criteria: `npm test` passes for both pages; this is a direct, mechanical proof of §4.5's claim, not an assertion resting on prose.
@@ -926,6 +928,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 21 — `registry.ts` cross-check and `projectLiveSlugs` tests
+   - Status: Complete
    - Files: `src/pages/live/registry.test.ts` (new)
    - Changes: Using Task 8's exported `validateLiveRegistry`/`computeProjectLiveSlugs` functions directly with fixture `Project[]` arrays (no module mocking needed, per Task 8's testability deviation):
      - A fixture `hostedSlugs` entry for a slug with no matching project in the fixture list throws, naming the slug.
@@ -937,6 +940,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 22 — `ProjectLivePage` dispatch tests
+   - Status: Complete
    - Files: `src/pages/ProjectLivePage.test.tsx` (new)
    - Changes: With `@/data` and `./live/registry` mocked per-test: given a hosted-registered slug, renders that component; given a `liveUrl`-only slug, renders `LiveRedirectFallback`; given a slug matching neither, renders `NotFoundPage`.
    - Acceptance criteria: `npm test` passes all three dispatch branches, each asserting on the actually-rendered component (e.g. by a distinguishing testid/text), not just "did not throw."
@@ -944,6 +948,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 23 — `LiveRedirectFallback` test
+   - Status: Complete
    - Files: `src/components/LiveRedirectFallback.test.tsx` (new)
    - Changes: Covers Task 11's acceptance criteria as an automated test — mock `trackEvent` and `window.location.replace`; render with fixture `to`/`label` props; assert both are called exactly once with the correct arguments, and that the tracking call is not skipped or deferred past the navigation call.
    - Acceptance criteria: `npm test` passes.
@@ -951,6 +956,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 24 — `liveRedirectsPlugin` test
+   - Status: Complete
    - Files: `vite.config.test.ts` (new, or `scripts/liveRedirectsPlugin.test.ts` if the plugin/`readLiveUrls` is easier to import in isolation from that location — pick one, keep `vite.config.ts`'s own exports minimal either way)
    - Changes: Per PRD §7 — given a fixture temp directory (created via `fs.mkdtempSync` in a `beforeEach`) containing a mix of `liveUrl`-bearing and hosted-mode `.md` files (frontmatter written directly as strings, no need for `gray-matter` to round-trip anything complex), call Task 13's exported `readLiveUrls(fixtureDir)` directly and assert it returns exactly the expected `{slug, liveUrl}` pairs (hosted-mode files, with no `liveUrl` key, are excluded). Separately, construct a fixture `firebase.json`-shaped object, apply the same `entries.map(...)` transform the plugin's `closeBundle` uses, and assert the resulting `hosting.redirects` array is exactly `[{source, destination, type: 302}, ...]` while every other key on the fixture object is unchanged (reference-equal or deep-equal, either is fine to assert).
    - Acceptance criteria: `npm test` passes; this test does not invoke a real `npm run build` (confirmed fast, per PRD §7's explicit "not requiring a real vite build" framing).
@@ -958,6 +964,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 25 — `check-no-forms.sh` automated regression test
+   - Status: Complete
    - Files: `scripts/check-no-forms.test.ts` (new) — a small Vitest test that shells out to the script (Node's `child_process.execFileSync` or equivalent), per PRD §7's "a small shell-invocation test... acceptable given the script's own small surface"
    - Changes: In a `beforeEach`/`afterEach`, create and remove a fixture temp directory shaped like `src/pages/live/` (do **not** touch the real `src/pages/live/` directory from this automated test — that manual/reverted check already happened in Task 15's acceptance criteria 3). If the script's target path is hardcoded to the real `src/pages/live/` (as written in Task 15), this test's simplest reliable form is: (a) confirm the script exits 0 today against the real, clean directory, and (b) reproduce the exact manual steps from Task 15 acceptance criterion 3 programmatically — write a temp file into the real `src/pages/live/` inside the test, assert nonzero exit and the file's name in the output, then delete the temp file in a `finally`/`afterEach` regardless of test outcome, so a failed assertion never leaves the fixture behind to break every subsequent `check:no-forms` run.
    - Acceptance criteria: `npm test` passes; running the full suite twice in a row leaves zero stray files under `src/pages/live/` (confirm by diffing `git status --porcelain src/pages/live/` before and after the test run — must be identical).
