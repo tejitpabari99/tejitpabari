@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, afterEach } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { parseResearch, research } from './research';
 
 const bodylessResearch = `---
@@ -54,4 +57,80 @@ describe('migrated research corpus', () => {
       expect(entry.body).toBe('');
     }
   });
+});
+
+// Coverage-audit gap F: research.ts's module-scope duplicate-slug guard
+// (lines ~59-65) was never exercised. See src/data/projects.test.ts's
+// identical "duplicate slug guard" describe block for the full rationale
+// (why a real fixture pair can never collide without bypassing
+// assertSlugMatchesFilename, and why that bypass must run in a genuinely
+// fresh OS process rather than a same-process dynamic re-import).
+describe('duplicate slug guard', () => {
+  const REPO_ROOT = path.resolve(__dirname, '../..');
+  const VITEST_BIN = path.join(REPO_ROOT, 'node_modules/.bin/vitest');
+  const CONTENT_DIR = path.resolve(__dirname, '../content/research');
+  const fixtureA = path.join(CONTENT_DIR, '__dup-slug-fixture-a__.md');
+  const fixtureB = path.join(CONTENT_DIR, '__dup-slug-fixture-b__.md');
+  // Distinct filename from projects.test.ts's identical block — Vitest runs
+  // different test files in parallel workers, so a shared filename here
+  // risks both suites writing/deleting the same path concurrently.
+  const helperFile = path.join(__dirname, '__dup-slug-nested-check-research__.test.ts');
+
+  function makeFixture(slug: string) {
+    return `---\nslug: ${slug}\ntitle: Dup\ndescription: d\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\n---\nbody\n`;
+  }
+
+  afterEach(() => {
+    for (const f of [fixtureA, fixtureB, helperFile]) {
+      if (existsSync(f)) rmSync(f);
+    }
+  });
+
+  it(
+    'throws "Duplicate slug" when two files share a slug (via a fresh nested process)',
+    () => {
+      const slug = 'dup-slug-fixture';
+      mkdirSync(CONTENT_DIR, { recursive: true });
+      writeFileSync(fixtureA, makeFixture(slug));
+      writeFileSync(fixtureB, makeFixture(slug));
+      writeFileSync(
+        helperFile,
+        [
+          "import { describe, it, expect, vi } from 'vitest';",
+          '',
+          "vi.mock('./shared', async (importOriginal) => {",
+          "  const actual = await importOriginal<typeof import('./shared')>();",
+          '  return {',
+          '    ...actual,',
+          '    assertSlugMatchesFilename: (_path: string, _filenameSlug: string, data: Record<string, unknown>) => data.slug as string,',
+          '  };',
+          '});',
+          '',
+          "describe('nested duplicate-slug check', () => {",
+          `  it('rejects on import with the real Duplicate slug message', async () => {`,
+          `    await expect(import('./research')).rejects.toThrow(/Duplicate slug "${slug}"/);`,
+          '  });',
+          '});',
+          '',
+        ].join('\n'),
+      );
+
+      let result: { status: number; output: string };
+      try {
+        const output = execFileSync(VITEST_BIN, ['run', helperFile], {
+          cwd: REPO_ROOT,
+          encoding: 'utf-8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+        });
+        result = { status: 0, output };
+      } catch (err) {
+        const e = err as { status: number | null; stdout?: string; stderr?: string };
+        result = { status: e.status ?? 1, output: `${e.stdout ?? ''}${e.stderr ?? ''}` };
+      }
+
+      expect(result.output).toContain('1 passed');
+      expect(result.status).toBe(0);
+    },
+    30_000,
+  );
 });
