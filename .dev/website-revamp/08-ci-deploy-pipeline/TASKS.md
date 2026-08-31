@@ -9,6 +9,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/08-ci-deploy-pi
 ---
 
 ### Task 1 — `package.json` reconciliation: `typecheck` script and `tsx` devDependency
+   - Status: Complete
    - Files: `package.json` (modify — SP01-owned file, additive only)
    - Changes: Per PRD §4.10. Two real gaps this PRD's own design surfaced while tracing exactly which npm scripts the workflows below invoke: (1) no standalone `typecheck` script exists — `tsc --noEmit` is only ever bundled inside `build`, with no way to name it as its own CI step; (2) `tsx` (the runner `check:launch` invokes) is never declared as a dependency, so a clean `npm ci` on a CI runner has no global fallback and fails with `tsx: command not found`. Add exactly these two entries; do not touch any other script or dependency. (`"typecheck"`/`"build"` corrected during SP01 implementation, inherited here: the root `tsconfig.json` is solution-style (`"files": []` + `references`), so a plain `tsc --noEmit` checks zero files and always exits 0 — a silent no-op that would make this sub-project's own CI gate gate on nothing. `tsc -b --noEmit` walks the project references and actually typechecks; see SP01 Task 3.)
 
