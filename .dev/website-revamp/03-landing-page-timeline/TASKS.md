@@ -958,6 +958,8 @@ describe('ProjectCard', () => {
 
 ### Task 12 — Timeline behavior tests
    - Files: `src/components/timeline/Timeline.test.tsx` (new), `src/sections/WorkExperienceSection.test.ts` (new)
+   - Status: Complete
+   - Progress: Added seven fixture-based tests for current-dot selection, stub rendering and spine padding, plus landing timeline boundary behavior; targeted tests and typecheck pass.
    - Changes: Per PRD §7, second bullet. Depends on Tasks 4 and 5. Use in-memory `WorkExperience[]` fixtures — never the real loaded `workExperience`.
 
 ```tsx
