@@ -242,6 +242,7 @@ export function EmptyState({ itemLabel, query, activeTag, onClear }: EmptyStateP
 ---
 
 ### Task 4 — `ProjectsPage` (real listing, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectsPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.2. Depends on Tasks 1–3, SP02's `projects` (`@/data`), SP03's `ProjectCard`, and SP05's `trackEvent`.
 
