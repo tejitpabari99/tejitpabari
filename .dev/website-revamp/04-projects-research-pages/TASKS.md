@@ -488,6 +488,7 @@ export function LinksRow({ links, liveHref }: LinksRowProps) {
 ---
 
 ### Task 8 — `src/pages/live/registry.ts` — the hosted mini-project convention
+   - Status: Complete
    - Files: `src/pages/live/registry.ts` (new)
    - Changes: Implement per PRD §4.7. This is the file SP05 §9's "no forms" mechanical check was blocked on, and the file SP06's `sample-project` plugs into later with exactly one line. **Ships with `HOSTED_LIVE_PAGES` empty — do not add `sample-project` here; that's SP06's task, not this one.**
    - **Testability deviation from the PRD's exact code sample, same class of deviation SP02's `src/data/index.ts` already made (SP02 `TASKS.md` Task 8):** the cross-check and the `projectLiveSlugs` computation are pulled into two exported, parameterized functions (`validateLiveRegistry`, `computeProjectLiveSlugs`) that the real module-scope code calls with the real `HOSTED_LIVE_PAGES`/`projects`, and that Task 21's tests call directly with fixture data — this preserves the PRD's exact "eager, fail loud, name the file" runtime behavior while making it possible to unit test the redirect-XOR-hosted conflict and the "no matching project" case without mocking `@/data` and forcing a fresh module evaluation.
