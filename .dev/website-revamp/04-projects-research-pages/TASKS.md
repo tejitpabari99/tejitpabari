@@ -14,6 +14,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/04-projects-res
 ---
 
 ### Task 1 — `useCollectionFilter` shared hook
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.ts` (new)
    - Changes: Implement exactly per PRD §4.2 — the one place Fuse.js, tag filtering, URL state, and the debounced `search_query` analytics call all live.
 
@@ -138,6 +139,7 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
 ---
 
 ### Task 2 — `SearchFilter` presentational component
+   - Status: Complete
    - Files: `src/components/SearchFilter.tsx` (new)
    - Changes: Implement per PRD §4.2 — pure UI, no data logic. Reuses SP01's `TagPill` in its `active`/`onClick` filter-chip mode (added by SP01 specifically for this consumer).
 
@@ -196,6 +198,7 @@ export function SearchFilter({
 ---
 
 ### Task 3 — `EmptyState` presentational component
+   - Status: Complete
    - Files: `src/components/EmptyState.tsx` (new)
    - Changes: Implement per PRD §4.2, parameterized by `itemLabel` so one component serves both collections. No "zero items in the whole collection" variant — both collections are non-empty at launch (PRD §4.2 states this is dead code here, not a gap).
 
@@ -239,6 +242,7 @@ export function EmptyState({ itemLabel, query, activeTag, onClear }: EmptyStateP
 ---
 
 ### Task 4 — `ProjectsPage` (real listing, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectsPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.2. Depends on Tasks 1–3, SP02's `projects` (`@/data`), SP03's `ProjectCard`, and SP05's `trackEvent`.
 
@@ -313,6 +317,7 @@ export function ProjectsPage() {
 ---
 
 ### Task 5 — `ResearchPage` (real listing, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ResearchPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.2/§4.3. Identical shape to Task 4 with **three deliberate differences**, all tied to the resolved decision in PRD §4.3 that Research cards never populate `externalHref`: (a) `research` from `@/data` instead of `projects`; (b) `ProjectCard` is invoked **without** `externalHref`, `externalLabel`, or `onExternalClick` — not `undefined`-valued props, the props are omitted from the JSX entirely; (c) `href` points at `/research/${item.slug}`.
 
@@ -868,6 +873,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ## Tests
 
 ### Task 16 — `useCollectionFilter` filtering/analytics unit tests
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.test.ts` (new)
    - Changes: Cover, using fixture data (no real content) and `renderHook` wrapped in a `MemoryRouter`, with `vi.mock('@/lib/analytics')` and fake timers for the 600ms analytics timer:
      - Tag filter alone narrows correctly.
@@ -881,6 +887,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 17 — `useCollectionFilter` URL-sync tests
+   - Status: Complete
    - Files: `src/hooks/useCollectionFilter.test.ts` (same file as Task 16, or a sibling `useCollectionFilter.urlSync.test.ts` — either is fine, pick one and keep it consistent) — new test cases
    - Changes: Per PRD §4.2 and §7's explicit call-out that this timing is "worth pinning directly since it's easy to accidentally 'fix' into a hydration-mismatch-prone synchronous read":
      - Given a fixture wrapped in `MemoryRouter` with an initial entry `?q=maps&tag=Health%20Tech`, the hook's returned `query`/`activeTag` are still the empty/`null` defaults on the very first synchronous render, and only reflect the URL values **after** the mount effect runs (assert both states — pre-effect-flush and post-effect-flush — not just the final settled state).
@@ -890,6 +897,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 18 — `SearchFilter` and `EmptyState` component tests
+   - Status: Complete
    - Files: `src/components/SearchFilter.test.tsx` (new), `src/components/EmptyState.test.tsx` (new)
    - Changes: Cover Task 2's and Task 3's acceptance criteria as automated tests: `SearchFilter` renders `resultCount` text and calls the right callback on input change and tag click (including the active-tag-clears-on-reclick case); `EmptyState` renders each of the three copy variants (tag-only, query-only, both) correctly and calls `onClear` on button click.
    - Acceptance criteria: `npm test` passes; each variant/interaction from Tasks 2/3's acceptance criteria has a corresponding `it()` block.

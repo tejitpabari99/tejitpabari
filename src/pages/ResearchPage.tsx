@@ -1,11 +1,53 @@
 // src/pages/ResearchPage.tsx
 import { BackButton } from '@/components/BackButton';
+import { SearchFilter } from '@/components/SearchFilter';
+import { EmptyState } from '@/components/EmptyState';
+import { ProjectCard } from '@/components/ProjectCard'; // same shared component, no fork
+import { useCollectionFilter } from '@/hooks/useCollectionFilter';
+import { research } from '@/data';
+import { trackEvent } from '@/lib/analytics';
 
 export function ResearchPage() {
+  const { query, setQuery, activeTag, setActiveTag, results, allTags } =
+    useCollectionFilter({ items: research, collection: 'research' });
+
   return (
     <div className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
       <BackButton />
-      <h1 className="mt-6 text-2xl font-bold text-ink">Research — filled in by SP04</h1>
+      <h1 className="mt-6 text-[1.9rem] font-extrabold tracking-tight text-ink sm:text-[2.3rem]">Research</h1>
+      <div className="mt-8">
+        <SearchFilter
+          query={query} onQueryChange={setQuery} tags={allTags} activeTag={activeTag}
+          onTagChange={setActiveTag} resultCount={results.length}
+          placeholder="Search research by title, topic, or tag"
+        />
+      </div>
+      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {results.length === 0 ? (
+          <EmptyState itemLabel="research entries" query={query} activeTag={activeTag}
+            onClear={() => { setQuery(''); setActiveTag(null); }} />
+        ) : (
+          results.map((item) => (
+            <ProjectCard
+              key={item.slug}
+              href={`/research/${item.slug}`}
+              image={item.image}
+              imageAlt={`${item.title} preview`}
+              title={item.title}
+              description={item.description}
+              tags={item.tags}
+              status={item.status}
+              // externalHref / externalLabel / onExternalClick: DELIBERATELY
+              // omitted — PRD §4.3 (resolves SP03's previously open item).
+              // A citation link is not a "try it now" affordance; the
+              // external-icon shortcut never appears on a Research card.
+              onCardClick={() =>
+                trackEvent('project_card_click', { slug: item.slug, collection: 'research', title: item.title })
+              }
+            />
+          ))
+        )}
+      </div>
     </div>
   );
 }
