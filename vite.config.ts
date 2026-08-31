@@ -13,9 +13,48 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 import path from 'node:path';
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import matter from 'gray-matter';
+import type { Plugin } from 'vite';
+
+const PROJECTS_DIR = path.resolve(__dirname, 'src/content/projects');
+
+// Independent of src/data/projects.ts on purpose — same reasoning
+// juno-landing-page's own sitemapPlugin documents: import.meta.glob is a
+// Vite *application*-build-pipeline macro, not guaranteed to resolve from
+// vite.config.ts's own lighter esbuild-based load path. This plugin does its
+// own small fs + gray-matter scan instead. It does NOT re-validate
+// frontmatter — the main build's loader (SP02) already fails loudly on bad
+// content before this plugin's closeBundle runs.
+export function readLiveUrls(dir: string): { slug: string; liveUrl: string }[] {
+  return readdirSync(dir)
+    .filter((f) => f.endsWith('.md'))
+    .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data)
+    .filter((data): data is { slug: string; liveUrl: string } => typeof data.liveUrl === 'string')
+    .map(({ slug, liveUrl }) => ({ slug, liveUrl }));
+}
+
+function liveRedirectsPlugin(): Plugin {
+  return {
+    name: 'live-redirects',
+    closeBundle() {
+      const entries = readLiveUrls(PROJECTS_DIR);
+      const firebaseJsonPath = path.resolve(__dirname, 'firebase.json');
+      const config = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
+      config.hosting.redirects = entries.map(({ slug, liveUrl }) => ({
+        source: `/projects/${slug}/live`,
+        destination: liveUrl,
+        type: 302, // temporary — liveUrl is content the owner can change; a
+                   // permanent 301 risks a browser/crawler caching a stale
+                   // destination past the next content edit.
+      }));
+      writeFileSync(firebaseJsonPath, JSON.stringify(config, null, 2) + '\n');
+    },
+  };
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), liveRedirectsPlugin() /* SP06 adds its own sitemapPlugin() alongside this */],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
