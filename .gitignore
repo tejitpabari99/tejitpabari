@@ -2,12 +2,14 @@ node_modules/
 dist/
 dist-ssr/
 
-# Build-time generated output (SP06 `prebuild`: scripts/generate-og-cards.mjs).
-# `public/` is copied verbatim into `dist/` by `vite-react-ssg build`, and
-# `prebuild` always regenerates these before that copy happens — same
-# "regenerated every build, nothing to commit" status as `dist/` itself, just
-# staged one directory earlier.
+# Build-time generated output (SP06 `prebuild`: scripts/generate-og-cards.mjs,
+# scripts/generate-sitemap.mjs). `public/` is copied verbatim into `dist/` by
+# `vite-react-ssg build`, and `prebuild` always regenerates these before that
+# copy happens — same "regenerated every build, nothing to commit" status as
+# `dist/` itself, just staged one directory earlier.
 public/og/
+public/sitemap.xml
+public/robots.txt
 
 .env
 .env.*

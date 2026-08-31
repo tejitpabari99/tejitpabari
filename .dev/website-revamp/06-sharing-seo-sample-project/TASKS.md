@@ -353,6 +353,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
      2. `node --check scripts/generate-sitemap.mjs` reports no syntax errors.
      3. Merely importing this file's exports does not trigger `main()` or any filesystem write.
      4. `robots.txt`'s content is exactly `User-agent: *\nAllow: /\n\nSitemap: https://tejitpabari.com/sitemap.xml\n` — no `Disallow` lines (PRD §4.4: nothing on this portfolio site should be hidden from search).
+   - Status: Complete (`node scripts/generate-sitemap.mjs` exits 0, writes `public/sitemap.xml` with 21 `<loc>` entries — the 6 static routes + 10 project + 5 research detail pages, all absolute `https://tejitpabari.com/...` URLs off `SITE_URL` — and `public/robots.txt` byte-verified against the exact expected string. `/live` routes: zero appear, correctly — `src/pages/live/` currently holds only `registry.ts` (no hosted-mode `.tsx` page has landed yet; Task 7/8's `sample-project` is out of this task's scope) and Juno's redirect-mode `/live` (its `liveUrl` frontmatter) is structurally excluded by construction since `hostedLiveSlugs()` never reads frontmatter, matching PRD §4.4's binding decision D exactly. Import-only of the four exports triggers no `main()`/filesystem write. `public/sitemap.xml`/`public/robots.txt` gitignored as build output alongside `public/og/`, for the same reason.)
 
 ---
 
