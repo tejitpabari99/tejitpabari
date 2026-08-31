@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 3/7 tasks complete
+**Progress:** 4/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -278,6 +278,7 @@ date: "2020-05-01"
 ---
 
 ### Task 4 — Research collection (5 files)
+   - Status: Done
    - Files: `src/content/research/flood-event-extraction-bangladesh.md` (new), `src/content/research/dvmm-lab.md` (new), `src/content/research/incite-labs.md` (new), `src/content/research/pill-recognition-prescription-extraction.md` (new), `src/content/research/solar-illumination-water-bottle.md` (new)
    - Changes: Per PRD §4.2. **No `liveUrl` key on any of these five** — SP02's Research schema doesn't define the field at all; setting it fails the build via `assertNoUnknownKeys`. Every entry gets the same drafted abstract text in both `description` and `body` — per PRD §4.2's own note, all 5 research bodies are "abstract-only" (no separate short-blurb/long-writeup split the way Projects has one): the 2–3 sentence, 30–50 word abstract is the entire content deliverable for each item, so it is written once and populates both the required `description` field and the markdown `body`. `flood-event-extraction-bangladesh.md`'s abstract is quoted verbatim from PRD §4.5.4 (the one the task explicitly required); the other four are drafted below, following the identical rule (past tense, method → headline result/number → outcome), not to be re-drafted.
 
