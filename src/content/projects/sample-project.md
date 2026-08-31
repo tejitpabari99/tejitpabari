@@ -20,9 +20,9 @@ links:
   react-markdown/remark-gfm feature SP02 §4.8 configures, and to give
   SP06's OG-card generator, RouteMeta, and share-preview testing a safe,
   disposable subject that isn't a real project. Delete this file (and
-  src/pages/live/sample-project.tsx, and its one line in
-  src/pages/live/registry.ts's HOSTED_LIVE_PAGES) once share previews
-  are confirmed working on the real domain — see PRD 06 §8.
+  src/pages/live/sample-project.tsx, src/pages/live/sample-project.test.tsx,
+  and its one line in src/pages/live/registry.ts's HOSTED_LIVE_PAGES) once
+  share previews are confirmed working on the real domain — see PRD 06 §8.
 
   NOTE: this comment lives just after the frontmatter, not literally at
   byte 0 of the file — gray-matter (src/data/shared.ts's parseProject)
