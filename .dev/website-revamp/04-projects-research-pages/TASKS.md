@@ -317,6 +317,7 @@ export function ProjectsPage() {
 ---
 
 ### Task 5 — `ResearchPage` (real listing, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ResearchPage.tsx` (rewritten)
    - Changes: Implement per PRD §4.2/§4.3. Identical shape to Task 4 with **three deliberate differences**, all tied to the resolved decision in PRD §4.3 that Research cards never populate `externalHref`: (a) `research` from `@/data` instead of `projects`; (b) `ProjectCard` is invoked **without** `externalHref`, `externalLabel`, or `onExternalClick` — not `undefined`-valued props, the props are omitted from the JSX entirely; (c) `href` points at `/research/${item.slug}`.
 
