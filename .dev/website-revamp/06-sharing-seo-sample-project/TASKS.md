@@ -728,6 +728,9 @@ echo "robots.txt OK"
      1. The script above exits 0 against a real `npm run build`'s `public/sitemap.xml`/`public/robots.txt`.
      2. Total `<url>` count in `sitemap.xml` equals `6 static routes + (number of project .md files) + (number of research .md files) + (number of files under src/pages/live/ excluding registry.ts)` exactly — verify with `grep -c '<url>' public/sitemap.xml` against that computed number.
      3. `robots.txt` has no `Disallow` line anywhere and points at the real sitemap URL.
+   - Status: Complete. Verification-only, no source changes. Ran a real `npm run build`: prebuild output reported `sitemap.xml: 23 URLs` / `robots.txt written`. Ran the verbatim script above against `public/sitemap.xml`/`public/robots.txt`: **exit code 0**, every check printed `OK`, including `ALL CHECKS PASSED` at the end — all 6 static routes present, `/projects/sample-project` and `/projects/sample-project/live` both present, `/projects/juno/live` (redirect mode) correctly absent, `robots.txt` has `Allow: /`, no `Disallow` line, and the correct `Sitemap:` line.
+
+     Criterion 2's exact count, verified directly rather than assumed: `grep -c '<url>' public/sitemap.xml` → 23; `6 static + 11 project .md files + 5 research .md files + 1 file under src/pages/live/ (excluding registry.ts)` → `6 + 11 + 5 + 1 = 23`. Match. Full `public/sitemap.xml`/`public/robots.txt` contents inspected directly (`cat`) as part of this verification, not just grepped — both match PRD §4.4's generator output exactly (18 static/collection `<url>` entries in file order, then the one hosted-`/live` entry appended last; `robots.txt`'s three lines verbatim). `firebase.json`'s build-artifact rewrite reverted via `git checkout -- firebase.json` before committing (no other files changed).
 
 ---
 
