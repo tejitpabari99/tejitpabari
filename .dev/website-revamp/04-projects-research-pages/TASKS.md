@@ -704,6 +704,7 @@ export function LiveRedirectFallback({ to, label }: LiveRedirectFallbackProps) {
 ---
 
 ### Task 12 — `ProjectLivePage` (dual-mode dispatch, replaces SP01 placeholder)
+   - Status: Complete
    - Files: `src/pages/ProjectLivePage.tsx` (rewritten)
    - Changes: Implement per PRD §4.6, directly implementing SP02's `liveMode()` contract. Depends on Task 8's `HOSTED_LIVE_PAGES`, Task 11's `LiveRedirectFallback`, SP01's `NotFoundPage`.
 
