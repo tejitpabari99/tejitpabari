@@ -428,6 +428,7 @@ export function DetailHeader({ image, imageAlt = '', title, status, tags }: Deta
 ---
 
 ### Task 7 — `LinksRow` shared component
+   - Status: Complete
    - Files: `src/components/LinksRow.tsx` (new)
    - Changes: Implement per PRD §4.4. Renders SP02's `links[]` plus an optional internal "Open Live" CTA (Projects only — Research never passes `liveHref`). Uses SP01's `ExternalLinkIcon`/`ArrowIcon`. Emits `outbound_click` with `context: 'content_external_link'` on every external link click — **this is the renamed enum value (from `'project_external_link'`) that this PRD's §4.4/§9 resolves; confirm SP05 has actually shipped it in its `AnalyticsEventName` union before this file is expected to typecheck** (see the sequencing note at the top of this file).
 
