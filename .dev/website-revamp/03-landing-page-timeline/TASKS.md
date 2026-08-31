@@ -1124,6 +1124,8 @@ describe('ContactSection', () => {
 
 ### Task 15 — `useSectionScrollDepth` unit test
    - Files: `src/hooks/useSectionScrollDepth.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added mocked-IntersectionObserver coverage for per-section de-duplication and non-intersecting entries; targeted tests and typecheck pass.
    - Changes: Per PRD §7, fifth bullet. Depends on Task 9. Mock `IntersectionObserver` (not provided by jsdom).
 
 ```tsx
