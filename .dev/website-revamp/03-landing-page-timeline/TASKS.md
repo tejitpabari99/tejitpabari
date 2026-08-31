@@ -1080,6 +1080,8 @@ describe('formatWorkDate', () => {
 
 ### Task 14 — `ContactSection` pre/post-mount integration test
    - Files: `src/sections/ContactSection.test.tsx` (new)
+   - Status: Complete
+   - Progress: Added pre/post-hook-state integration coverage for both email affordances; primary `Email Me` label/href and aside display link are asserted. Because RTL `render()` flushes effects in this React version, the test controls the hook value across rerenders; real hook timing remains covered by SP05’s test.
    - Changes: Per PRD §7, fourth bullet. Depends on Task 8. This is the test that pins the hydration-safety property the PRD spends a full paragraph justifying — verify the behavior actually holds, not just that it's plausible in theory.
 
 ```tsx
