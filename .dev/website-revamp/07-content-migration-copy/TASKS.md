@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 6/7 tasks complete
+**Progress:** 7/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -489,6 +489,7 @@ Built a TensorFlow-based license-plate recognition model for a campus security s
 ---
 
 ### Task 7 — Full-set validation: SP02 validator and pre-launch gate
+   - Status: Done
    - Files: none (verification only — no content or code changes in this task).
    - Changes: Run SP02's build-time validators and pre-launch content gate against the complete 17-file content set produced by Tasks 1–5, and confirm every claim this PRD makes about the finished set is actually true, not merely intended.
    - Steps:
