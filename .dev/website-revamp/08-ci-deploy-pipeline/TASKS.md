@@ -321,6 +321,7 @@ git -C /root/projects/tejitpabari ls-tree -r website-revamp --name-only | grep '
 ---
 
 ### Task 7 — Open a validation PR and confirm the preview workflow end to end
+   - Status: Blocked — owner-only. Requires Tasks 4/5's real GCP/GitHub provisioning to exist first (neither was run, see Tasks 4/5), and requires pushing a real branch/PR to `tejitpabari99/tejitpabari` and observing live GitHub Actions runs — nothing here is simulable locally, and mutating the real repo is out of scope for this implementation pass (SCOPE BOUNDARY). Not attempted.
    - Files: none — this task exercises the pipeline against a real, trivial, reviewable PR (e.g. a comment or whitespace tweak on a non-critical file); revert or keep the PR open per the outcome, do not merge it as part of this task
    - Changes: Per PRD §7's manual-QA checklist, items 1–4 and 6. This is the first real proof the two workflow files (Tasks 2–3) and the provisioned secret/variable (Tasks 4–5) actually compose correctly — nothing in GitHub Actions' secret-scoping, concurrency, or PR-comment behavior can be faithfully simulated locally.
      1. Push a trivial, reviewable commit to a feature branch off `website-revamp` and open a PR. Confirm `Deploy to Firebase Hosting on PR` fires automatically.
