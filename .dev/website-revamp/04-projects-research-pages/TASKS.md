@@ -894,6 +894,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 18 — `SearchFilter` and `EmptyState` component tests
+   - Status: Complete
    - Files: `src/components/SearchFilter.test.tsx` (new), `src/components/EmptyState.test.tsx` (new)
    - Changes: Cover Task 2's and Task 3's acceptance criteria as automated tests: `SearchFilter` renders `resultCount` text and calls the right callback on input change and tag click (including the active-tag-clears-on-reclick case); `EmptyState` renders each of the three copy variants (tag-only, query-only, both) correctly and calls `onClear` on button click.
    - Acceptance criteria: `npm test` passes; each variant/interaction from Tasks 2/3's acceptance criteria has a corresponding `it()` block.
