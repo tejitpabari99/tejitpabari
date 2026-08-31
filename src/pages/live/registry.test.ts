@@ -6,8 +6,9 @@
 // per Task 8's testability deviation (these functions are exported and
 // parameterized specifically for this). Importing this module also runs
 // its own eager, real-content validation (`validateLiveRegistry(HOSTED_SLUGS,
-// projects)` against the REAL `projects` array) — safe today because the
-// real `HOSTED_LIVE_PAGES` registry is empty, so that loop never iterates.
+// projects)` against the REAL `projects` array) — safe today because SP06
+// populated the real `HOSTED_LIVE_PAGES` registry with a matching, non-
+// conflicting `sample-project` entry, so that loop iterates without throwing.
 import { describe, expect, it } from 'vitest';
 import type { Project } from '@/data';
 import { computeProjectLiveSlugs, hasLiveRoute, validateLiveRegistry } from './registry';
@@ -90,9 +91,10 @@ describe('hasLiveRoute (reconstructed from computeProjectLiveSlugs output)', () 
 });
 
 // The real, exported hasLiveRoute — checked directly against whatever the
-// real, currently-empty HOSTED_LIVE_PAGES registry + real content computed
-// projectLiveSlugs to be. Not a fixture test; a light sanity check that the
-// exported function's own logic (membership check) works as documented.
+// real HOSTED_LIVE_PAGES registry (populated with `sample-project` by SP06)
+// + real content computed projectLiveSlugs to be. Not a fixture test; a
+// light sanity check that the exported function's own logic (membership
+// check) works as documented.
 describe('hasLiveRoute (the real exported function)', () => {
   it('returns false for a slug that is certainly not a real project', () => {
     expect(hasLiveRoute('definitely-not-a-real-project-slug')).toBe(false);
