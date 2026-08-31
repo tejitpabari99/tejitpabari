@@ -928,6 +928,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 21 — `registry.ts` cross-check and `projectLiveSlugs` tests
+   - Status: Complete
    - Files: `src/pages/live/registry.test.ts` (new)
    - Changes: Using Task 8's exported `validateLiveRegistry`/`computeProjectLiveSlugs` functions directly with fixture `Project[]` arrays (no module mocking needed, per Task 8's testability deviation):
      - A fixture `hostedSlugs` entry for a slug with no matching project in the fixture list throws, naming the slug.
