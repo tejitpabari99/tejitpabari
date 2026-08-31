@@ -90,6 +90,7 @@ export function RouteMeta({ title, description, path, image }: RouteMetaProps) {
      1. `npx tsc --noEmit` passes.
      2. `RouteMeta` accepts exactly the four props above — `image` optional, the other three required (verify by attempting to compile a call site missing `title`/`description`/`path` and confirming `tsc` rejects it, then removing that scratch call site).
      3. `og:type` is always the literal string `"website"` — never conditionally `"article"` — and `og:image:width`/`og:image:height` are always `"1200"`/`"630"` regardless of props (PRD §4.2's `[RESOLVED]` decision). No functional test needed for this criterion beyond Task 13's unit test; noted here as the binding contract Task 13 verifies.
+   - Status: Complete (pulled forward ahead of phase order, out of Phase 5, to unblock SP04's `ProjectDetailPage`/`ResearchDetailPage`, which import `@/components/RouteMeta` directly)
 
 ---
 
