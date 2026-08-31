@@ -663,6 +663,7 @@ export function ResearchDetailPage() {
 ---
 
 ### Task 11 — `LiveRedirectFallback` component
+   - Status: Complete
    - Files: `src/components/LiveRedirectFallback.tsx` (new)
    - Changes: Implement per PRD §4.6. Client-side redirect UI, defense-in-depth only (not the primary redirect mechanism — that's Task 13's HTTP-level redirect). Fires the single `live_redirect` tracking call regardless of how the visitor got here.
 
