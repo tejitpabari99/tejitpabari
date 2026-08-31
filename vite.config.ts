@@ -62,7 +62,7 @@ function liveRedirectsPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), liveRedirectsPlugin() /* SP06 adds its own sitemapPlugin() alongside this */],
+  plugins: [react(), liveRedirectsPlugin()], // sitemap.xml/robots.txt generation lives in scripts/generate-sitemap.mjs, run via the `prebuild` npm script — not a Vite plugin here.
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

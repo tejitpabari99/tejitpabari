@@ -10,7 +10,11 @@
 // excluded from vitest's default test discovery via `test.exclude` in
 // vite.config.ts (`scripts/**`), so `npm test` (`vitest run` with no path
 // argument) does not pick it up and its suite/test counts stay unaffected.
-// Run it explicitly: `npx vitest run scripts/check-no-forms.test.ts`.
+// Because Vitest applies `exclude` before a CLI path argument filters
+// anything, a bare `npx vitest run scripts/check-no-forms.test.ts` finds
+// zero test files. Run it with the same lever `check:launch` uses to lift
+// the `scripts/**` exclusion for one invocation:
+// `CHECK_LAUNCH=1 npx vitest run scripts/check-no-forms.test.ts`.
 //
 // check-no-forms.sh's target path (`src/pages/live`) is hardcoded, not
 // parameterized (Task 15, unchanged here) — so unlike a fixture-temp-dir
