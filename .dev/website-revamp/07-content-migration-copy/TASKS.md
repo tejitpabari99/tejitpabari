@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 5/7 tasks complete
+**Progress:** 6/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -455,6 +455,7 @@ Built a TensorFlow-based license-plate recognition model for a campus security s
 ---
 
 ### Task 6 — Hero, About, and Contact copy (handed to SP03)
+   - Status: Done
    - Files: none — this copy is not a markdown content file SP07 owns; it's prose consumed directly by SP03's `src/sections/Hero.tsx`, `src/sections/AboutSection.tsx`, and `src/sections/ContactSection.tsx` (already implemented per `03-landing-page-timeline/TASKS.md` Tasks 3, 8, 9, which inlined this exact text). This task exists to record the final, PRD-approved wording as the authoritative source and to verify SP03's implementation matches it — not to write a new file.
    - Changes: Per PRD §4.5.1, §4.5.2, §4.5.6. All three pieces of copy are quoted verbatim below — the PRD drafted them in full, so there is nothing left to draft here, only to confirm and cross-check.
 
