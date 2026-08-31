@@ -911,6 +911,7 @@ describe('cardJsx status pill', () => {
 ```
 
    - Acceptance criteria: `npm test` passes both cases — mirrors Med-Doc Tracker/Clip-Verse, the two launch projects that ship with no `status` (brief §6), getting a card with no pill and no reserved gap.
+   - Status: Complete. Added a `cardJsx status pill` `describe` block to the existing `scripts/generate-og-cards.test.ts` (same file Task 15 created), with 3 cases (the 2 above plus one confirming the pill entry is filtered out of the `children` array entirely rather than left as a stray `false`/`null` placeholder). **Not run by plain `npm test`** — same `scripts/**` exclusion as Task 15; run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-og-cards.test.ts`. Result: 1 file, 8 tests (5 from Task 15 + 3 new), all passed. Full `npm test` (unaffected): 37 test files / 171 tests passed. `npm run typecheck`: clean.
 
 ---
 

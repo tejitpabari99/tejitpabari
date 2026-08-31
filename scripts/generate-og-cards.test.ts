@@ -26,7 +26,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
-import { localImageDataUri } from './generate-og-cards.mjs';
+import { localImageDataUri, cardJsx } from './generate-og-cards.mjs';
 
 const UNSPLASH_PLACEHOLDER = 'https://images.unsplash.com/photo-1572177812156-58036aae439c';
 const fixtureDir = path.resolve(import.meta.dirname, '../public/_fixture-images');
@@ -58,5 +58,41 @@ describe('localImageDataUri', () => {
   it('returns null for undefined/empty image values (no crash on a missing frontmatter field)', () => {
     expect(localImageDataUri(undefined)).toBeNull();
     expect(localImageDataUri('')).toBeNull();
+  });
+});
+
+// Task 16 — the status-pill-only-when-set rule. Asserts on the JSX object
+// `cardJsx()` returns before it's ever handed to `satori()` — no image
+// rendering needed. Mirrors Med-Doc Tracker/Clip-Verse, the two launch
+// projects that ship with no `status` (brief §6): a card with no pill and
+// no reserved gap, not a default/"Unknown" pill.
+function hasStatusPillNode(tree: ReturnType<typeof cardJsx>): boolean {
+  const leftColumn = tree.props.children[0];
+  const textGroup = leftColumn.props.children[0];
+  return textGroup.props.children.some(
+    (node: { props?: { children?: unknown } } | false) => node && node.props?.children === 'Completed',
+  );
+}
+
+describe('cardJsx status pill', () => {
+  it('includes a status-pill node when status is set', () => {
+    const tree = cardJsx({ title: 'X', tags: [], status: 'Completed', imageDataUri: null });
+    expect(hasStatusPillNode(tree)).toBe(true);
+  });
+
+  it('includes no status-pill node at all when status is undefined', () => {
+    const tree = cardJsx({ title: 'X', tags: [], status: undefined, imageDataUri: null });
+    expect(hasStatusPillNode(tree)).toBe(false);
+  });
+
+  it('the pill entry is filtered out of the children array entirely, not left as a false/null placeholder', () => {
+    // Confirms the `.filter(Boolean)` behavior PRD §4.3 describes: no
+    // reserved gap in the array, the entry is simply absent — a stray
+    // `false`/`null`/`undefined` entry would mean satori is handed a
+    // malformed child node.
+    const tree = cardJsx({ title: 'X', tags: [], status: undefined, imageDataUri: null });
+    const leftColumn = tree.props.children[0];
+    const textGroup = leftColumn.props.children[0];
+    expect(textGroup.props.children.every((node: unknown) => node !== false && node != null)).toBe(true);
   });
 });
