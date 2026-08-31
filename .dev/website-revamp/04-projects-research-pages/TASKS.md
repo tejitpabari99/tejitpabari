@@ -198,6 +198,7 @@ export function SearchFilter({
 ---
 
 ### Task 3 — `EmptyState` presentational component
+   - Status: Complete
    - Files: `src/components/EmptyState.tsx` (new)
    - Changes: Implement per PRD §4.2, parameterized by `itemLabel` so one component serves both collections. No "zero items in the whole collection" variant — both collections are non-empty at launch (PRD §4.2 states this is dead code here, not a gap).
 
