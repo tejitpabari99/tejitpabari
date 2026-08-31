@@ -4,7 +4,7 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/02-content-pipe
 
 **Toolchain assumption, confirmed from SP01's PRD, not re-derived here:** `gray-matter@^4.0.3`, `react-markdown@^10.1.0`, `remark-gfm@^4.0.1`, `@tailwindcss/typography@^0.5.20`, and `vitest@^4.1.11` (`npm test` → `vitest run`) are already installed by SP01's `package.json`. No task below installs a dependency. `src/content/` and `src/config/` already exist as empty directories per SP01's scaffold; `src/data/` does not exist yet and is created by Task 1.
 
-**Progress:** 10/15 tasks complete (Tasks 1–10). Tasks 11–15 (validator/unit test suites) not started — deliberately deferred, not blocked. Full detail: see `../code-2026-08-31-0420.md`.
+**Progress:** 15/15 tasks complete. Full detail: see `../code-2026-08-31-0420.md`.
 
 ---
 
@@ -656,7 +656,7 @@ exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...co
 ---
 
 ### Task 11 — Validator unit tests
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — 873e99f
    - Files: `src/data/shared.test.ts` (new)
    - Changes: Per PRD §7, first bullet. Using `vitest`, construct malformed raw frontmatter strings in-memory and call `parseProject`/`parseResearch`/`parseWorkExperience` (from Tasks 2–4) directly — not through `import.meta.glob` — asserting each throws with a message containing the offending file path and field name. Cover every case the PRD names explicitly:
 
@@ -709,7 +709,7 @@ describe('parseProject', () => {
 ---
 
 ### Task 12 — `liveMode` unit test
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — 5c6f7ba
    - Files: `src/data/projects.test.ts` (new)
    - Changes: Per PRD §7, `liveMode` bullet. Not given an explicit filename in the PRD's §7 list (only `shared.test.ts`, `featured.test.ts`, `index.test.ts` are named there) — placed here, colocated with `projects.ts`, following the same `<file>.test.ts` convention.
 
@@ -738,7 +738,7 @@ describe('liveMode', () => {
 ---
 
 ### Task 13 — Featured-backfill unit tests
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — f877925
    - Files: `src/config/featured.test.ts` (new)
    - Changes: Per PRD §7, second bullet. Use an in-memory `Project[]` fixture — never real content files — calling `computeFeatured` (exported by Task 9) directly. Cover every case the PRD names:
 
@@ -796,7 +796,7 @@ describe('computeFeatured', () => {
 ---
 
 ### Task 14 — Cross-collection and Nav/Footer link validation tests
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — d5b4347
    - Files: `src/data/index.test.ts` (new)
    - Changes: Per PRD §7, third bullet. Use in-memory fixtures for all three collections, calling `validateInternalLinks`/`validateNavAndFooterLinks` (exported, parameterized per Task 8) directly rather than relying on the real loaded content.
 
@@ -853,7 +853,7 @@ describe('validateNavAndFooterLinks', () => {
 ---
 
 ### Task 15 — Pre-launch gate logic tests
-   **Status:** ⬜ Not started
+   **Status:** ✅ Done — 74f78a7
    - Files: `scripts/check-launch-content.test.ts` (new)
    - Changes: Per PRD §7, fourth bullet. Test `checkLaunchContent` (exported by Task 10) directly with in-memory fixtures — never invoke `main()` or assert on `process.exit`.
 

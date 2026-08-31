@@ -70,3 +70,35 @@ describe('pre-launch content gate', () => {
     expect(demoProjects).toEqual([]);
   });
 });
+
+// SP02 Task 15 (PRD §7, fourth bullet): exercise `checkLaunchContent`'s
+// filter/report logic directly against in-memory fixtures, never through
+// `projects`/`workExperience` (the real, loaded content — already covered
+// above) and never through `main()`/`process.exit` (there is no `main()`
+// here; `vitest run`'s own pass/fail exit code is the gate's contract, per
+// the file-header note above). `checkLaunchContent` is defined and exported
+// in this same file (not a separate `./check-launch-content` module) — see
+// the file-header note on why the gate's logic lives here — so it's used
+// directly with no additional import.
+const cleanProject: Project = { slug: 'a', title: 'A', description: 'd', image: '/x.png', tags: ['Others'], links: [], date: '2024-01-01', body: '' };
+const demoProject: Project = { ...cleanProject, slug: 'sample-project', demo: true };
+const cleanWork: WorkExperience = { company: 'C', role: 'R', startDate: '2024-01-01', endDate: 'Present', links: [], draftDate: false, body: 'b', id: 'c' };
+const draftWork: WorkExperience = { ...cleanWork, draftDate: true };
+
+describe('checkLaunchContent', () => {
+  it('reports a work-experience entry with draftDate: true', () => {
+    const { draftDates } = checkLaunchContent([cleanProject], [cleanWork, draftWork]);
+    expect(draftDates.map((w) => w.id)).toEqual(['c']);
+  });
+
+  it('reports a project with demo: true', () => {
+    const { demoProjects } = checkLaunchContent([cleanProject, demoProject], [cleanWork]);
+    expect(demoProjects.map((p) => p.slug)).toEqual(['sample-project']);
+  });
+
+  it('reports clean when neither marker is present', () => {
+    const result = checkLaunchContent([cleanProject], [cleanWork]);
+    expect(result.draftDates).toHaveLength(0);
+    expect(result.demoProjects).toHaveLength(0);
+  });
+});
