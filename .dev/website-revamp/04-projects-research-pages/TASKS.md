@@ -920,6 +920,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 20 — Detail-page empty-`body` rendering tests
+   - Status: Complete
    - Files: `src/pages/ProjectDetailPage.test.tsx` (new), `src/pages/ResearchDetailPage.test.tsx` (new)
    - Changes: Per PRD §4.5's "verified by construction" claim — given a fixture item (mock `@/data`'s `projects`/`research` export) with `body: ''`, `description` set, and a non-empty `links[]`, the page renders the header, the description paragraph, and the links row, but **nothing** from `ContentBody` — assert directly on the DOM that no stray empty wrapper element exists where the body would have gone (e.g. query for `ContentBody`'s known wrapper class/testid and assert it's absent, not just present-but-empty).
    - Acceptance criteria: `npm test` passes for both pages; this is a direct, mechanical proof of §4.5's claim, not an assertion resting on prose.
