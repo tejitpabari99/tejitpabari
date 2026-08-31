@@ -808,6 +808,7 @@ describe('RouteMeta', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all three cases. Explicitly noted: this test proves the **React component** builds the right tree — it does NOT substitute for Task 9's built-output audit, since `vite-react-ssg`'s `Head` mock here never touches the actual prerendering pipeline that writes `dist/**/index.html`.
+   - Status: Complete. `src/components/RouteMeta.test.tsx` written with 5 cases (the 3 above plus two additional ones pinning the binding contract further: width/height/type stay `"1200"`/`"630"`/`"website"` even with an explicit `image` prop, and `og:title`/`twitter:title` both carry the same `" · Tejit Pabari"` suffix as `<title>`). Assertions query `document.head`/`document.title` directly — React 19 auto-hoists `<title>`/`<meta>`/`<link>` rendered anywhere in the tree to `document.head`, the exact mechanism `src/pages/PrivacyPage.test.tsx` already documents and relies on for its own real `RouteMeta` call site — confirmed empirically here too. `npx vitest run src/components/RouteMeta.test.tsx`: 1 file, 5 tests, all passed. Full `npm test` after: 36 test files / 167 tests passed (up from the 35/162 baseline). `npm run typecheck`: clean.
 
 ---
 
@@ -835,6 +836,7 @@ describe('absoluteUrl', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all three cases.
+   - Status: Complete. `src/config/site.test.ts` written with 4 cases (the 3 above plus an `http://` passthrough case alongside the `https://` one, since `absoluteUrl`'s regex is `/^https?:\/\//` and both schemes need to short-circuit). `npx vitest run src/config/site.test.ts`: 1 file, 4 tests, all passed. Full `npm test` after: 37 test files / 171 tests passed (up from 36/167 after Task 13). `npm run typecheck`: clean.
 
 ---
 
@@ -878,6 +880,7 @@ describe('localImageDataUri', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all four cases, including the "missing local file degrades to text-only, does not throw and does not fail the build" case PRD §7 calls out explicitly.
+   - Status: Complete. `scripts/generate-og-cards.test.ts` written with 5 cases (the 4 above plus an `undefined`/empty-string defensive case). **Not run by plain `npm test`** — `vite.config.ts`'s `test.exclude` contains `scripts/**`, and per that file's own comment, Vitest applies `exclude` before a CLI path argument filters anything, so even an explicit `npx vitest run scripts/generate-og-cards.test.ts` finds zero files (confirmed empirically — same behavior verified against the existing `scripts/check-no-forms.test.ts`, whose own header comment claiming a bare `npx vitest run scripts/check-no-forms.test.ts` works is stale/inaccurate). Run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-og-cards.test.ts` — the same lever `check:launch` already uses to lift the `scripts/**` exclusion for one invocation. Result: 1 file, 5 tests, all passed. Full `npm test` (unaffected by this file, as expected): 37 test files / 171 tests passed (unchanged from Task 14's count, since `scripts/**` stays excluded). `npm run typecheck`: clean.
 
 ---
 
@@ -908,6 +911,7 @@ describe('cardJsx status pill', () => {
 ```
 
    - Acceptance criteria: `npm test` passes both cases — mirrors Med-Doc Tracker/Clip-Verse, the two launch projects that ship with no `status` (brief §6), getting a card with no pill and no reserved gap.
+   - Status: Complete. Added a `cardJsx status pill` `describe` block to the existing `scripts/generate-og-cards.test.ts` (same file Task 15 created), with 3 cases (the 2 above plus one confirming the pill entry is filtered out of the `children` array entirely rather than left as a stray `false`/`null` placeholder). **Not run by plain `npm test`** — same `scripts/**` exclusion as Task 15; run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-og-cards.test.ts`. Result: 1 file, 8 tests (5 from Task 15 + 3 new), all passed. Full `npm test` (unaffected): 37 test files / 171 tests passed. `npm run typecheck`: clean.
 
 ---
 
@@ -941,6 +945,7 @@ describe('buildSitemapUrls', () => {
 ```
 
    - Acceptance criteria: `npm test` passes both cases. The second test is the one PRD §7 flags as "directly proving binding decision D by construction, not just by code inspection."
+   - Status: Complete. `scripts/generate-sitemap.test.ts` written with 4 cases (the 2 above plus a bare-static-routes case and a multi-slug-independent-of-collection case). **Not run by plain `npm test`** — same `scripts/**` exclusion as Tasks 15/16; run with `CHECK_LAUNCH=1 npx vitest run scripts/generate-sitemap.test.ts`. Result: 1 file, 4 tests, all passed. Full `npm test` (unaffected): 37 test files / 171 tests passed. `npm run typecheck`: clean.
 
 ---
 
@@ -981,6 +986,11 @@ describe('SampleProjectLive', () => {
 ```
 
    - Acceptance criteria: `npm test` passes both cases — the second case specifically fails if `SampleProjectLive` were rewritten to read `Date.now()` once at render time instead of ticking via `setInterval` (the exact regression PRD §4.7 flags as the hydration-unsafe alternative this page avoids).
+   - Status: Complete, with two deviations from TASKS.md's literal snippet, both necessary to make the test pass against the real shipped component rather than a hypothetical one — neither weakens what's being proven:
+     1. `screen.getByRole('status', { hidden: true })` throws against the real component: `SampleProjectLive`'s ticking `<p>` carries `aria-live="polite"` but no explicit `role="status"`, and `aria-live` alone does not grant an implicit ARIA "status" role (confirmed empirically — the query throws "Unable to find an accessible element with the role status", so the snippet's `?? document.body.textContent` fallback never actually engages, since a thrown query isn't caught by `?.`/`??`). Replaced with `container.querySelector('[aria-live="polite"]')`, which selects the same node by the one attribute that's actually unique to it in this tree.
+     2. `screen.getByText(/—|\d/)` also throws against the real component ("multiple elements found") — the page's static caption paragraph also contains both an em dash and digits (`` `/projects/sample-project/live` ``, "second"), so the regex matches more than one text node. Scoped the same assertion to the ticking node specifically instead.
+     3. Also confirmed empirically: React Testing Library's `render()` flushes the mount effect synchronously even under `vi.useFakeTimers()` — so the very first observable paint already shows a real timestamp, never the build-time-safe `'—'` placeholder. This matches the ambiguity TASKS.md's own comment already flags ("Testing Library flushes effects on render, so... otherwise assert the displayed value changes between two successive 1s ticks below") — test 1 stays deliberately lenient (placeholder-or-timestamp) for this reason, and tests 2/3 are the ones that actually prove the real per-second tick.
+     Added a third case beyond the two specified: ticks across 3 consecutive seconds all differ pairwise, and advancing timers 5s past `unmount()` doesn't throw (proves the effect's `clearInterval` cleanup actually runs). `npx vitest run src/pages/live/sample-project.test.tsx`: 1 file, 3 tests, all passed. Full `npm test` after: 38 test files / 174 tests passed (up from 37/171 after Task 17). `npm run typecheck`: clean.
 
 ---
 
