@@ -940,6 +940,7 @@ If `check:launch` does not exist yet when this task runs, add `check:no-forms` a
 ---
 
 ### Task 22 — `ProjectLivePage` dispatch tests
+   - Status: Complete
    - Files: `src/pages/ProjectLivePage.test.tsx` (new)
    - Changes: With `@/data` and `./live/registry` mocked per-test: given a hosted-registered slug, renders that component; given a `liveUrl`-only slug, renders `LiveRedirectFallback`; given a slug matching neither, renders `NotFoundPage`.
    - Acceptance criteria: `npm test` passes all three dispatch branches, each asserting on the actually-rendered component (e.g. by a distinguishing testid/text), not just "did not throw."
