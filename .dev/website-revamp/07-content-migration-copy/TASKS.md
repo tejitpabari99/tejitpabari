@@ -2,7 +2,7 @@
 
 Source of truth: `/root/projects/tejitpabari/.dev/website-revamp/07-content-migration-copy/PRD.md`. Every task below cites the PRD §4 subsection it implements. This sub-project writes markdown content files into `src/content/{projects,research,work-experience}/` plus the Hero/About/Contact copy SP03 renders — it defines no types, components, validators, or schema; every field below is specified by SP02 (`02-content-pipeline/PRD.md` §4.4, mirrored in `02-content-pipeline/TASKS.md` Tasks 1–4).
 
-**Progress:** 4/7 tasks complete
+**Progress:** 5/7 tasks complete
 
 **Toolchain/ordering assumption:** per the initiative's `README.md` phase graph (also stated in `03-landing-page-timeline/TASKS.md`), SP02 lands in Phase 1–2, before SP07's Phase 3 authoring work. By the time these tasks run, `src/data/projects.ts`, `src/data/research.ts`, `src/data/workExperience.ts`, and `scripts/check-launch-content.ts` are expected to already exist and compile — so unlike SP03 (which had to hedge around content not existing yet), SP07's tasks can and should run the real `npm run build` / `npm test` / `npm run check:launch` as acceptance gates, not a `tsc --noEmit` substitute. If any of those SP02 files genuinely doesn't exist yet when a task is picked up, stop and confirm with the orchestrator rather than authoring content nothing will validate.
 
@@ -408,6 +408,7 @@ Experimentally demonstrated that a "Liter of Light" water bottle outperforms a g
 ---
 
 ### Task 5 — Work Experience collection (2 files)
+   - Status: Done
    - Files: `src/content/work-experience/microsoft-fabric-maps.md` (new), `src/content/work-experience/jio-reliance-industries.md` (new)
    - Changes: Per PRD §4.3 and §4.5.5. **Exactly these two files — do not create a third file for "Programming for Entrepreneurs and Social Good."** That role is dropped from the site entirely (owner decision, PRD §4.3/§9) — there is no filename, no frontmatter, no `DRAFT_DATE` placeholder for it anywhere. Both files ship real, résumé-sourced dates; **zero `DRAFT_DATE: true` entries exist in this collection.** Per SP02's schema (§4.4.4), this collection has no `slug`/filename-agreement check and no `title`/`description`/`tags`/`status`/`image` fields at all — only `company`, `role`, `startDate`, `endDate`, `links`, and `body`.
 
