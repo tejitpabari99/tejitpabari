@@ -139,6 +139,7 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
 ---
 
 ### Task 2 — `SearchFilter` presentational component
+   - Status: Complete
    - Files: `src/components/SearchFilter.tsx` (new)
    - Changes: Implement per PRD §4.2 — pure UI, no data logic. Reuses SP01's `TagPill` in its `active`/`onClick` filter-chip mode (added by SP01 specifically for this consumer).
 
