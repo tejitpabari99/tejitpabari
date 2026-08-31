@@ -836,6 +836,7 @@ describe('absoluteUrl', () => {
 ```
 
    - Acceptance criteria: `npm test` passes all three cases.
+   - Status: Complete. `src/config/site.test.ts` written with 4 cases (the 3 above plus an `http://` passthrough case alongside the `https://` one, since `absoluteUrl`'s regex is `/^https?:\/\//` and both schemes need to short-circuit). `npx vitest run src/config/site.test.ts`: 1 file, 4 tests, all passed. Full `npm test` after: 37 test files / 171 tests passed (up from 36/167 after Task 13). `npm run typecheck`: clean.
 
 ---
 
