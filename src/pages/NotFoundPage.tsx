@@ -28,7 +28,7 @@ export function NotFoundPage() {
     <PageContainer chrome="full" className="flex flex-col items-center gap-4 text-center">
       <RouteMeta
         title="Page Not Found"
-        description="That page doesn't exist — head back to the homepage."
+        description="That page doesn't exist. Head back to the homepage."
         path={location.pathname}
       />
       <h1 className="text-2xl font-bold text-ink">Page not found</h1>
