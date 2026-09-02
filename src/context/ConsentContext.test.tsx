@@ -33,6 +33,7 @@ describe('ConsentContext / ConsentBanner', () => {
     document.head.querySelectorAll('script[src*="googletagmanager"]').forEach((el) => el.remove());
     delete (window as unknown as { gtag?: unknown }).gtag;
     delete (window as unknown as { dataLayer?: unknown }).dataLayer;
+    delete (window as unknown as { [k: string]: unknown })['ga-disable-G-TEST123'];
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
@@ -144,5 +145,43 @@ describe('ConsentContext / ConsentBanner', () => {
     expect(localStorage.getItem('tejitpabari:consent')).toBeNull();
     await waitFor(() => expect(screen.getByTestId('consent-value').textContent).toBe('unset'));
     expect(await screen.findByRole('button', { name: 'Decline' })).toBeInTheDocument();
+  });
+
+  it('clearConsent after granting also disables GA and removes GA cookies (the teardown fix, PRD 05 §4.1 Hypothesis 3)', async () => {
+    localStorage.clear();
+    const { ConsentProvider, useConsent, analytics } = await freshModules();
+
+    function Harness() {
+      const { consent, grant, clearConsent } = useConsent();
+      return (
+        <>
+          <div data-testid="consent-value">{consent}</div>
+          <button type="button" onClick={grant}>test-grant</button>
+          <button type="button" onClick={clearConsent}>test-clear</button>
+        </>
+      );
+    }
+
+    render(
+      <MemoryRouter>
+        <ConsentProvider>
+          <Harness />
+        </ConsentProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByText('test-grant'));
+    await waitFor(() => expect(analytics.isGaLoaded()).toBe(true));
+
+    // Simulate GA having actually set a cookie during the granted phase.
+    document.cookie = '_ga=GA1.2.123456789.987654321; path=/';
+    expect(document.cookie).toContain('_ga=');
+
+    fireEvent.click(screen.getByText('test-clear'));
+
+    expect(analytics.isGaLoaded()).toBe(false);
+    expect((window as unknown as { [k: string]: unknown })['ga-disable-G-TEST123']).toBe(true);
+    expect(document.cookie).not.toContain('_ga=');
+    expect(localStorage.getItem('tejitpabari:consent')).toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 // src/context/ConsentContext.tsx
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { loadGa } from '@/lib/analytics';
+import { loadGa, disableGa } from '@/lib/analytics';
 
 type ConsentValue = 'unset' | 'granted' | 'denied';
 const STORAGE_KEY = 'tejitpabari:consent'; // namespaced — different site/property than juno-landing-page's
@@ -64,15 +64,18 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
   }
 
   function clearConsent(): void {
-    // Implements the "Clear my choice" affordance the /privacy copy promises
-    // (§4.5). Resets to the same 'unset' value used at first paint, so
-    // ConsentBanner's `!hydrated || consent !== 'unset'` guard shows the
-    // banner again on the very next render — no reload needed.
+    // Implements the "Clear my choice" affordance on /privacy. Beyond
+    // resetting the stored choice and in-memory state (which is all this used
+    // to do), this must also stop Google Analytics from sending further hits
+    // this session and remove any analytics cookies already on the device —
+    // see analytics.ts's disableGa() and PRD 05 (R5) §4.1/§4.2 for why the
+    // old version of this function was an incomplete fix, not a broken one.
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
       /* best-effort */
     }
+    disableGa();
     setConsent('unset');
   }
 
