@@ -1,7 +1,6 @@
 import { Button } from '@/components/Button';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LinkedInIcon } from '@/components/icons/LinkedInIcon';
-import { EmailIcon } from '@/components/icons/EmailIcon';
 import { CONTACT_EMAIL_DISPLAY, LINKEDIN_URL, GITHUB_URL } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
 import { trackEvent } from '@/lib/analytics';
@@ -23,9 +22,8 @@ export function ContactSection() {
             Get in Touch
           </h2>
           <p className="mt-4 max-w-[28rem] text-[0.9rem] leading-6.5 text-body">
-            Whether you&rsquo;re hiring, working on something in health tech, or want to
-            talk through Juno with a clinician&rsquo;s or researcher&rsquo;s eye &mdash;
-            I&rsquo;d like to hear from you.
+            I&rsquo;m always glad to hear from people working in health tech, especially
+            if you want to talk through Juno from a clinical or research angle.
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             {emailHref ? (
@@ -44,68 +42,43 @@ export function ContactSection() {
               Connect
             </p>
 
-            <div className="mt-5 space-y-4 text-ink">
-              <div className="flex items-start gap-3">
-                <span className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-teal-secondary/12 bg-cream text-teal-secondary">
-                  <EmailIcon />
-                </span>
-                <div>
-                  <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate">
-                    Email
-                  </p>
-                  {emailHref ? (
-                    <a
-                      href={emailHref}
-                      className="mt-1.5 inline-block text-[0.9rem] font-semibold text-ink transition hover:text-teal-secondary"
-                    >
-                      {CONTACT_EMAIL_DISPLAY}
-                    </a>
-                  ) : (
-                    <p className="mt-1.5 select-all text-[0.9rem] font-semibold text-ink">
-                      {CONTACT_EMAIL_DISPLAY}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="border-t border-teal-secondary/10 pt-4">
-                <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate">
-                  Profiles
-                </p>
-                <div className="mt-3 flex items-center gap-2.5">
-                  <a
-                    href={GITHUB_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="GitHub"
-                    onClick={() =>
-                      trackEvent('outbound_click', {
-                        url: GITHUB_URL,
-                        context: 'contact_social',
-                        label: 'GitHub',
-                      })
-                    }
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
-                  >
-                    <GitHubIcon />
-                  </a>
-                  <a
-                    href={LINKEDIN_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    aria-label="LinkedIn"
-                    onClick={() =>
-                      trackEvent('outbound_click', {
-                        url: LINKEDIN_URL,
-                        context: 'contact_social',
-                        label: 'LinkedIn',
-                      })
-                    }
-                    className="flex h-9 w-9 items-center justify-center rounded-full border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
-                  >
-                    <LinkedInIcon />
-                  </a>
-                </div>
+            <div className="mt-5 text-ink">
+              <p className="text-[0.66rem] font-semibold uppercase tracking-[0.22em] text-slate">
+                Profiles
+              </p>
+              <div className="mt-3 flex items-center gap-2.5">
+                <a
+                  href={GITHUB_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="GitHub"
+                  onClick={() =>
+                    trackEvent('outbound_click', {
+                      url: GITHUB_URL,
+                      context: 'contact_social',
+                      label: 'GitHub',
+                    })
+                  }
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
+                >
+                  <GitHubIcon />
+                </a>
+                <a
+                  href={LINKEDIN_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label="LinkedIn"
+                  onClick={() =>
+                    trackEvent('outbound_click', {
+                      url: LINKEDIN_URL,
+                      context: 'contact_social',
+                      label: 'LinkedIn',
+                    })
+                  }
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
+                >
+                  <LinkedInIcon />
+                </a>
               </div>
             </div>
           </div>

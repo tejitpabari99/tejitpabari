@@ -15,24 +15,25 @@ vi.mock('@/hooks/useContactMailto', () => ({
 }));
 
 describe('ContactSection', () => {
-  it('shows the obfuscated text before the mailto effect settles, then exposes the mailto affordances', async () => {
+  it('shows the obfuscated text before the mailto effect settles, then exposes the mailto affordance', async () => {
     const view = render(
       <MemoryRouter>
         <ContactSection />
       </MemoryRouter>,
     );
 
-    // Before the hook supplies a client-only href, both display nodes remain
-    // plain text so prerendered HTML cannot contain a mailto href.
+    // Before the hook supplies a client-only href, the left column's
+    // fallback stays plain text so prerendered HTML cannot contain a
+    // mailto href. The Connect aside no longer renders an email node at
+    // all (R4's Connect-panel rebuild moved email out of the aside
+    // entirely, keeping only Profiles there) — CONTACT_EMAIL_DISPLAY now
+    // appears exactly once, not twice.
     const initialNodes = screen.getAllByText(CONTACT_EMAIL_DISPLAY);
-    expect(initialNodes).toHaveLength(2);
-    for (const node of initialNodes) {
-      expect(node.closest('a')).toBeNull();
-    }
+    expect(initialNodes).toHaveLength(1);
+    expect(initialNodes[0].closest('a')).toBeNull();
 
-    // Once useContactMailto's effect settles, rerender with its resulting
-    // value. Verify the primary affordance by its label/href and the aside by
-    // its obfuscated display text.
+    // Once useContactMailto's effect settles, rerender with its
+    // resulting value and verify the "Email Me" button by its label/href.
     contactMailto.href = 'mailto:tejitpabari99@gmail.com';
     view.rerender(
       <MemoryRouter>
@@ -44,8 +45,6 @@ describe('ContactSection', () => {
         'href',
         'mailto:tejitpabari99@gmail.com',
       );
-      const asideEmail = screen.getAllByText(CONTACT_EMAIL_DISPLAY).find((node) => node.closest('a'));
-      expect(asideEmail?.closest('a')).toHaveAttribute('href', 'mailto:tejitpabari99@gmail.com');
     });
   });
 });
