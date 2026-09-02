@@ -85,10 +85,24 @@ describe('PrivacyPage', () => {
     );
   });
 
-  it('"Clear my choice" calls the mocked clearConsent()', () => {
+  it('with consent unset, "Clear my choice" is not rendered and the status says there is nothing to clear', () => {
+    renderPrivacyPage();
+    expect(screen.queryByRole('button', { name: 'Clear my choice' })).toBeNull();
+    expect(screen.getByText(/There is nothing to clear yet/)).toBeInTheDocument();
+  });
+
+  it('with consent granted, "Clear my choice" calls the mocked clearConsent() and shows the Cleared confirmation', () => {
+    vi.mocked(useConsent).mockReturnValue({
+      consent: 'granted',
+      hydrated: true,
+      grant: vi.fn(),
+      decline: vi.fn(),
+      clearConsent: clearConsentMock,
+    });
     renderPrivacyPage();
     fireEvent.click(screen.getByRole('button', { name: 'Clear my choice' }));
     expect(clearConsentMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('status')).toHaveTextContent('Cleared.');
   });
 
   it('never renders a literal mailto: string or the bare email address when useContactMailto is mocked to return null', () => {

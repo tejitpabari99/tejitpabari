@@ -1,5 +1,5 @@
 // src/pages/PrivacyPage.tsx
-import type { ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { PageContainer } from '@/layout/PageContainer';
 import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
@@ -17,8 +17,69 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-export function PrivacyPage() {
+/**
+ * The "Your consent choice" status line + Clear control. Root-cause fix for
+ * "Clear my choice doesn't work" (PRD 05 §4.1): the old button rendered
+ * unconditionally, including when consent was already 'unset': clicking it
+ * then called localStorage.removeItem on a key that was never set and
+ * setConsent('unset') on a value already 'unset', so nothing observable
+ * happened; the status line read the same before and after. Fixed by (1)
+ * only rendering the button when there's something to clear
+ * (consent !== 'unset'), and (2) showing an explicit on-page confirmation
+ * when it's clicked, rather than relying on a status line whose text may
+ * already have read the same way pre-click.
+ */
+function ConsentStatus() {
   const { consent, clearConsent } = useConsent();
+  const [justCleared, setJustCleared] = useState(false);
+
+  // A fresh Accept/Decline (from the banner shown immediately below, which
+  // reappears the instant consent becomes 'unset') supersedes the "Cleared"
+  // confirmation.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (consent !== 'unset') setJustCleared(false);
+  }, [consent]);
+
+  function handleClear() {
+    clearConsent();
+    setJustCleared(true);
+  }
+
+  return (
+    <>
+      <p>
+        Your saved analytics choice is currently{' '}
+        <strong>{consent === 'unset' ? 'not set' : consent}</strong>.{' '}
+        {consent === 'unset'
+          ? 'There is nothing to clear yet. You will see the banner below the first time it has something to ask.'
+          : 'You can clear this choice at any time. Clearing turns off Google Analytics for the rest of this visit, removes any analytics cookies already set on this device, and shows the banner again so you can decide again.'}
+      </p>
+      {consent !== 'unset' && (
+        <button
+          type="button"
+          onClick={handleClear}
+          className="rounded-full border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
+        >
+          Clear my choice
+        </button>
+      )}
+      {justCleared && (
+        <p role="status" className="text-sm font-semibold text-teal-secondary">
+          Cleared. Your analytics choice has been reset, and Google Analytics is now off for the
+          rest of this visit.
+        </p>
+      )}
+      <p className="text-xs text-slate">
+        Clearing your choice does not, and cannot, recall analytics data already sent to Google
+        before you clear it. No website can undo that after the fact; this only changes what
+        happens from this point forward.
+      </p>
+    </>
+  );
+}
+
+export function PrivacyPage() {
   const emailHref = useContactMailto();
 
   return (
@@ -145,19 +206,7 @@ export function PrivacyPage() {
             browser's local storage — a small piece of on-device storage, not a cookie sent to
             any server — so you're not asked again on every visit.
           </p>
-          <p>
-            Your saved choice about analytics is{' '}
-            <strong>{consent === 'unset' ? 'not yet set' : consent}</strong>.{' '}
-            {consent !== 'unset' &&
-              "You can clear it — the button below resets your choice and shows the banner again next time."}
-          </p>
-          <button
-            type="button"
-            onClick={clearConsent}
-            className="rounded-full border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
-          >
-            Clear my choice
-          </button>
+          <ConsentStatus />
         </Section>
 
         <Section title="Cookies, in full">

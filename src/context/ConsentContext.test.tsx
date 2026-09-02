@@ -15,7 +15,8 @@ async function freshModules() {
   const analytics = await import('@/lib/analytics');
   const { ConsentProvider, useConsent } = await import('@/context/ConsentContext');
   const { ConsentBanner } = await import('@/components/ConsentBanner');
-  return { analytics, ConsentProvider, useConsent, ConsentBanner };
+  const { PrivacyPage } = await import('@/pages/PrivacyPage');
+  return { analytics, ConsentProvider, useConsent, ConsentBanner, PrivacyPage };
 }
 
 function ConsentReader({
@@ -183,5 +184,29 @@ describe('ConsentContext / ConsentBanner', () => {
     expect((window as unknown as { [k: string]: unknown })['ga-disable-G-TEST123']).toBe(true);
     expect(document.cookie).not.toContain('_ga=');
     expect(localStorage.getItem('tejitpabari:consent')).toBeNull();
+  });
+
+  it('the real "Clear my choice" button on PrivacyPage disables GA and removes GA cookies end to end', async () => {
+    localStorage.setItem('tejitpabari:consent', 'granted');
+    document.cookie = '_ga=GA1.2.123456789.987654321; path=/';
+    const { ConsentProvider, ConsentBanner, PrivacyPage } = await freshModules();
+
+    render(
+      <MemoryRouter>
+        <ConsentProvider>
+          <PrivacyPage />
+          <ConsentBanner />
+        </ConsentProvider>
+      </MemoryRouter>,
+    );
+
+    const clearButton = await screen.findByRole('button', { name: 'Clear my choice' });
+    fireEvent.click(clearButton);
+
+    expect(localStorage.getItem('tejitpabari:consent')).toBeNull();
+    expect(document.cookie).not.toContain('_ga=');
+    expect((window as unknown as { [k: string]: unknown })['ga-disable-G-TEST123']).toBe(true);
+    expect(screen.queryByRole('button', { name: 'Clear my choice' })).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent('Cleared.');
   });
 });
