@@ -4,6 +4,7 @@ import { SearchFilter } from '@/components/SearchFilter';
 import { EmptyState } from '@/components/EmptyState';
 import { ProjectCard } from '@/components/ProjectCard'; // SP03, verbatim — no fork
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
+import { PageContainer } from '@/layout/PageContainer';
 import { useCollectionFilter } from '@/hooks/useCollectionFilter';
 import { projects } from '@/data';
 import { trackEvent } from '@/lib/analytics';
@@ -13,7 +14,7 @@ export function ProjectsPage() {
     useCollectionFilter({ items: projects, collection: 'projects' });
 
   return (
-    <div className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+    <PageContainer chrome="back-only">
       <RouteMeta
         title="Projects"
         description="Health-tech and developer-tools projects, from Juno to a decade of shipped side projects."
@@ -59,6 +60,6 @@ export function ProjectsPage() {
           ))
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
