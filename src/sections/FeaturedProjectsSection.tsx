@@ -14,7 +14,7 @@ export function FeaturedProjectsSection() {
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary">
           Projects
         </p>
-        <h2 className="mt-4 max-w-[22ch] text-balance text-[1.7rem] font-extrabold leading-[1.1] tracking-tight text-ink sm:max-w-none sm:whitespace-nowrap sm:text-[clamp(1.4rem,3.2vw,2.5rem)] sm:leading-[0.96]">
+        <h2 className="mt-4 max-w-[22ch] text-balance text-[1.15rem] font-extrabold leading-[1.1] tracking-tight text-ink sm:max-w-none sm:whitespace-nowrap sm:text-[clamp(1.4rem,3.2vw,2.5rem)] sm:leading-[0.96]">
           Selected work, in health tech and beyond.
         </h2>
 
