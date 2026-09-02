@@ -1,5 +1,5 @@
 // src/hooks/useCollectionFilter.ts
-import { useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Fuse, { type IFuseOptions } from 'fuse.js';
 import { useDebouncedValue } from '@/hooks/useDebouncedValue'; // SP01
@@ -52,8 +52,15 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
   useEffect(() => {
     const q = searchParams.get('q');
     const tag = searchParams.get('tag');
-    if (q) setQuery(q);
-    if (tag) setActiveTag(tag);
+    // Wrapped in startTransition (not a bare setState-in-effect) so this
+    // post-mount hydration is deprioritized rather than forcing an urgent
+    // cascading re-render right after the hydration-safe empty-default paint
+    // above — same one-time adoption, just scheduled the way React's own
+    // guidance for effect-driven external-sync updates recommends.
+    startTransition(() => {
+      if (q) setQuery(q);
+      if (tag) setActiveTag(tag);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
