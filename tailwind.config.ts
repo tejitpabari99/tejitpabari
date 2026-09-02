@@ -51,6 +51,8 @@ export default {
       typography: () => ({
         DEFAULT: {
           css: {
+            fontSize: '0.95rem',
+            lineHeight: '1.7',
             '--tw-prose-body': '#3E514D',
             '--tw-prose-headings': '#162b26',
             '--tw-prose-lead': '#3E514D',
@@ -65,6 +67,32 @@ export default {
             '--tw-prose-code': '#162b26',
             a: { textDecoration: 'none', fontWeight: '500' },
             'a:hover': { textDecoration: 'underline' },
+
+            // Heading ramp — sits below the page's own <h1> (DetailHeader,
+            // 1.9rem/2.4rem across breakpoints) since content markdown is
+            // expected to start at h2. h1 is still styled here, capped well
+            // below the page h1's smallest breakpoint value, purely as a
+            // defensive floor in case a content author ever writes one.
+            h1: { fontSize: '1.5rem', lineHeight: '1.25', fontWeight: '800', marginTop: '0', marginBottom: '0.75em' },
+            h2: { fontSize: '1.28rem', lineHeight: '1.3', fontWeight: '800', marginTop: '2em', marginBottom: '0.65em' },
+            h3: { fontSize: '1.08rem', lineHeight: '1.35', fontWeight: '700', marginTop: '1.6em', marginBottom: '0.5em' },
+            h4: { fontSize: '0.98rem', fontWeight: '700', marginTop: '1.4em', marginBottom: '0.4em' },
+            p: { marginTop: '0', marginBottom: '1.1em' },
+            'ul, ol': { marginTop: '0.9em', marginBottom: '1.1em' },
+            li: { marginTop: '0.35em', marginBottom: '0.35em' },
+
+            // GFM task lists — keyed on the real classes mdast-util-to-hast
+            // actually emits (li.task-list-item / ul.contains-task-list), not
+            // `:has()` or a `[data-type="taskList"]` attribute (that's a
+            // different, ProseMirror/Tiptap-family convention this toolchain
+            // never emits). PRD §4.5.
+            'ul.contains-task-list': { paddingInlineStart: '0' },
+            'li.task-list-item': { listStyleType: 'none' },
+            'li.task-list-item input[type="checkbox"]': {
+              marginInlineEnd: '0.6em',
+              accentColor: '#0F4C45',
+              verticalAlign: 'middle',
+            },
           },
         },
       }),
