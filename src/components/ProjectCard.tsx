@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { TagPill } from './TagPill';
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon';
+import { StatusBadge } from './StatusBadge';
+import type { ProjectStatus } from '@/data';
 
 export interface ProjectCardProps {
   href: string;
@@ -9,7 +11,7 @@ export interface ProjectCardProps {
   title: string;
   description: string;
   tags: string[];
-  status?: string;
+  status?: ProjectStatus;
   externalHref?: string;
   externalLabel?: string;
   onCardClick?: () => void;
@@ -39,11 +41,7 @@ export function ProjectCard({
           className="h-[120px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-[140px] xl:h-[155px]"
         />
 
-        {status && (
-          <span className="absolute left-2 top-2 rounded-full bg-teal/92 px-2 py-0.5 text-[0.58rem] font-semibold uppercase tracking-wide text-white">
-            {status}
-          </span>
-        )}
+        {status && <StatusBadge status={status} size="sm" className="absolute left-2 top-2" />}
 
         {externalHref && (
           <a
