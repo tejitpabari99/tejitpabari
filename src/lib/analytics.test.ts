@@ -19,6 +19,7 @@ describe('analytics.ts', () => {
     document.head.querySelectorAll('script[src*="googletagmanager"]').forEach((el) => el.remove());
     delete (window as unknown as { gtag?: unknown }).gtag;
     delete (window as unknown as { dataLayer?: unknown }).dataLayer;
+    delete (window as unknown as Record<string, boolean>)['ga-disable-G-VALID123'];
     vi.unstubAllEnvs();
     vi.restoreAllMocks();
   });
@@ -105,5 +106,37 @@ describe('analytics.ts', () => {
       page_location: window.location.href,
       page_title: document.title,
     });
+  });
+
+  it('disableGa sets the ga-disable-<ID> window flag and flips isGaLoaded to false', async () => {
+    const { loadGa, disableGa, isGaLoaded } = await freshAnalytics(false, 'G-VALID123');
+    loadGa();
+    expect(isGaLoaded()).toBe(true);
+    disableGa();
+    expect(isGaLoaded()).toBe(false);
+    expect((window as unknown as Record<string, boolean>)['ga-disable-G-VALID123']).toBe(true);
+  });
+
+  it('disableGa deletes pre-set _ga/_gid cookies', async () => {
+    const { loadGa, disableGa } = await freshAnalytics(false, 'G-VALID123');
+    loadGa();
+    document.cookie = '_ga=GA1.2.123456789.987654321; path=/';
+    document.cookie = '_gid=GA1.2.111111111.222222222; path=/';
+    expect(document.cookie).toContain('_ga=');
+    expect(document.cookie).toContain('_gid=');
+    disableGa();
+    expect(document.cookie).not.toContain('_ga=');
+    expect(document.cookie).not.toContain('_gid=');
+  });
+
+  it('loadGa after disableGa re-enables (isGaLoaded true again) without injecting a second script', async () => {
+    const { loadGa, disableGa, isGaLoaded } = await freshAnalytics(false, 'G-VALID123');
+    loadGa();
+    expect(scriptCount()).toBe(1);
+    disableGa();
+    expect(isGaLoaded()).toBe(false);
+    loadGa();
+    expect(isGaLoaded()).toBe(true);
+    expect(scriptCount()).toBe(1);
   });
 });
