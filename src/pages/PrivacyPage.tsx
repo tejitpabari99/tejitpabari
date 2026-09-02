@@ -1,5 +1,6 @@
 // src/pages/PrivacyPage.tsx
 import type { ReactNode } from 'react';
+import { PageContainer } from '@/layout/PageContainer';
 import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
@@ -21,7 +22,7 @@ export function PrivacyPage() {
   const emailHref = useContactMailto();
 
   return (
-    <div className="mx-auto max-w-content px-4 py-16 sm:px-6 lg:px-8">
+    <PageContainer chrome="full">
       <RouteMeta
         title="Privacy Policy"
         description="This is Tejit Pabari's personal portfolio — no company, no accounts, no forms today. Here is what this site (and everything hosted under it) collects, and what your choices are."
@@ -205,6 +206,6 @@ export function PrivacyPage() {
           </p>
         </Section>
       </div>
-    </div>
+    </PageContainer>
   );
 }
