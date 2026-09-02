@@ -13,7 +13,7 @@ export function ConsentBanner() {
     <div className="fixed inset-x-0 bottom-0 z-50 border-t border-teal-secondary/15 bg-cream/97 px-4 py-4 shadow-panel backdrop-blur-sm sm:px-6">
       <div className="mx-auto flex max-w-content flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-body">
-          I use Google Analytics to see whether people find this site — for example, from a
+          I use Google Analytics to see whether people find this site, for example from a
           LinkedIn post. It only runs, and only sets cookies, if you accept. See the{' '}
           <Link to="/privacy" className="underline hover:text-teal-secondary">Privacy Policy</Link>.
         </p>
