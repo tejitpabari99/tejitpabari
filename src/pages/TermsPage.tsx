@@ -1,5 +1,6 @@
 // src/pages/TermsPage.tsx
 import type { ReactNode } from 'react';
+import { PageContainer } from '@/layout/PageContainer';
 import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
@@ -19,7 +20,7 @@ export function TermsPage() {
   const emailHref = useContactMailto();
 
   return (
-    <div className="mx-auto max-w-content px-4 py-16 sm:px-6 lg:px-8">
+    <PageContainer chrome="full">
       <RouteMeta
         title="Terms of Use"
         description="Terms governing use of tejitpabari.com, a personal portfolio — no company, no warranty, and how hosted projects and outbound links are treated."
@@ -127,6 +128,6 @@ export function TermsPage() {
           </p>
         </Section>
       </div>
-    </div>
+    </PageContainer>
   );
 }
