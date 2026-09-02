@@ -35,6 +35,10 @@ describe('validateNavAndFooterLinks', () => {
     expect(() => validateNavAndFooterLinks([{ label: 'Projects', href: '/#projects' }], [])).not.toThrow();
   });
 
+  it('passes a plain route entry with no hash (e.g. Home\'s "/")', () => {
+    expect(() => validateNavAndFooterLinks([{ label: 'Home', href: '/' }], [])).not.toThrow();
+  });
+
   it('throws on an internal entry whose pathname is not a known route', () => {
     expect(() => validateNavAndFooterLinks([{ label: 'Bad', href: '/nope' }], [])).toThrow(/KNOWN_STATIC_ROUTES/);
   });
