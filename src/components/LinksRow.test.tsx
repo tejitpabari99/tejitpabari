@@ -79,4 +79,11 @@ describe('LinksRow', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
+
+  it('the "Open Live" CTA opens in a new tab with rel="noreferrer"', () => {
+    renderLinksRow({ links: [], liveHref: '/projects/juno/live' });
+    const cta = screen.getByRole('link', { name: /Open Live/i });
+    expect(cta).toHaveAttribute('target', '_blank');
+    expect(cta).toHaveAttribute('rel', 'noreferrer');
+  });
 });
