@@ -33,7 +33,7 @@ export function ProjectLivePage() {
       </>
     );
   }
-  if (project?.liveUrl) return <LiveRedirectFallback to={project.liveUrl} label={project.title} />;
+  if (project?.liveUrl) return <LiveRedirectFallback to={project.liveUrl} label={project.title} backTo={`/projects/${project.slug}`} />;
 
   // Reachable only via a hand-typed/stale URL for a slug with neither mode —
   // getStaticPaths (Task 14) never generates this path for such a slug.
