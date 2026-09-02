@@ -11,14 +11,12 @@ export function FeaturedProjectsSection() {
       className="scroll-mt-24 bg-sage px-6 py-16 sm:px-8 sm:py-20 md:px-10 lg:px-12 lg:py-24"
     >
       <div className="mx-auto w-full max-w-content">
-        <div className="max-w-[640px]">
-          <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary">
-            Projects
-          </p>
-          <h2 className="mt-4 max-w-[13ch] text-[2rem] font-extrabold leading-[0.96] tracking-tight text-ink sm:text-[2.5rem]">
-            Selected work, in health tech and beyond.
-          </h2>
-        </div>
+        <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary">
+          Projects
+        </p>
+        <h2 className="mt-4 max-w-[22ch] text-balance text-[1.7rem] font-extrabold leading-[1.1] tracking-tight text-ink sm:max-w-none sm:whitespace-nowrap sm:text-[clamp(1.4rem,3.2vw,2.5rem)] sm:leading-[0.96]">
+          Selected work, in health tech and beyond.
+        </h2>
 
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:mt-10 xl:grid-cols-4">
           {featuredProjects.map((project) => (
