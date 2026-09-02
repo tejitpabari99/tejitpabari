@@ -1,6 +1,7 @@
 // src/routes.tsx
 import type { RouteRecord } from 'vite-react-ssg';
 import { PageShell } from '@/layout/PageShell';
+import type { RouteHandle } from '@/layout/chromeMode';
 import { HomePage } from '@/pages/HomePage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
@@ -21,16 +22,22 @@ export const routes: RouteRecord[] = [
     element: <PageShell />,
     children: [
       { index: true, element: <HomePage /> },
-      { path: 'projects', element: <ProjectsPage /> },
+      {
+        path: 'projects',
+        element: <ProjectsPage />,
+        handle: { chrome: 'back-only' } satisfies RouteHandle,
+      },
       {
         path: 'projects/:slug',
         element: <ProjectDetailPage />,
         getStaticPaths: () => projectSlugs.map((slug) => `projects/${slug}`),
+        handle: { chrome: 'back-only' } satisfies RouteHandle,
       },
       {
         path: 'projects/:slug/live',
         element: <ProjectLivePage />,
         getStaticPaths: () => projectLiveSlugs.map((slug) => `projects/${slug}/live`),
+        handle: { chrome: 'back-only' } satisfies RouteHandle,
         // FRAGILITY GUARD (see /privacy, /terms — "no forms"): every hosted (i.e.
         // non-redirect) /projects/<slug>/live page must currently accept ZERO user
         // input. Both legal pages state plainly that this domain has no forms as
