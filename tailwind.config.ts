@@ -18,6 +18,12 @@ export default {
         slate: '#6B7B77',        // tertiary text (lighter)
         'slate-dark': '#4D5D59', // tertiary text (darker)
         placeholder: '#EEF3EE',  // image placeholder background
+        'status-building': '#92400E', // NEW — StatusBadge's "in progress" color.
+        // Tailwind's own default amber-800 hex, reused deliberately rather
+        // than inventing an arbitrary new color: a familiar, well-tested
+        // exact value, formally declared as a named brand token here (not
+        // referenced as a bare `amber-800` utility class anywhere) so it's
+        // tracked in the design system the same way every other color is.
       },
       fontFamily: {
         sans: [
