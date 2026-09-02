@@ -129,7 +129,8 @@ describe('PrivacyPage', () => {
     expect(title?.textContent).toBe('Privacy Policy · Tejit Pabari');
     const description = document.head.querySelector('meta[name="description"]');
     expect(description?.getAttribute('content')).toBe(
-      "This is Tejit Pabari's personal portfolio — no company, no accounts, no forms today. Here is what this site (and everything hosted under it) collects, and what your choices are.",
+      "This is Tejit Pabari's personal portfolio: no company, no accounts, and no forms today. " +
+        'Here is what this site, and everything hosted under it, collects, and what your choices are.',
     );
   });
 });
