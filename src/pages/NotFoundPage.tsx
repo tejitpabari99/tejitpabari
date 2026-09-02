@@ -2,6 +2,7 @@
 import { useLocation } from 'react-router-dom';
 import { BackButton } from '@/components/BackButton';
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
+import { PageContainer } from '@/layout/PageContainer';
 
 export function NotFoundPage() {
   // `path: '*'` is never enumerated by getStaticPaths (SP01 §4.7), so this
@@ -24,7 +25,7 @@ export function NotFoundPage() {
   const location = useLocation();
 
   return (
-    <div className="mx-auto flex w-full max-w-content flex-col items-center gap-4 px-6 py-32 text-center">
+    <PageContainer chrome="full" className="flex flex-col items-center gap-4 text-center">
       <RouteMeta
         title="Page Not Found"
         description="That page doesn't exist — head back to the homepage."
@@ -33,6 +34,6 @@ export function NotFoundPage() {
       <h1 className="text-2xl font-bold text-ink">Page not found</h1>
       <p className="text-body">The page you&rsquo;re looking for doesn&rsquo;t exist or may have moved.</p>
       <BackButton />
-    </div>
+    </PageContainer>
   );
 }
