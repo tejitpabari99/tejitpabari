@@ -90,4 +90,14 @@ describe('LiveRedirectFallback', () => {
       'https://app.meetjuno.health',
     );
   });
+
+  it("passes backTo through to BackButton's `to` prop when provided", () => {
+    renderFallback({ to: 'https://app.meetjuno.health', label: 'Juno', backTo: '/projects/juno' });
+    expect(screen.getByRole('link', { name: /Back/i })).toHaveAttribute('href', '/projects/juno');
+  });
+
+  it("falls back to BackButton's own default ('/') when backTo is omitted", () => {
+    renderFallback({ to: 'https://app.meetjuno.health', label: 'Juno' });
+    expect(screen.getByRole('link', { name: /Back/i })).toHaveAttribute('href', '/');
+  });
 });
