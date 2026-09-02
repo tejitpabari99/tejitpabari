@@ -2,19 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 
 // featured.ts computes `featuredProjects = computeFeatured(projects, FEATURED_PROJECT_SLUGS)`
 // eagerly at module-eval time (Task 9 / PRD §4.6), validating FEATURED_PROJECT_SLUGS
-// (['juno', 'smarttest', 'med-doc-tracker']) against the REAL `projects` array
-// imported from '@/data'. Since src/content/projects/ has no real .md files yet
-// (SP07 hasn't authored content — see this task's briefing), that real `projects`
-// array is empty, so merely `import`-ing anything from './featured' throws
-// synchronously during module evaluation (verified directly: unknown project slug
-// "juno" — no file at src/content/projects/juno.md), before any test in this file
-// can even run.
+// (the six pinned project slugs) against the REAL `projects` array imported from
+// '@/data'. The mock below supplies those slugs so the eager computation can
+// succeed during module evaluation before the tests run.
 //
 // To exercise the real, unmodified `computeFeatured` function (Task 9's actual
 // implementation, exported specifically for this purpose per PRD §7) with fully
 // controlled in-memory fixtures — rather than reimplementing or copy-pasting its
 // logic — '@/data' is mocked here to provide a `projects` array containing exactly
-// the three slugs FEATURED_PROJECT_SLUGS names, which is enough for the module's
+// the six slugs FEATURED_PROJECT_SLUGS names, which is enough for the module's
 // own eager computation to succeed without throwing. Every test below then calls
 // the real `computeFeatured` directly with its own independent fixture data (the
 // `all`/`slugs` arguments), never relying on the mocked `projects` or on
@@ -32,7 +28,14 @@ vi.mock('@/data', async () => {
     body: '',
   });
   return {
-    projects: [mkProject('juno'), mkProject('smarttest'), mkProject('med-doc-tracker')],
+    projects: [
+      mkProject('juno'),
+      mkProject('smarttest'),
+      mkProject('med-doc-tracker'),
+      mkProject('clip-verse'),
+      mkProject('columbia-virtual-campus'),
+      mkProject('crunchy-filler'),
+    ],
   };
 });
 

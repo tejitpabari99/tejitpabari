@@ -3,22 +3,23 @@ import { projects, type Project } from '@/data';
 
 export const MAX_FEATURED = 6;
 
-// Ordered, up to 6 slugs — the single source of truth for the landing
+// Ordered, exactly 6 slugs — the single source of truth for the landing
 // page's featured Projects section. Author edits this array directly;
 // nothing else controls what's featured or in what order.
 //
-// Ordering-dependency note: SP02 authors this pipeline before SP07 authors
-// the real content, so src/content/projects/ is currently empty. The three
-// slugs below are unknown against zero real projects, which means any
-// import of this module (and therefore of featuredProjects below) throws
-// until SP07's matching project files land. This is expected and
-// intentional — see 02-content-pipeline TASKS.md Task 9 / PRD §4.6 — and is
-// harmless today because nothing yet imports this module (SP03, which
-// consumes featuredProjects on the landing page, hasn't wired it up yet).
+// Pinned explicitly by owner decision (2026-09-01, round 2 R3 PRD §4.2),
+// not date-sorted backfill. With exactly 6 slugs against MAX_FEATURED = 6,
+// computeFeatured's date-descending backfill branch below can never run
+// (remainingSlots = 6 - 6 = 0) — this list is the complete, final featured
+// set. The landing page's featured section no longer reshuffles when a
+// project is added, removed, or re-dated.
 export const FEATURED_PROJECT_SLUGS: string[] = [
   'juno',
   'smarttest',
   'med-doc-tracker',
+  'clip-verse',
+  'columbia-virtual-campus',
+  'crunchy-filler',
 ];
 
 export function computeFeatured(all: Project[], slugs: string[]): Project[] {
