@@ -5,6 +5,7 @@ import { DetailHeader } from '@/components/DetailHeader';
 import { LinksRow } from '@/components/LinksRow';
 import { ContentBody } from '@/data/ContentBody'; // SP02
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
+import { PageContainer } from '@/layout/PageContainer';
 import { projects } from '@/data';
 import { NotFoundPage } from './NotFoundPage';
 import { hasLiveRoute } from './live/registry';
@@ -19,7 +20,7 @@ export function ProjectDetailPage() {
   if (!project) return <NotFoundPage />;
 
   return (
-    <article className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+    <PageContainer as="article" chrome="back-only">
       <RouteMeta
         title={project.title}
         description={project.description}
@@ -29,7 +30,7 @@ export function ProjectDetailPage() {
       {/* image is the build-generated OG card path, NOT project.image (the
           frontmatter placeholder/thumbnail used below in DetailHeader and on
           the card grid) — PRD §4.5/§9. */}
-      <BackButton />
+      <BackButton to="/projects" />
       <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{project.description}</p>
       <LinksRow
@@ -37,6 +38,6 @@ export function ProjectDetailPage() {
         liveHref={hasLiveRoute(project.slug) ? `/projects/${project.slug}/live` : undefined}
       />
       <ContentBody body={project.body} />
-    </article>
+    </PageContainer>
   );
 }
