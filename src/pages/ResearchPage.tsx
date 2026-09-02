@@ -4,6 +4,7 @@ import { SearchFilter } from '@/components/SearchFilter';
 import { EmptyState } from '@/components/EmptyState';
 import { ProjectCard } from '@/components/ProjectCard'; // same shared component, no fork
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
+import { PageContainer } from '@/layout/PageContainer';
 import { useCollectionFilter } from '@/hooks/useCollectionFilter';
 import { research } from '@/data';
 import { trackEvent } from '@/lib/analytics';
@@ -13,7 +14,7 @@ export function ResearchPage() {
     useCollectionFilter({ items: research, collection: 'research' });
 
   return (
-    <div className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+    <PageContainer chrome="full">
       <RouteMeta
         title="Research"
         description="Published and presented research, from flood-event NLP to a Google Science Fair project."
@@ -54,6 +55,6 @@ export function ResearchPage() {
           ))
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
