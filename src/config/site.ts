@@ -3,7 +3,7 @@ export const SITE_URL = 'https://tejitpabari.com';
 export const SITE_NAME = 'Tejit Pabari';
 
 export const DEFAULT_DESCRIPTION =
-  'Health-tech builder and software engineer — building Juno, an AI companion ' +
+  'Health-tech builder and software engineer. Building Juno, an AI companion ' +
   'for medical appointments, while working full-time on Microsoft Fabric Maps.';
 
 export const DEFAULT_OG_IMAGE = '/og/default.png';
