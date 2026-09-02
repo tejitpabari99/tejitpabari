@@ -21,10 +21,9 @@ export function Hero() {
           </h1>
 
           <p className="mt-5 max-w-[32rem] text-[0.94rem] leading-7 text-body">
-            I&rsquo;m building Juno, an AI companion that helps patients get more out of every medical
-            appointment &mdash; while working full-time as a Software Engineer II on Microsoft&rsquo;s Fabric
-            Maps team. Health tech is where most of my energy outside of work goes, and where I&rsquo;m headed
-            next.
+            I&rsquo;m a full-time Software Engineer II at Microsoft, on the Fabric Maps team. On the
+            side, I build in health tech. Right now that means Juno, an AI companion that helps patients get
+            more out of every medical appointment.
           </p>
 
           <div className="mt-7 flex flex-wrap gap-3">
