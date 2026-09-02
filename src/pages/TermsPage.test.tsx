@@ -14,12 +14,12 @@ vi.mock('@/hooks/useContactMailto', () => ({
 // the page's complete set of top-level headings (unlike Privacy, there's no
 // extra heading not named by the task).
 const EXPECTED_HEADINGS = [
-  "This isn't professional or medical advice",
+  'Not medical or professional advice',
   'What this covers',
   'No forms, today',
   'No warranty',
-  'Individual projects may carry their own licence',
-  'Links to other sites aren\'t endorsements',
+  'Project licences',
+  'Links to other sites',
   'My views are my own',
   'Changes',
   'Contact',
@@ -88,7 +88,8 @@ describe('TermsPage', () => {
     expect(title?.textContent).toBe('Terms of Use · Tejit Pabari');
     const description = document.head.querySelector('meta[name="description"]');
     expect(description?.getAttribute('content')).toBe(
-      'Terms governing use of tejitpabari.com, a personal portfolio — no company, no warranty, and how hosted projects and outbound links are treated.',
+      'Terms governing use of tejitpabari.com, a personal portfolio: no company, no warranty, and ' +
+        'information on how hosted projects and outbound links are treated.',
     );
   });
 });
