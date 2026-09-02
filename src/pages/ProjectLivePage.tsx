@@ -1,6 +1,7 @@
 // src/pages/ProjectLivePage.tsx
 import { useParams } from 'react-router-dom';
 import { projects } from '@/data';
+import { BackButton } from '@/components/BackButton';
 import { LiveRedirectFallback } from '@/components/LiveRedirectFallback';
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { HOSTED_LIVE_PAGES } from './live/registry';
@@ -25,6 +26,9 @@ export function ProjectLivePage() {
           path={`/projects/${project.slug}/live`}
           image={`/og/projects/${project.slug}.png`}
         />
+        <div className="mx-auto w-full max-w-content px-6 pt-8 sm:px-8 md:px-10 lg:px-12">
+          <BackButton to={`/projects/${project.slug}`} />
+        </div>
         <HostedComponent />
       </>
     );
