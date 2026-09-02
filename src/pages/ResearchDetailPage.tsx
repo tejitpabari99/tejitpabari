@@ -5,6 +5,7 @@ import { DetailHeader } from '@/components/DetailHeader';
 import { LinksRow } from '@/components/LinksRow';
 import { ContentBody } from '@/data/ContentBody';
 import { RouteMeta } from '@/components/RouteMeta';
+import { PageContainer } from '@/layout/PageContainer';
 import { research } from '@/data';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -14,7 +15,7 @@ export function ResearchDetailPage() {
   if (!item) return <NotFoundPage />;
 
   return (
-    <article className="mx-auto w-full max-w-content px-6 pb-20 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12">
+    <PageContainer as="article" chrome="full">
       {/* image is the build-generated OG card path, NOT item.image (the
           frontmatter placeholder/thumbnail used below in DetailHeader) —
           same fix as ProjectDetailPage, PRD §4.5/§9. */}
@@ -24,6 +25,6 @@ export function ResearchDetailPage() {
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{item.description}</p>
       <LinksRow links={item.links} />
       <ContentBody body={item.body} />
-    </article>
+    </PageContainer>
   );
 }
