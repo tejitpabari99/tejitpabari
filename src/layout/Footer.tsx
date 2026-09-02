@@ -7,7 +7,7 @@ import { trackEvent } from '@/lib/analytics'; // SP05 add
 export function Footer() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-teal-secondary/10 bg-cream">
+    <footer className="shrink-0 border-t border-teal-secondary/10 bg-cream">
       <div className="mx-auto flex w-full max-w-content flex-col items-center gap-3 px-6 py-8 text-center sm:px-8 md:px-10 lg:px-12">
         <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-4 text-[0.78rem] font-semibold text-teal-secondary">
           {FOOTER_LINKS.map((item) =>
