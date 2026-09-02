@@ -1,5 +1,4 @@
 // src/components/LinksRow.tsx
-import { Link } from 'react-router-dom';
 import type { Link as ContentLink } from '@/data'; // SP02's Link type: { label, href }
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon';
 import { ArrowIcon } from './icons/ArrowIcon';
@@ -18,13 +17,20 @@ export function LinksRow({ links, liveHref }: LinksRowProps) {
   return (
     <div className="mt-6 flex flex-wrap gap-3">
       {liveHref && (
-        <Link
-          to={liveHref}
+        // Plain <a>, not react-router's <Link>: react-router explicitly
+        // skips client-side handling for any target other than "_self",
+        // so a target="_blank" Link and a target="_blank" plain anchor
+        // behave identically — there's no client-nav benefit left to
+        // keep <Link> for.
+        <a
+          href={liveHref}
+          target="_blank"
+          rel="noreferrer"
           className="inline-flex items-center gap-1.5 rounded-full bg-teal px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
         >
           Open Live
           <ArrowIcon className="h-4 w-4" />
-        </Link>
+        </a>
       )}
       {links.map((link) => (
         <a
