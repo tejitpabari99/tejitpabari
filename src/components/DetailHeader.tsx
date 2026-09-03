@@ -1,16 +1,20 @@
 // src/components/DetailHeader.tsx
 import { TagPill } from './TagPill';
 import { StatusBadge, type BadgeStatus } from './StatusBadge';
+import { TechTagList } from './TechTagList';
 
 interface DetailHeaderProps {
   image: string;
   imageAlt?: string;
   title: string;
-  status?: BadgeStatus; // was `string` — tightened, see PRD §4.3
+  status?: BadgeStatus; // was `string` - tightened, see PRD §4.3
   tags: string[];
+  /** Free-form techTags (round 3, PRD item 7), rendered below the category
+   *  tags in TechTagList's subtler treatment. @default [] */
+  techTags?: string[];
 }
 
-export function DetailHeader({ image, imageAlt = '', title, status, tags }: DetailHeaderProps) {
+export function DetailHeader({ image, imageAlt = '', title, status, tags, techTags = [] }: DetailHeaderProps) {
   return (
     <header className="mt-6">
       <div className="relative overflow-hidden rounded-section bg-placeholder">
@@ -23,6 +27,7 @@ export function DetailHeader({ image, imageAlt = '', title, status, tags }: Deta
           {tags.map((tag) => <TagPill key={tag}>{tag}</TagPill>)}
         </div>
       )}
+      <TechTagList techTags={techTags} className="mt-2" />
     </header>
   );
 }

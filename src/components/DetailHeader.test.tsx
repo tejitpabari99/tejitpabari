@@ -2,7 +2,7 @@
 //
 // Task 19 per .dev/website-revamp/04-projects-research-pages/TASKS.md.
 // Covers PRD §4.4/§7's claim that DetailHeader's status pill is an
-// absolute overlay with zero layout impact when absent — the same claim
+// absolute overlay with zero layout impact when absent - the same claim
 // SP03's own ProjectCard.test.tsx already pins for ProjectCard.
 import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -31,7 +31,7 @@ describe('DetailHeader', () => {
     const { container } = renderHeader();
     const imageWrapper = container.querySelector('.bg-placeholder');
     expect(imageWrapper).not.toBeNull();
-    // Only the <img> itself should be a child — no placeholder <span>/<div>
+    // Only the <img> itself should be a child - no placeholder <span>/<div>
     // reserving space for a pill that isn't there.
     expect(imageWrapper!.children).toHaveLength(1);
     expect(imageWrapper!.children[0].tagName).toBe('IMG');
@@ -57,5 +57,31 @@ describe('DetailHeader', () => {
   it('renders the title as an h1', () => {
     renderHeader({ title: 'Med-Doc Tracker' });
     expect(screen.getByRole('heading', { level: 1, name: 'Med-Doc Tracker' })).toBeInTheDocument();
+  });
+
+  // Round 3, PRD item 7: techTags render below the category tags, in the
+  // same subtler TechTagList treatment ProjectListCard uses.
+  it('renders techTags when non-empty', () => {
+    renderHeader({ techTags: ['React', 'TypeScript'] });
+    expect(screen.getByText('React')).toBeInTheDocument();
+    expect(screen.getByText('TypeScript')).toBeInTheDocument();
+  });
+
+  it('renders no techTags group when techTags is empty or omitted', () => {
+    // tags: [] too, so the only possible '.flex-wrap' row left would be
+    // TechTagList's - asserting there is none proves it renders nothing
+    // for an empty/omitted techTags array (it returns null, no wrapper).
+    const { container } = renderHeader({ tags: [], techTags: [] });
+    expect(container.querySelectorAll('.flex-wrap')).toHaveLength(0);
+  });
+
+  it('techTags render in a visually distinct (non-TagPill) treatment from category tags', () => {
+    renderHeader({ tags: ['Health Tech'], techTags: ['React'] });
+    const categoryPill = screen.getByText('Health Tech');
+    const techChip = screen.getByText('React');
+    expect(categoryPill.className).not.toEqual(techChip.className);
+    // TagPill's category styling is bolder (font-semibold, colored border);
+    // TechTagList's chip is deliberately muted (text-slate, subtler border).
+    expect(techChip.className).toContain('text-slate');
   });
 });
