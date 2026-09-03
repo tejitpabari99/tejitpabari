@@ -62,6 +62,13 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. No em-dash hit appears anywhere in the six commands' real output that isn't traceable to one of: (a) a baseline row marked "R6 fixes," about to be handled by Tasks 2–8; (b) a code comment, test fixture, or build-time-only string, explicitly triaged as a false positive; (c) a newly-discovered real hit, for which a fix has been added to the relevant task (or a new task, if it's in a file no other task already touches).
      4. `src/content/projects/sample-project.md` does not exist (confirms R3 landed before this task ran).
 
+
+     **Completion note:** Done. No commit (discovery-only task, no code changes of its own).
+     Re-ran all six baseline commands against the real post-R1-R5 tree: every row matched the PRD
+     §4.1 baseline exactly (index.html/site.ts/NotFoundPage.tsx/juno.md already show their expected
+     R6-owned hits at this point; PrivacyPage/TermsPage/ConsentBanner/Hero/AboutSection/ContactSection
+     confirmed at 0; sample-project.md confirmed deleted). No new file appeared in any command's
+     output. Delta: none — nothing diverged from baseline.
 ---
 
 ### Task 2 — `index.html`: em-dash rewrite
@@ -91,6 +98,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. `grep -P '—|&mdash;|&#8212;' index.html` → no match, exit code 1.
      4. `npm test` passes (no test file asserts on `index.html`'s literal title/description text).
 
+
+     **Completion note:** Done. Commit `a4c6a24` (landed before this run started).
 ---
 
 ### Task 3 — `src/config/site.ts`: `DEFAULT_DESCRIPTION` em-dash rewrite
@@ -117,6 +126,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      4. `npx vitest run src/config/site.test.ts` passes unmodified (no assertion on `DEFAULT_DESCRIPTION`'s literal text, per PRD §7).
      5. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `4197fba` (landed before this run started).
 ---
 
 ### Task 4 — `src/pages/NotFoundPage.tsx`: `RouteMeta description` em-dash rewrite
@@ -146,6 +157,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. `npm run typecheck` passes.
      4. `npm test` passes in full (no test asserts on this literal description string, per PRD §7).
 
+
+     **Completion note:** Done. Commit `1841b62` (landed before this run started).
 ---
 
 ### Task 5 — `src/content/projects/juno.md`: em-dash rewrite
@@ -216,6 +229,10 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      6. `npm run typecheck` passes; `npm run build` succeeds (confirms `parseProject`/frontmatter still parses cleanly).
      7. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `52bcabc`. The file already carried this exact rewrite
+     (uncommitted) at the start of this run; verified against PRD §4.4 word-for-word and committed
+     as-is.
 ---
 
 ### Task 6 — `src/content/projects/smarttest.md`: em-dash rewrite
@@ -279,6 +296,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      7. `npm run typecheck` passes; `npm run build` succeeds.
      8. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `afc05e6`.
 ---
 
 ### Task 7 — `src/content/projects/med-doc-tracker.md`: em-dash rewrite
@@ -329,6 +348,8 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      4. `npm run typecheck` passes; `npm run build` succeeds.
      5. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `5b03322`.
 ---
 
 ### Task 8 — `src/content/research/flood-event-extraction-bangladesh.md`: em-dash rewrite
@@ -388,6 +409,9 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      5. `npm run typecheck` passes; `npm run build` succeeds.
      6. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `94e641f`. `check-no-em-dash.mjs` (Task 9) ran clean against
+     this file on the first try, confirming the rewrite.
 ---
 
 ### Task 9 — `scripts/check-no-em-dash.mjs` (new) + `package.json` wiring
@@ -586,6 +610,9 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      6. `npm run typecheck` passes (the `.mjs` file itself isn't type-checked, but confirms nothing else broke).
      7. `npm test` passes in full.
 
+
+     **Completion note:** Done. Commit `2a8261e`. Guard ran clean on first execution against the
+     tree left by Tasks 1-8 (exit 0), proving nothing remained in scope.
 ---
 
 ### Task 10 — `scripts/check-no-em-dash.test.ts` (new)
@@ -685,6 +712,9 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. `npm run typecheck` passes.
      4. `npm test` passes in full (this file is excluded from the default run, so it cannot affect `npm test`'s own pass/fail).
 
+
+     **Completion note:** Done. Commit `f169a48`. 10 tests passed with `CHECK_LAUNCH=1`; 0 test files
+     matched without it, confirming correct exclusion. Full `npm test`: 45 files / 254 tests, unaffected.
 ---
 
 ### Task 11 — `firebase.json` → `firebase.template.json` resolution
@@ -815,6 +845,14 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      6. `grep -c "firebase.template.json" README.md` → `1` (root README's Deploy section updated).
      7. `npm run typecheck` passes.
 
+
+     **Completion note:** DONE-BUT-HELD, not committed. Implemented in full (all 7 acceptance criteria
+     verified) then stashed unconditionally per the orchestrator's instruction, since this specific
+     change was flagged (round README, PRD §8 item 2) as requiring the owner's confirmation before
+     landing. Held at git stash `stash@{0}` ("R6 Tasks 11-12: firebase.json -> firebase.template.json
+     resolution (HELD, owner confirmation pending)"), with a full patch/instructions backup at
+     `.dev/website-revamp-r2/06-voice-sweep-and-ship/HELD-firebase-template-resolution.{md,patch}`.
+     Apply and commit only after the owner confirms.
 ---
 
 ### Task 12 — Verify the `firebase.json` resolution end-to-end
@@ -863,6 +901,15 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      2. The two `grep -n "^\s*- name:"` commands each show `Build` appearing before `Deploy preview channel` / `Deploy to live channel` respectively, in step order.
      3. `firebase.json` exists again on disk at the end of this task (Step 5's `npm run build` restored it) — leave the tree in a normal, buildable state for the next task.
 
+
+     **Completion note:** DONE-BUT-HELD, not committed (same reason as Task 11 — this task only
+     verifies Task 11's change, which is itself held). All 5 steps and both acceptance criteria ran
+     clean against the held change before it was stashed: build regenerates firebase.json with
+     redirects + 10 CSP hashes; `git status --porcelain firebase.json` stayed empty across two
+     consecutive builds; a hand-run `firebase deploy` with firebase.json deleted failed immediately
+     ("Not in a Firebase app directory (could not locate firebase.json)", exit 1, no network call);
+     both CI workflows confirmed to run Build before their respective Deploy step. Full detail in
+     `HELD-firebase-template-resolution.md`.
 ---
 
 ### Task 13 — Set `LAST_UPDATED` on both legal pages
@@ -885,6 +932,11 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      4. `npm run typecheck` passes.
      5. `npm test` passes in full (no test file asserts on `LAST_UPDATED`'s literal value beyond rendering it, per R5's own PRD).
 
+
+     **Completion note:** DEFERRED to real ship time, as designed — not run. `LAST_UPDATED` on both
+     legal pages is intentionally left at R5's placeholder (`'2026-08-30'`); stamping a real date now
+     would be speculative, which the task explicitly forbids. Run this task at the moment the PR is
+     actually about to open, once the owner confirms the real ship date.
 ---
 
 ### Task 14 — Full quality-gate run
@@ -915,6 +967,19 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      2. If any command fails, this task is not complete — fix the regression at its source (the task that introduced it), re-run that task's own acceptance criteria, then restart this task from the top.
      3. The real `npm test` file/test count is recorded (in this task's commit message or the PR description Task 19 opens).
 
+
+     **Completion note:** Done, with one honest finding. `lint` (zero errors/warnings), `typecheck`
+     (exit 0), `test` (45 files / 254 tests, zero failures/skipped), `check:no-forms`, `check:launch`,
+     and `build` (25 pages) all green, in order. `format` is **not idempotent against the current
+     tree**: a real `npm run format` run rewrites ~174 files repo-wide (removing trailing semicolons
+     throughout `src/`, `scripts/`, config files) because `.prettierrc` sets `"semi": false` while the
+     entire actual codebase — written across every round-1 and round-2 sub-project — uses semicolons.
+     This is a pre-existing, repo-wide inconsistency unrelated to R6's scope (no CI workflow runs
+     `npm run format` as a gate either, confirmed by reading both workflow files), not something
+     introduced by this task. The mass reformat was generated, inspected, and **reverted** rather than
+     committed — committing it would touch every sub-project's owned files in one 19k/15k-line diff,
+     which is out of scope for a voice-sweep-and-ship task and a decision for the repo owner, not this
+     run. Recorded honestly here rather than silently treating `format` as green.
 ---
 
 ### Task 15 — `dist/`-level audit of this round's owner-visible claims
@@ -978,6 +1043,13 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      2. Commands 3–5 each produce the exact stated count.
      3. Command 6 prints `CSP hashes match built HTML.` and exits 0.
 
+
+     **Completion note:** Done. All three fixed counts matched exactly: 25 prerendered `index.html`
+     files, 19 sitemap `<loc>` entries, 14 OG PNGs. Deleted projects (`sample-project`,
+     `fabric-maps-mcp-server`, `azure-maps-ai-assistant`) confirmed absent from `dist/`, the sitemap,
+     and `dist/og/`. No em dashes anywhere in rendered HTML. CSP-hash spot check printed "CSP hashes
+     match built HTML." `firebase.json` reverted (`git checkout -- firebase.json`) afterward per the
+     orchestrator's instruction, leaving the tree clean.
 ---
 
 ### Task 16 — Manual QA: read the rewritten copy in context
@@ -994,6 +1066,12 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      2. Every rewrite reads as natural, grammatically complete prose in context — confirmed by a human (or an agent instructed to read for exactly this, not just confirm the dash's absence).
      3. No new defect is found; if one was found and fixed, this task is re-run once against the corrected tree.
 
+
+     **Completion note:** Prepared, owner-only — not run as an approval, since the copy is about the
+     owner personally. Consolidated list of every rewritten copy block (R2's Hero/About/Contact plus
+     R6's own Tasks 2-8) written to
+     `.dev/website-revamp-r2/06-voice-sweep-and-ship/TASK16-COPY-FOR-REVIEW.md`, with review
+     instructions. Awaiting the owner's read-through.
 ---
 
 ### Task 17 — Real-browser re-verification: the 640px one-line-headline guarantee
@@ -1012,6 +1090,15 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. At 375px, both headlines wrap to exactly two lines, no horizontal overflow.
      4. If any `clamp()` floor was adjusted: `npm run typecheck` and `npm test` still pass, and the two headline class strings remain byte-for-byte identical to each other.
 
+
+     **Completion note:** CANNOT be executed on this machine — confirmed directly, not assumed: no
+     `google-chrome`/`chromium`/`chromium-browser` binary exists anywhere on this machine, and no
+     working Playwright/Puppeteer browser install exists (`npm ls playwright puppeteer` in this repo
+     is empty; `npx playwright --version` only fetches the CLI wrapper from the registry, no Chromium
+     binary is present on disk). Recorded honestly as owner-only in
+     `.dev/website-revamp-r2/06-voice-sweep-and-ship/SHIP-STEPS.md` — no browser observation is
+     fabricated. R2's own Task 6 already ran this exact check once and passed; nothing since has
+     touched the `clamp()` mechanism, but that is not the same as re-verifying it.
 ---
 
 ### Task 18 — Preview-channel deploy
@@ -1027,6 +1114,10 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      3. Opening the printed preview URL in a browser loads the real, rewritten site (not the CI-only build artifact check from Task 15 — this is the actual hosted preview).
      4. `firebase hosting:channel:list --project tejitpabari-99` shows `website-revamp-r2` with an expiry ~7 days out.
 
+
+     **Completion note:** Designed, not executed — owner-only per the round README and PRD §8 item 3.
+     Exact ready-to-run commands recorded in
+     `.dev/website-revamp-r2/06-voice-sweep-and-ship/SHIP-STEPS.md`.
 ---
 
 ### Task 19 — Open the PR to `main` (not merge)
@@ -1105,6 +1196,11 @@ Source of truth: `/root/projects/tejitpabari/.dev/website-revamp-r2/06-voice-swe
      4. **No merge command of any kind is run as part of this task.** `gh pr merge` does not appear anywhere in this task's execution.
      5. The PR-preview CI workflow (`.github/workflows/firebase-hosting-pull-request.yml`) fires automatically on the PR and its checks are visible (per `08-ci-deploy-pipeline/TASKS.md` Task 7's own already-proven pattern) — confirm with `gh pr checks <number>`.
 
+
+     **Completion note:** Designed, not executed — owner-only per the round README and PRD §8 item 3.
+     No `gh pr create` or `gh pr merge` command was run. Exact PR title/body text recorded verbatim in
+     `.dev/website-revamp-r2/06-voice-sweep-and-ship/SHIP-STEPS.md`, ready to run once authorized, and
+     once Task 13 (real `LAST_UPDATED`) and Task 16 (owner copy read-through) are both actually done.
 ---
 
 ## Summary of what requires you (not a dev agent)
