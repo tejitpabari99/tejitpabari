@@ -12,7 +12,7 @@ status: Completed
 links:
   - label: Chrome Web Store
     href: https://chromewebstore.google.com/detail/crunchy-filler/djbcknbbfoldifpllefimnnkfaogcnid
-    icon: puzzle
+    icon: chrome
     primary: true
 date: "2022-01-01"
 ---
