@@ -5,8 +5,13 @@
   "type": "module",
   "author": "Tejit Pabari (tejitpabari99@gmail.com)",
   "license": "0BSD",
-  "repository": { "type": "git", "url": "https://github.com/tejitpabari99/tejitpabari" },
-  "bugs": { "url": "https://github.com/tejitpabari99/tejitpabari/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tejitpabari99/tejitpabari"
+  },
+  "bugs": {
+    "url": "https://github.com/tejitpabari99/tejitpabari/issues"
+  },
   "scripts": {
     "dev": "vite-react-ssg dev",
     "typecheck": "tsc -b --noEmit",
@@ -22,6 +27,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\""
   },
   "dependencies": {
+    "buffer": "^6.0.3",
     "fuse.js": "^7.5.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.39.0",
