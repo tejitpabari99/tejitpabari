@@ -3,7 +3,7 @@ slug: med-doc-tracker
 title: Med-Doc Tracker
 description: >-
   A personal tool for storing, organizing, and searching all your medical
-  documents in one place — built to make the fragmented world of medical
+  documents in one place. Built to make the fragmented world of medical
   records simpler to navigate.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Health Tech]
