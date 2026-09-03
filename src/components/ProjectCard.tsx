@@ -38,7 +38,7 @@ export function ProjectCard({
           src={image}
           alt={imageAlt}
           loading="lazy"
-          className="h-[120px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-[140px] xl:h-[155px]"
+          className="h-[120px] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02] sm:h-[140px] lg:h-[168px] xl:h-[205px]"
         />
 
         {status && <StatusBadge status={status} size="sm" className="absolute left-2 top-2" />}
