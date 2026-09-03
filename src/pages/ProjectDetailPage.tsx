@@ -1,6 +1,5 @@
 // src/pages/ProjectDetailPage.tsx
 import { useParams } from 'react-router-dom';
-import { BackButton } from '@/components/BackButton';
 import { DetailHeader } from '@/components/DetailHeader';
 import { LinksRow } from '@/components/LinksRow';
 import { ContentBody } from '@/data/ContentBody'; // SP02
@@ -14,12 +13,12 @@ export function ProjectDetailPage() {
   const project = projects.find((p) => p.slug === slug);
 
   // Unreachable via getStaticPaths (only real slugs are prerendered), but a
-  // hand-edited/typo'd URL can still hit this client-side — reuse SP01's
+  // hand-edited/typo'd URL can still hit this client-side - reuse SP01's
   // real NotFoundPage rather than a second bespoke 404.
   if (!project) return <NotFoundPage />;
 
   return (
-    <PageContainer as="article" chrome="back-only">
+    <PageContainer as="article">
       <RouteMeta
         title={project.title}
         description={project.description}
@@ -28,9 +27,8 @@ export function ProjectDetailPage() {
       />
       {/* image is the build-generated OG card path, NOT project.image (the
           frontmatter placeholder/thumbnail used below in DetailHeader and on
-          the card grid) — PRD §4.5/§9. */}
-      <BackButton to="/projects" />
-      <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} />
+          the card grid) - PRD §4.5/§9. */}
+      <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} techTags={project.techTags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{project.description}</p>
       <LinksRow links={project.links} />
       <ContentBody body={project.body} />

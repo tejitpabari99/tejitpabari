@@ -5,7 +5,7 @@ import { RouteMeta } from '@/components/RouteMeta';
 import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
 
-const LAST_UPDATED = '2026-08-30'; // placeholder — owner confirms the real ship date, see PRD §8
+const LAST_UPDATED = '2026-08-30'; // placeholder - owner confirms the real ship date, see PRD §8
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -20,7 +20,7 @@ export function TermsPage() {
   const emailHref = useContactMailto();
 
   return (
-    <PageContainer chrome="full">
+    <PageContainer>
       <RouteMeta
         title="Terms of Use"
         description="Terms governing use of tejitpabari.com, a personal portfolio: no company, no warranty, and information on how hosted projects and outbound links are treated."

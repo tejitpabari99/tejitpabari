@@ -6,7 +6,7 @@ import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
 import { useConsent } from '@/context/ConsentContext';
 
-const LAST_UPDATED = '2026-08-30'; // placeholder — owner confirms the real ship date, see PRD §8
+const LAST_UPDATED = '2026-08-30'; // placeholder - owner confirms the real ship date, see PRD §8
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -83,7 +83,7 @@ export function PrivacyPage() {
   const emailHref = useContactMailto();
 
   return (
-    <PageContainer chrome="full">
+    <PageContainer>
       <RouteMeta
         title="Privacy Policy"
         description="This is Tejit Pabari's personal portfolio: no company, no accounts, and no forms today. Here is what this site, and everything hosted under it, collects, and what your choices are."

@@ -6,10 +6,8 @@ import { routes } from './routes';
 const paths = [
   '/', '/projects', '/projects/anything',
   '/work-experience', '/research', '/research/anything', '/privacy', '/terms',
-  '/this-does-not-exist',
+  '/404', '/this-does-not-exist',
 ];
-
-const BACK_ONLY_PATHS = ['/projects', '/projects/anything'];
 
 class NoopIntersectionObserver {
   observe() {}
@@ -31,14 +29,13 @@ describe('route tree smoke test', () => {
     expect(() => render(<RouterProvider router={router} />)).not.toThrow();
   });
 
-  it.each(paths)('shows the navbar on %s only when chrome mode is full', (path) => {
+  // Round 3 (owner: "Remove back from all places ... navbar is good
+  // enough"): the "back-only" chrome mode is gone - Nav is now
+  // unconditionally rendered on every route.
+  it.each(paths)('shows the navbar on %s (Nav is always rendered now)', (path) => {
     const router = createMemoryRouter(routes, { initialEntries: [path] });
     render(<RouterProvider router={router} />);
     const nav = screen.queryByRole('navigation', { name: 'Primary' });
-    if (BACK_ONLY_PATHS.includes(path)) {
-      expect(nav).toBeNull();
-    } else {
-      expect(nav).not.toBeNull();
-    }
+    expect(nav).not.toBeNull();
   });
 });

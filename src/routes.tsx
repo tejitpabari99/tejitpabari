@@ -1,7 +1,6 @@
 // src/routes.tsx
 import type { RouteRecord } from 'vite-react-ssg';
 import { PageShell } from '@/layout/PageShell';
-import type { RouteHandle } from '@/layout/chromeMode';
 import { HomePage } from '@/pages/HomePage';
 import { ProjectsPage } from '@/pages/ProjectsPage';
 import { ProjectDetailPage } from '@/pages/ProjectDetailPage';
@@ -23,13 +22,11 @@ export const routes: RouteRecord[] = [
       {
         path: 'projects',
         element: <ProjectsPage />,
-        handle: { chrome: 'back-only' } satisfies RouteHandle,
       },
       {
         path: 'projects/:slug',
         element: <ProjectDetailPage />,
         getStaticPaths: () => projectSlugs.map((slug) => `projects/${slug}`),
-        handle: { chrome: 'back-only' } satisfies RouteHandle,
       },
       { path: 'work-experience', element: <WorkExperiencePage /> },
       { path: 'research', element: <ResearchPage /> },
@@ -40,6 +37,13 @@ export const routes: RouteRecord[] = [
       },
       { path: 'privacy', element: <PrivacyPage /> },
       { path: 'terms', element: <TermsPage /> },
+      // Enumerable static path so vite-react-ssg prerenders dist/404/index.html,
+      // which scripts/inject-csp-hashes.mjs's promote404() then copies to
+      // dist/404.html for Firebase Hosting's automatic 404 fallback - see
+      // .dev/website-revamp-r3/BUGFIX-NOTES.md's Bug 2 Handoff section.
+      { path: '404', element: <NotFoundPage /> },
+      // Client-side catch-all: after hydration, any unknown path still
+      // renders NotFoundPage without a full page reload. Must stay.
       { path: '*', element: <NotFoundPage /> },
     ],
   },
