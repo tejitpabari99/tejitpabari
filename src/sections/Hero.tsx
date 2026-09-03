@@ -11,7 +11,16 @@ export function Hero() {
   return (
     <section className="relative bg-cream px-6 pb-14 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12 lg:pt-36">
       <div className="mx-auto grid w-full max-w-content grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)] lg:gap-8">
-        <div className="mx-auto w-full max-w-[440px] text-left lg:mx-0">
+        {/* Portrait renders first in the DOM so it appears above the
+            headline text on mobile/small screens, matching the intended
+            visual order without needing a CSS order override there. At
+            `lg` and up it moves back to the right via lg:order-2, paired
+            with lg:order-1 on the text block below. */}
+        <div className="order-1 flex items-center justify-center lg:order-2">
+          <HeroPortrait />
+        </div>
+
+        <div className="order-2 mx-auto w-full max-w-[440px] text-left lg:order-1 lg:mx-0">
           <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary sm:text-[0.74rem]">
             Health Tech Builder
           </p>
@@ -81,10 +90,6 @@ export function Hero() {
               <LinkedInIcon />
             </a>
           </div>
-        </div>
-
-        <div className="flex items-center justify-center">
-          <HeroPortrait />
         </div>
       </div>
     </section>
