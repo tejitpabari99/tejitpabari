@@ -3,8 +3,8 @@ slug: flood-event-extraction-bangladesh
 title: Flood Event Extraction from News Media (Bangladesh)
 description: >-
   Built a BERT-based classifier to extract flood events from 40,000+ tagged
-  Bangladeshi news articles, then used the resulting time-series — validated
-  against Sentinel satellite data — to help the Bangladesh government
+  Bangladeshi news articles, then used the resulting time-series (validated
+  against Sentinel satellite data) to help the Bangladesh government
   develop a flood-index insurance product. Presented at AGU; published as a
   pre-print.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
