@@ -68,6 +68,30 @@ export default {
         // 1.5rem, leading-7 = 1.75rem, so (6 + 0.5) * 0.25rem = 1.625rem.
         '6.5': '1.625rem',
       },
+      opacity: {
+        // Real bug fixed here (round 3 final pass): Tailwind's default
+        // opacity scale (used to resolve the `/NN` modifier on color
+        // utilities like `bg-teal/92`) only has multiples of 5. Any `/NN`
+        // value outside that scale silently compiles to NO css rule at
+        // all — no error, the utility is just dropped — unless it's
+        // written with arbitrary-value syntax (`bg-teal/[0.92]`). This bit
+        // StatusBadge (`bg-teal/92`, `bg-slate-dark/92`,
+        // `bg-status-building/92` — its colored pill background never
+        // rendered anywhere on the site) and, it turns out, several other
+        // `/NN` modifiers already in use across the design system
+        // (`border-*/12`, `/22`, `/28`, `hover:bg-teal-secondary/8`,
+        // `bg-cream/97`) that were silently no-ops the same way. Extending
+        // the scale with the exact non-standard steps this codebase uses
+        // (verified against dist/assets/*.css before and after) fixes all
+        // of them at once, the same way the spacing/lineHeight '4.5'/'6.5'
+        // extensions above fix their own gaps.
+        '8': '0.08',
+        '12': '0.12',
+        '22': '0.22',
+        '28': '0.28',
+        '92': '0.92',
+        '97': '0.97',
+      },
       typography: () => ({
         DEFAULT: {
           css: {
