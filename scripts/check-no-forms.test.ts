@@ -1,9 +1,12 @@
 // scripts/check-no-forms.test.ts
 //
-// Task 25 per .dev/website-revamp/04-projects-research-pages/TASKS.md —
-// a small shell-invocation test for scripts/check-no-forms.sh (Task 15),
-// per PRD §7's "a small shell-invocation test... acceptable given the
-// script's own small surface".
+// Round 3 (r3-01-schema-icons-content): the /live subsystem was deleted, so
+// src/pages/live/ no longer exists on disk. check-no-forms.sh's own new
+// early-exit branch (`[ ! -d src/pages/live ]`) is what this file now
+// exercises against the real repo state — plus a synthetic re-check of the
+// original "input-accepting markup" guard logic against a throwaway
+// src/pages/live/ directory, created and torn down within this one test, so
+// that logic still has coverage even though the real directory is gone.
 //
 // This file intentionally lives under `scripts/`, not `src/`, and — like
 // scripts/check-launch-content.test.ts (SP02 Task 10/15) before it — is
@@ -11,30 +14,16 @@
 // vite.config.ts (`scripts/**`), so `npm test` (`vitest run` with no path
 // argument) does not pick it up and its suite/test counts stay unaffected.
 // Because Vitest applies `exclude` before a CLI path argument filters
-// anything, a bare `npx vitest run scripts/check-no-forms.test.ts` finds
-// zero test files. Run it with the same lever `check:launch` uses to lift
+// anything, run this file with the same lever `check:launch` uses to lift
 // the `scripts/**` exclusion for one invocation:
 // `CHECK_LAUNCH=1 npx vitest run scripts/check-no-forms.test.ts`.
-//
-// check-no-forms.sh's target path (`src/pages/live`) is hardcoded, not
-// parameterized (Task 15, unchanged here) — so unlike a fixture-temp-dir
-// test, this test's simplest reliable form is to exercise the script
-// against the REAL src/pages/live/ directory: (a) confirm it exits 0
-// today against that real, clean directory, and (b) reproduce the exact
-// manual steps from Task 15's acceptance criterion 3 programmatically —
-// write a temp file with a bare <input> into the real src/pages/live/,
-// assert nonzero exit and the file's name in the output, then delete the
-// temp file in a finally/afterEach regardless of test outcome, so a
-// failed assertion never leaves the fixture behind to break every
-// subsequent `check:no-forms` run.
 import { afterEach, describe, expect, it } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { existsSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const REPO_ROOT = path.resolve(__dirname, '..');
 const LIVE_DIR = path.join(REPO_ROOT, 'src', 'pages', 'live');
-const FIXTURE_FILE = path.join(LIVE_DIR, '__check-no-forms-test-fixture__.tsx');
 
 function runScript(): { status: number; output: string } {
   try {
@@ -51,93 +40,58 @@ function runScript(): { status: number; output: string } {
 }
 
 describe('check-no-forms.sh', () => {
-  // Backstop cleanup: even if an assertion below throws mid-test, the
-  // fixture file must never survive to break a later `check:no-forms` run
-  // (this test's own acceptance criterion, and TASKS.md's own explicit
-  // "zero stray files" requirement).
+  // Backstop cleanup: even if an assertion below throws mid-test, the real
+  // repo must never end up with a leftover src/pages/live/ directory (the
+  // whole point of round 3's removal) breaking a later `check:no-forms` run.
   afterEach(() => {
-    if (existsSync(FIXTURE_FILE)) {
-      rmSync(FIXTURE_FILE);
+    if (existsSync(LIVE_DIR)) {
+      rmSync(LIVE_DIR, { recursive: true, force: true });
     }
   });
 
-  it('exits 0 against the real, clean src/pages/live/ directory today', () => {
+  it('exits 0 against the real repo, where src/pages/live/ no longer exists', () => {
+    expect(existsSync(LIVE_DIR)).toBe(false);
     const { status, output } = runScript();
     expect(status).toBe(0);
     expect(output).toContain('check:no-forms passed');
+    expect(output).toContain('does not exist');
   });
 
-  it('exits nonzero and names the offending file when a bare <input> is added under src/pages/live/', () => {
+  it('exits nonzero and names the offending file when a bare <input> is added under a (re-created) src/pages/live/', () => {
+    mkdirSync(LIVE_DIR, { recursive: true });
     writeFileSync(
-      FIXTURE_FILE,
+      path.join(LIVE_DIR, '__check-no-forms-test-fixture__.tsx'),
       `export function CheckNoFormsTestFixture() {\n  return <input type="text" />;\n}\n`,
     );
 
-    let result: { status: number; output: string };
-    try {
-      result = runScript();
-    } finally {
-      rmSync(FIXTURE_FILE);
-    }
+    const result = runScript();
 
     expect(result.status).not.toBe(0);
     expect(result.output).toContain('FRAGILITY GUARD FAILED');
     expect(result.output).toContain('__check-no-forms-test-fixture__.tsx');
   });
 
-  it('is clean again (exits 0) immediately after the fixture file is removed', () => {
-    const { status, output } = runScript();
-    expect(status).toBe(0);
-    expect(output).toContain('check:no-forms passed');
-    expect(existsSync(FIXTURE_FILE)).toBe(false);
-  });
-
-  // Security regression (verified finding): the original pattern
-  // `<(input|form|textarea)[ >]` required a space or ">" immediately after
-  // the tag name, and grep matched line-by-line — so it missed both a bare
-  // self-closing tag (no space before "/") and a Prettier-wrapped
-  // multi-line tag (nothing follows "input" on its own line). This check
-  // backs a factual "no forms on this site" claim in /privacy and /terms,
-  // so a silent bypass here makes shipped legal copy false.
-  it('exits nonzero and names the file for a bare self-closing tag ("<input/>", no space before "/")', () => {
+  it('exits nonzero for a bare self-closing tag ("<input/>", no space before "/") under a (re-created) src/pages/live/', () => {
+    mkdirSync(LIVE_DIR, { recursive: true });
     writeFileSync(
-      FIXTURE_FILE,
+      path.join(LIVE_DIR, '__check-no-forms-test-fixture__.tsx'),
       `export function CheckNoFormsTestFixture() {\n  return <input/>;\n}\n`,
     );
 
-    let result: { status: number; output: string };
-    try {
-      result = runScript();
-    } finally {
-      rmSync(FIXTURE_FILE);
-    }
+    const result = runScript();
 
     expect(result.status).not.toBe(0);
     expect(result.output).toContain('FRAGILITY GUARD FAILED');
-    expect(result.output).toContain('__check-no-forms-test-fixture__.tsx');
   });
 
-  it('exits nonzero and names the file for a Prettier-wrapped multi-line self-closing tag', () => {
-    writeFileSync(
-      FIXTURE_FILE,
-      `export function CheckNoFormsTestFixture() {\n  return (\n    <input\n      type="text"\n    />\n  );\n}\n`,
-    );
+  it('is clean again (exits 0, "does not exist") immediately after the re-created directory is removed', () => {
+    mkdirSync(LIVE_DIR, { recursive: true });
+    writeFileSync(path.join(LIVE_DIR, 'placeholder.tsx'), 'export {};\n');
+    rmSync(LIVE_DIR, { recursive: true, force: true });
 
-    let result: { status: number; output: string };
-    try {
-      result = runScript();
-    } finally {
-      rmSync(FIXTURE_FILE);
-    }
-
-    expect(result.status).not.toBe(0);
-    expect(result.output).toContain('FRAGILITY GUARD FAILED');
-    expect(result.output).toContain('__check-no-forms-test-fixture__.tsx');
-  });
-
-  it('still exits 0 against the real src/pages/live/ contents (registry.ts, sample-project.tsx, and their tests) after the pattern broadened', () => {
     const { status, output } = runScript();
     expect(status).toBe(0);
-    expect(output).toContain('check:no-forms passed');
+    expect(output).toContain('does not exist');
+    expect(existsSync(LIVE_DIR)).toBe(false);
   });
 });

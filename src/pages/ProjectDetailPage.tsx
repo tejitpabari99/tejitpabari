@@ -8,7 +8,6 @@ import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { PageContainer } from '@/layout/PageContainer';
 import { projects } from '@/data';
 import { NotFoundPage } from './NotFoundPage';
-import { hasLiveRoute } from './live/registry';
 
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -33,10 +32,7 @@ export function ProjectDetailPage() {
       <BackButton to="/projects" />
       <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{project.description}</p>
-      <LinksRow
-        links={project.links}
-        liveHref={hasLiveRoute(project.slug) ? `/projects/${project.slug}/live` : undefined}
-      />
+      <LinksRow links={project.links} />
       <ContentBody body={project.body} />
     </PageContainer>
   );

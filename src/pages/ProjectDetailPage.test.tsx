@@ -21,6 +21,7 @@ const { FIXTURE_PROJECT } = vi.hoisted(() => ({
     description: 'Track and organize medical documents in one place.',
     image: '/images/med-doc-tracker.png',
     tags: ['Health Tech'],
+    techTags: [],
     status: 'Completed',
     links: [{ label: 'GitHub', href: 'https://github.com/x/med-doc-tracker' }],
     date: '2024-06-01',
@@ -30,14 +31,7 @@ const { FIXTURE_PROJECT } = vi.hoisted(() => ({
 
 vi.mock('@/data', async () => {
   const actual = await vi.importActual<typeof import('@/data')>('@/data');
-  // registry.ts's eager validateLiveRegistry() runs against this same
-  // mocked `projects` array (ProjectDetailPage -> registry -> '@/data'),
-  // so every HOSTED_LIVE_PAGES slug (currently just 'sample-project') must
-  // still resolve to a project here or that eager check throws at import
-  // time — keep the real entry alongside the fixture rather than dropping
-  // it, without pulling in the rest of the real `projects` array.
-  const hostedRealProjects = actual.projects.filter((p) => p.slug === 'sample-project');
-  return { ...actual, projects: [FIXTURE_PROJECT, ...hostedRealProjects] };
+  return { ...actual, projects: [FIXTURE_PROJECT] };
 });
 
 import { ProjectDetailPage } from './ProjectDetailPage';

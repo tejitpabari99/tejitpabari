@@ -13,73 +13,18 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { configDefaults } from 'vitest/config';
 import path from 'node:path';
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import matter from 'gray-matter';
-import type { Plugin } from 'vite';
 
-const PROJECTS_DIR = path.resolve(__dirname, 'src/content/projects');
-
-// Independent of src/data/projects.ts on purpose — same reasoning
-// juno-landing-page's own sitemapPlugin documents: import.meta.glob is a
-// Vite *application*-build-pipeline macro, not guaranteed to resolve from
-// vite.config.ts's own lighter esbuild-based load path. This plugin does its
-// own small fs + gray-matter scan instead.
-//
-// It DOES validate liveUrl itself (mirroring src/data/shared.ts's
-// assertAbsoluteUrl) rather than deferring to the main build's loader
-// (SP02): closeBundle fires during vite-react-ssg's *client* bundle step,
-// while assertAbsoluteUrl only runs later, during SSR route rendering. An
-// invalid liveUrl (e.g. a protocol-relative "//evil.com/phish", which
-// Firebase Hosting would serve as an open redirect off tejitpabari.com)
-// would otherwise be written into firebase.json's hosting.redirects BEFORE
-// the SSR step ever gets a chance to reject it — leaving a corrupted
-// firebase.json on disk even though the build then aborts.
-export function readLiveUrls(dir: string): { slug: string; liveUrl: string }[] {
-  return readdirSync(dir)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => ({ file: f, data: matter(readFileSync(path.join(dir, f), 'utf-8')).data }))
-    .filter((entry): entry is { file: string; data: { slug: string; liveUrl: string } } =>
-      typeof entry.data.liveUrl === 'string',
-    )
-    .map(({ file, data: { slug, liveUrl } }) => {
-      if (!/^https?:\/\//.test(liveUrl)) {
-        throw new Error(
-          `readLiveUrls: ${path.join(dir, file)}: "liveUrl" must be an absolute http(s) URL. Got ${JSON.stringify(liveUrl)}.`,
-        );
-      }
-      return { slug, liveUrl };
-    });
-}
-
-function liveRedirectsPlugin(): Plugin {
-  return {
-    name: 'live-redirects',
-    // Build-only: closeBundle otherwise also fires as a side effect of
-    // Vitest's own config loading (Vitest resolves/loads vite.config.ts and
-    // runs the plugin pipeline even though it never performs a real bundle),
-    // which would silently rewrite the real firebase.json on every `npm
-    // test` / `npx vitest run`. `apply: 'build'` scopes this plugin (and
-    // therefore its closeBundle hook) to `vite build` only, leaving `vite
-    // dev` and Vitest untouched, without changing any build-time behavior.
-    apply: 'build',
-    closeBundle() {
-      const entries = readLiveUrls(PROJECTS_DIR);
-      const firebaseJsonPath = path.resolve(__dirname, 'firebase.json');
-      const config = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
-      config.hosting.redirects = entries.map(({ slug, liveUrl }) => ({
-        source: `/projects/${slug}/live`,
-        destination: liveUrl,
-        type: 302, // temporary — liveUrl is content the owner can change; a
-                   // permanent 301 risks a browser/crawler caching a stale
-                   // destination past the next content edit.
-      }));
-      writeFileSync(firebaseJsonPath, JSON.stringify(config, null, 2) + '\n');
-    },
-  };
-}
+// Round 3 (r3-01-schema-icons-content): this file used to also export
+// `readLiveUrls` and a `liveRedirectsPlugin` that scanned every project's
+// `liveUrl` frontmatter and wrote `firebase.json`'s `hosting.redirects` for
+// each `/projects/<slug>/live` path at build time (closeBundle). Both
+// `liveUrl` and the whole /live subsystem were removed in this round, so
+// that plugin has nothing left to do — removed here rather than left as
+// dead code that would otherwise still open/rewrite firebase.json on every
+// `vite build` for no reason.
 
 export default defineConfig({
-  plugins: [react(), liveRedirectsPlugin()], // sitemap.xml/robots.txt generation lives in scripts/generate-sitemap.mjs, run via the `prebuild` npm script — not a Vite plugin here.
+  plugins: [react()], // sitemap.xml/robots.txt generation lives in scripts/generate-sitemap.mjs, run via the `prebuild` npm script — not a Vite plugin here.
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

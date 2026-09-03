@@ -1,10 +1,22 @@
 #!/usr/bin/env bash
 # scripts/check-no-forms.sh
-# Run before adding any new entry to src/pages/live/registry.ts's
-# HOSTED_LIVE_PAGES, and before every real deploy. Fails (nonzero exit) the
+# Round 3 (r3-01-schema-icons-content): the entire /live subsystem
+# (src/pages/live/) was removed — there is no more hosted-page registry to
+# guard. This script now exits 0 cleanly and harmlessly whenever
+# src/pages/live/ doesn't exist, rather than erroring, so it stays a
+# harmless no-op instead of a broken gate. It's kept (rather than deleted)
+# and still wired into package.json/CI in case a hosted mini-project ever
+# comes back under src/pages/live/ in the future.
+#
+# Original purpose, preserved for that future case: fail (nonzero exit) the
 # moment any file under src/pages/live/ contains input-accepting markup —
-# see the FRAGILITY GUARD comment in src/routes.tsx and PRD 05 §4.7.
+# see PRD 05 §4.7 (pre-round-3 history).
 set -euo pipefail
+
+if [ ! -d src/pages/live ]; then
+  echo "check:no-forms passed — src/pages/live/ does not exist (the /live subsystem was removed in round 3)."
+  exit 0
+fi
 
 # -P/-z (PCRE + null-data, so the whole file is one match buffer instead of
 # grep's normal line-at-a-time matching) with the (?s) inline flag makes

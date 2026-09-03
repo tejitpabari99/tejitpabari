@@ -44,17 +44,8 @@ export function ProjectsPage() {
               description={project.description}
               tags={project.tags}
               status={project.status}
-              externalHref={project.liveUrl}
-              externalLabel={`Open ${project.title} live`}
               onCardClick={() =>
                 trackEvent('project_card_click', { slug: project.slug, collection: 'projects', title: project.title })
-              }
-              onExternalClick={() =>
-                trackEvent('outbound_click', {
-                  url: project.liveUrl ?? '',
-                  context: 'content_external_link', // renamed enum value, PRD §4.4/§9
-                  label: `Open ${project.title} live`,
-                })
               }
             />
           ))

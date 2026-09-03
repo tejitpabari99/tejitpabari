@@ -1,13 +1,16 @@
 // src/components/LinksRow.test.tsx
 //
-// Task 19 per .dev/website-revamp/04-projects-research-pages/TASKS.md.
-// LinksRow renders null with no links/liveHref, renders the "Open Live"
-// CTA only when liveHref is set, and fires trackEvent('outbound_click', ...)
-// with context: 'content_external_link' (NOT the old 'project_external_link')
-// on an external link click.
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+// Round 3, r3-01-schema-icons-content: the "Open Live" CTA is gone (the
+// whole /live subsystem was removed). LinksRow now renders one button per
+// `links` entry — filled/dark-green (`bg-teal`) for the entry with
+// `primary: true`, outlined otherwise — with an optional per-link icon
+// (DynamicIcon when `icon` is set, the existing ExternalLinkIcon fallback
+// otherwise). Still fires trackEvent('outbound_click', ...) with
+// context: 'content_external_link' on every link click.
+import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { vi } from 'vitest';
 import { LinksRow } from './LinksRow';
 import { trackEvent } from '@/lib/analytics';
 
@@ -28,20 +31,9 @@ describe('LinksRow', () => {
     vi.clearAllMocks();
   });
 
-  it('renders nothing when links is empty and liveHref is undefined', () => {
-    const { container } = renderLinksRow({ links: [], liveHref: undefined });
+  it('renders nothing when links is empty', () => {
+    const { container } = renderLinksRow({ links: [] });
     expect(container).toBeEmptyDOMElement();
-  });
-
-  it('renders the "Open Live" CTA when liveHref is provided, pointing at that exact path', () => {
-    renderLinksRow({ links: [], liveHref: '/projects/juno/live' });
-    const cta = screen.getByRole('link', { name: /Open Live/i });
-    expect(cta).toHaveAttribute('href', '/projects/juno/live');
-  });
-
-  it('does not render the "Open Live" CTA when liveHref is undefined', () => {
-    renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }], liveHref: undefined });
-    expect(screen.queryByRole('link', { name: /Open Live/i })).not.toBeInTheDocument();
   });
 
   it('renders a labeled link for each entry in links', () => {
@@ -55,7 +47,40 @@ describe('LinksRow', () => {
     expect(screen.getByRole('link', { name: /GitHub/i })).toHaveAttribute('href', 'https://github.com/x');
   });
 
-  it("clicking an external link fires trackEvent('outbound_click', ...) with context: 'content_external_link' and the correct label/url", () => {
+  it('applies the filled dark-green (bg-teal) style to exactly the link marked primary, and the outlined style to the rest', () => {
+    renderLinksRow({
+      links: [
+        { label: 'Website', href: 'https://example.com', primary: true },
+        { label: 'GitHub', href: 'https://github.com/x' },
+      ],
+    });
+    const primaryLink = screen.getByRole('link', { name: /Website/i });
+    const secondaryLink = screen.getByRole('link', { name: /GitHub/i });
+    expect(primaryLink.className).toContain('bg-teal');
+    expect(primaryLink.className).not.toContain('border-teal-secondary');
+    expect(secondaryLink.className).toContain('border-teal-secondary');
+    expect(secondaryLink.className).not.toContain('bg-teal ');
+  });
+
+  it('renders the specified DynamicIcon before the label when a link has an "icon"', () => {
+    renderLinksRow({ links: [{ label: 'Chrome Web Store', href: 'https://chromewebstore.google.com/x', icon: 'puzzle' }] });
+    const link = screen.getByRole('link', { name: /Chrome Web Store/i });
+    const svg = link.querySelector('svg');
+    expect(svg).not.toBeNull();
+    expect(svg).toHaveClass('lucide-puzzle');
+  });
+
+  it('falls back to the plain ExternalLinkIcon when a link has no "icon"', () => {
+    renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
+    const link = screen.getByRole('link', { name: /GitHub/i });
+    const svg = link.querySelector('svg');
+    expect(svg).not.toBeNull();
+    // ExternalLinkIcon is a hand-authored svg (no lucide-* class) — the
+    // negative assertion distinguishes it from a DynamicIcon render.
+    expect(svg?.getAttribute('class') ?? '').not.toContain('lucide-');
+  });
+
+  it("clicking a link fires trackEvent('outbound_click', ...) with context: 'content_external_link' and the correct label/url", () => {
     renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
     fireEvent.click(screen.getByRole('link', { name: /GitHub/i }));
 
@@ -67,23 +92,10 @@ describe('LinksRow', () => {
     });
   });
 
-  it('does not fire trackEvent when clicking the internal "Open Live" CTA', () => {
-    renderLinksRow({ links: [], liveHref: '/projects/juno/live' });
-    fireEvent.click(screen.getByRole('link', { name: /Open Live/i }));
-    expect(trackEvent).not.toHaveBeenCalled();
-  });
-
-  it('external links open in a new tab with rel="noreferrer"', () => {
-    renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
+  it('every link opens in a new tab with rel="noreferrer"', () => {
+    renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x', primary: true }] });
     const link = screen.getByRole('link', { name: /GitHub/i });
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
-  });
-
-  it('the "Open Live" CTA opens in a new tab with rel="noreferrer"', () => {
-    renderLinksRow({ links: [], liveHref: '/projects/juno/live' });
-    const cta = screen.getByRole('link', { name: /Open Live/i });
-    expect(cta).toHaveAttribute('target', '_blank');
-    expect(cta).toHaveAttribute('rel', 'noreferrer');
   });
 });

@@ -18,6 +18,7 @@ const { FIXTURE_RESEARCH } = vi.hoisted(() => ({
     description: 'Extracting flood events from satellite imagery using ML.',
     image: '/images/flood-event-extraction.png',
     tags: ['Machine Learning'],
+    techTags: [],
     links: [{ label: 'Pre-print paper', href: 'https://arxiv.org/abs/x' }],
     date: '2023-11-01',
     body: '', // deliberately empty — this is the case under test
@@ -57,7 +58,7 @@ describe('ResearchDetailPage — empty body rendering', () => {
     expect(container.querySelector('.prose')).toBeNull();
   });
 
-  it('never renders an "Open Live" CTA (Research has no /live concept)', () => {
+  it('never renders an "Open Live" CTA (the /live subsystem was removed entirely; Research never had one)', () => {
     renderPage('flood-event-extraction');
     expect(screen.queryByRole('link', { name: /Open Live/i })).not.toBeInTheDocument();
   });

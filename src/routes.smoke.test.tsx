@@ -4,12 +4,12 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { routes } from './routes';
 
 const paths = [
-  '/', '/projects', '/projects/anything', '/projects/anything/live',
+  '/', '/projects', '/projects/anything',
   '/work-experience', '/research', '/research/anything', '/privacy', '/terms',
   '/this-does-not-exist',
 ];
 
-const BACK_ONLY_PATHS = ['/projects', '/projects/anything', '/projects/anything/live'];
+const BACK_ONLY_PATHS = ['/projects', '/projects/anything'];
 
 class NoopIntersectionObserver {
   observe() {}

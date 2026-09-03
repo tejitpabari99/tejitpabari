@@ -52,19 +52,19 @@ export function TermsPage() {
 
         <Section title="What this covers">
           <p>
-            These terms cover tejitpabari.com and everything hosted directly under this domain,
-            including project pages I host myself at addresses such as{' '}
-            <code>/projects/&lt;name&gt;/live</code>. A project hosted elsewhere, on its own
-            domain or subdomain, is governed by that project's own terms, not this page.
+            These terms cover tejitpabari.com and everything hosted directly under this domain.
+            Project and research pages here link out to where each thing actually lives, rather
+            than hosting it on this domain itself. A project hosted elsewhere, on its own domain
+            or subdomain, is governed by that project's own terms, not this page.
           </p>
         </Section>
 
         <Section title="No forms, today">
           <p>
             As of the date above, this site has no forms, accounts, or logins anywhere, and does
-            not accept anything you submit. If a future project hosted here needs to change that,
-            I will update this page, and that project's own page, before it ships, not after. See{' '}
-            <code>/privacy</code> for the same commitment, stated in more detail.
+            not accept anything you submit. If that ever changes, I will update this page before
+            it ships, not after. See <code>/privacy</code> for the same commitment, stated in more
+            detail.
           </p>
         </Section>
 

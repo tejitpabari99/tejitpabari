@@ -14,7 +14,7 @@ describe('chromeModeFromHandle', () => {
   })
 })
 
-const BACK_ONLY_PATHS = ['projects', 'projects/:slug', 'projects/:slug/live']
+const BACK_ONLY_PATHS = ['projects', 'projects/:slug']
 
 describe('every route in src/routes.tsx resolves to the expected chrome mode', () => {
   const leafRoutes = routes[0].children ?? []

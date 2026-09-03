@@ -115,21 +115,21 @@ export function PrivacyPage() {
 
         <Section title="What this covers">
           <p>
-            This policy covers tejitpabari.com and everything hosted directly under this domain,
-            including project pages I have built and hosted myself at addresses such as{' '}
-            <code>/projects/&lt;name&gt;/live</code>. If a project of mine lives on its own
+            This policy covers tejitpabari.com and everything hosted directly under this domain.
+            Every project and research item on this site links out to where it actually lives, its
+            own site, a GitHub repository, a published paper, an app or extension store listing,
+            rather than being hosted on this domain itself. If a project of mine lives on its own
             domain, such as meetjuno.health for Juno, that project has its own privacy policy, and
             this page does not speak for it. Where that applies, I link to the project's own
             policy from its page here.
           </p>
           <p>
-            <strong>This is a standing commitment, not a one-time fact.</strong> As I add new
-            hosted projects under <code>/projects/*/live</code>, one of them may eventually need
-            to collect something this page does not currently describe, for example an input
-            field. If that happens, I will update this page, and that project's own writeup,
-            before the project goes live, not after. If you are reading this and a project you are
-            using appears to ask for something this page does not describe, that is a gap in this
-            page, not a hidden feature. Please email me (see Contact, below).
+            <strong>This is a standing commitment, not a one-time fact.</strong> If I ever add
+            something to this domain that collects information this page does not currently
+            describe, for example an input field, I will update this page first, not after. If
+            you are reading this and something on tejitpabari.com appears to ask for something
+            this page does not describe, that is a gap in this page, not a hidden feature. Please
+            email me (see Contact, below).
           </p>
         </Section>
 

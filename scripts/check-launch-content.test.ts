@@ -26,28 +26,27 @@
 // argument) does not pick it up and its suite/test counts stay unaffected.
 // `check:launch` names this file explicitly instead.
 //
-// The gate's contract is unchanged from TASKS.md Task 10's original spec:
-// same two checks (no `DRAFT_DATE: true` left on a work-experience entry,
-// no `demo: true` left on a project), same failure messages, same
-// "names the offending file" behavior, exit 0 on a clean corpus and
-// non-zero otherwise (vitest run's own pass/fail exit code IS that
-// contract here — no separate process.exit call is needed).
+// Round 3 (r3-01-schema-icons-content): the gate's original second check —
+// "no `demo: true` left on a project" — is gone along with the `demo`
+// field itself, which was deleted from the Project schema entirely (it was
+// unused by any page; see src/data/projects.ts). The gate now checks only
+// the one remaining marker: no work-experience entry with
+// `DRAFT_DATE: true` left. Same failure-message style, same "names the
+// offending file" behavior, exit 0 on a clean corpus and non-zero
+// otherwise (vitest run's own pass/fail exit code IS that contract here —
+// no separate process.exit call is needed).
 import { describe, expect, it } from 'vitest';
-import { projects, workExperience, type Project, type WorkExperience } from '../src/data';
+import { workExperience, type WorkExperience } from '../src/data';
 
-export function checkLaunchContent(
-  allProjects: Project[],
-  allWorkExperience: WorkExperience[],
-): { draftDates: WorkExperience[]; demoProjects: Project[] } {
+export function checkLaunchContent(allWorkExperience: WorkExperience[]): { draftDates: WorkExperience[] } {
   return {
     draftDates: allWorkExperience.filter((w) => w.draftDate),
-    demoProjects: allProjects.filter((p) => p.demo === true),
   };
 }
 
 describe('pre-launch content gate', () => {
   it('has no work-experience entries with DRAFT_DATE: true remaining', () => {
-    const { draftDates } = checkLaunchContent(projects, workExperience);
+    const { draftDates } = checkLaunchContent(workExperience);
     if (draftDates.length > 0) {
       const lines = draftDates.map(
         (w) =>
@@ -57,48 +56,28 @@ describe('pre-launch content gate', () => {
     }
     expect(draftDates).toEqual([]);
   });
-
-  it('has no project entries with demo: true remaining', () => {
-    const { demoProjects } = checkLaunchContent(projects, workExperience);
-    if (demoProjects.length > 0) {
-      const lines = demoProjects.map(
-        (p) =>
-          `  - src/content/projects/${p.slug}.md still has demo: true — delete the file before a real launch (see BRIEF §3, Sharing/SEO).`,
-      );
-      expect.fail(`Pre-launch content check FAILED:\n\n${lines.join('\n')}`);
-    }
-    expect(demoProjects).toEqual([]);
-  });
 });
 
 // SP02 Task 15 (PRD §7, fourth bullet): exercise `checkLaunchContent`'s
 // filter/report logic directly against in-memory fixtures, never through
-// `projects`/`workExperience` (the real, loaded content — already covered
-// above) and never through `main()`/`process.exit` (there is no `main()`
-// here; `vitest run`'s own pass/fail exit code is the gate's contract, per
-// the file-header note above). `checkLaunchContent` is defined and exported
-// in this same file (not a separate `./check-launch-content` module) — see
+// `workExperience` (the real, loaded content — already covered above) and
+// never through `main()`/`process.exit` (there is no `main()` here;
+// `vitest run`'s own pass/fail exit code is the gate's contract, per the
+// file-header note above). `checkLaunchContent` is defined and exported in
+// this same file (not a separate `./check-launch-content` module) — see
 // the file-header note on why the gate's logic lives here — so it's used
 // directly with no additional import.
-const cleanProject: Project = { slug: 'a', title: 'A', description: 'd', image: '/x.png', tags: ['Others'], links: [], date: '2024-01-01', body: '' };
-const demoProject: Project = { ...cleanProject, slug: 'sample-project', demo: true };
 const cleanWork: WorkExperience = { company: 'C', role: 'R', startDate: '2024-01-01', endDate: 'Present', links: [], draftDate: false, body: 'b', id: 'c' };
 const draftWork: WorkExperience = { ...cleanWork, draftDate: true };
 
 describe('checkLaunchContent', () => {
   it('reports a work-experience entry with draftDate: true', () => {
-    const { draftDates } = checkLaunchContent([cleanProject], [cleanWork, draftWork]);
+    const { draftDates } = checkLaunchContent([cleanWork, draftWork]);
     expect(draftDates.map((w) => w.id)).toEqual(['c']);
   });
 
-  it('reports a project with demo: true', () => {
-    const { demoProjects } = checkLaunchContent([cleanProject, demoProject], [cleanWork]);
-    expect(demoProjects.map((p) => p.slug)).toEqual(['sample-project']);
-  });
-
-  it('reports clean when neither marker is present', () => {
-    const result = checkLaunchContent([cleanProject], [cleanWork]);
+  it('reports clean when no marker is present', () => {
+    const result = checkLaunchContent([cleanWork]);
     expect(result.draftDates).toHaveLength(0);
-    expect(result.demoProjects).toHaveLength(0);
   });
 });
