@@ -9,9 +9,12 @@ description: >-
   92.7% accuracy with AdaBoost.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Machine Learning]
+techTags: [YOLOv3, BERT, AdaBoost]
 status: Completed
 links:
   - label: Project Report
     href: https://bit.ly/tejit-dvmm-lab-research-2020
+    icon: file-text
+    primary: true
 date: "2020-08-01"
 ---

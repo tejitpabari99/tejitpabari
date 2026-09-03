@@ -7,9 +7,11 @@ description: >-
   content into a navigable, interactive map.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Developer Tools]
-liveUrl: https://clipverse-five.vercel.app/
+techTags: [YouTube Data API, Google Maps API, Web App]
 links:
   - label: Website
     href: https://clipverse-five.vercel.app/
+    icon: globe
+    primary: true
 date: "2023-06-01"
 ---

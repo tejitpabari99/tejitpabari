@@ -7,9 +7,12 @@ description: >-
   to train RandomForest and SVM classifiers for precise pill identification.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Health, Machine Learning]
+techTags: [Google Vision API, OCR, Random Forest, SVM]
 status: Completed
 links:
   - label: Project Report
     href: https://www.researchgate.net/publication/340528010_Pill_Detection_Prescription_Analysis
+    icon: file-text
+    primary: true
 date: "2019-05-01"
 ---

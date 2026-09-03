@@ -8,13 +8,16 @@ description: >-
   doctors so far.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Health Tech]
+techTags: [AI/LLM, Health Tech, Product Development]
 status: Building
-liveUrl: https://app.meetjuno.health/
 links:
   - label: App
     href: https://app.meetjuno.health/
+    icon: external-link
   - label: Website
     href: https://meetjuno.health/
+    icon: globe
+    primary: true
 date: "2025-06-01"
 ---
 Juno helps patients get more out of every doctor's visit. During an appointment, it takes structured notes in real time and prompts context-aware questions a patient might not think to ask in the moment. It turns the conversation into a clear summary with concrete follow-ups, instead of a page of hurried handwriting.

@@ -8,9 +8,12 @@ description: >-
   database interactions.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Machine Learning]
+techTags: [Python, SQL, Web Scraping]
 status: Completed
 links:
   - label: Website
     href: https://incite.columbia.edu/measuring-liberal-arts
+    icon: globe
+    primary: true
 date: "2020-05-01"
 ---

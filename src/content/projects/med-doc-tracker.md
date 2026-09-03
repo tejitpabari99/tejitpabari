@@ -7,9 +7,11 @@ description: >-
   records simpler to navigate.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Health Tech]
-liveUrl: https://tejitpabari.short.gy/med-doc-tracker
+techTags: [Document Management, Search, Health Tech]
 links:
   - label: Website
     href: https://tejitpabari.short.gy/med-doc-tracker
+    icon: file-text
+    primary: true
 date: "2024-06-01"
 ---

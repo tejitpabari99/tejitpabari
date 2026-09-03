@@ -7,10 +7,12 @@ description: >-
   the main story. Downloaded 200+ times.
 image: https://images.unsplash.com/photo-1572177812156-58036aae439c
 tags: [Developer Tools]
+techTags: [Chrome Extension, JavaScript]
 status: Completed
-liveUrl: https://chromewebstore.google.com/detail/crunchy-filler/djbcknbbfoldifpllefimnnkfaogcnid
 links:
   - label: Chrome Web Store
     href: https://chromewebstore.google.com/detail/crunchy-filler/djbcknbbfoldifpllefimnnkfaogcnid
+    icon: puzzle
+    primary: true
 date: "2022-01-01"
 ---
