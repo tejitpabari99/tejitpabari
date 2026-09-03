@@ -35,7 +35,7 @@ export function WorkExperienceSection() {
         <h2 className="mt-4 max-w-[22ch] text-balance text-[1.5rem] font-extrabold leading-[1.1] tracking-tight text-ink sm:max-w-none sm:whitespace-nowrap sm:text-[clamp(1.4rem,3.2vw,2.5rem)] sm:leading-[0.96]">
           Where I&rsquo;ve worked and what I&rsquo;ve built.
         </h2>
-        <div className="mt-8 max-w-[640px] lg:mt-10">
+        <div className="mt-8 lg:mt-10">
           <Timeline entries={entries} showSeeAll={hasMore} />
         </div>
       </div>
