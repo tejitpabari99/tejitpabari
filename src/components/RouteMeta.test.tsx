@@ -71,4 +71,14 @@ describe('RouteMeta', () => {
       'A list of things I have built.',
     );
   });
+
+  it('does not duplicate the site name when title already equals SITE_NAME', () => {
+    // Regression test for the reported "Tejit Pabari · Tejit Pabari" tab
+    // title bug: HomePage passes title="Tejit Pabari", which equals
+    // SITE_NAME exactly, so the " · SITE_NAME" suffix must not be appended.
+    render(<RouteMeta title="Tejit Pabari" description="d" path="/" />);
+    expect(document.title).toBe('Tejit Pabari');
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('Tejit Pabari');
+    expect(document.querySelector('meta[name="twitter:title"]')?.getAttribute('content')).toBe('Tejit Pabari');
+  });
 });

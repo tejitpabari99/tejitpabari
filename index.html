@@ -3,11 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tejit Pabari: Health-Tech Builder</title>
-    <meta
-      name="description"
-      content="Tejit Pabari is a software engineer and founder building health-tech products, including Juno, an AI companion for medical appointments."
-    />
+    <!--
+      No static title or description meta tag here on purpose: this is a
+      prerendered site, and vite-react-ssg's renderHTML always PREPENDS each
+      route's Head-emitted tags (from RouteMeta) right after the opening
+      head tag rather than replacing anything already in this template. A
+      static title tag here would sit as a second, dead title element on
+      every built page (invalid HTML) and would become the one browsers
+      actually use if the Head-emitted tag were ever missing. RouteMeta
+      supplies both on every route, so this file must not declare either.
+    -->
 
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/favicon.png" />
