@@ -4,21 +4,28 @@
 // use (a `links[].icon` value, kebab-case, e.g. "external-link"). Kept as a
 // plain .ts module (no JSX) so src/data/shared.ts (a non-React, content-parse
 // module) can import `isValidIconName` for validation without pulling React
-// component code into its own concerns — DynamicIcon.tsx imports this same
+// component code into its own concerns - DynamicIcon.tsx imports this same
 // map for rendering.
 //
 // Deliberately a hand-curated subset of lucide-react's ~1500 icons, not the
 // full `import * as LucideIcons from 'lucide-react'` set: named imports here
 // stay tree-shakeable (only the icons actually referenced end up in the
-// bundle), the resolution stays synchronous (required for SSG prerender —
+// bundle), the resolution stays synchronous (required for SSG prerender -
 // lucide-react/dynamicIconImports.mjs's per-icon dynamic `import()` would not
 // be), and a hand-picked list is easier to keep "vast enough for a portfolio
 // site" without accidentally exposing lucide-react's non-icon exports.
 //
 // NOTE: lucide-react does not ship brand/logo icons (no "chrome", "github",
-// "linkedin", "twitter", etc. — the project dropped those years ago in favor
-// of pointing users at simple-icons). Pick a generic icon that fits the
-// destination instead (e.g. "puzzle" for a browser-extension store link).
+// "linkedin", "twitter", etc. - the project dropped those years ago in favor
+// of pointing users at simple-icons). Three of those gaps ("chrome",
+// "github", "linkedin") are filled below with this repo's own hand-rolled
+// icon components instead (GitHubIcon.tsx, LinkedInIcon.tsx, ChromeIcon.tsx)
+// - see IconComponent below for why a plain function component can sit in
+// the same ICON_MAP as lucide-react's ForwardRefExoticComponent icons.
+import type { ComponentType } from 'react';
+import { GitHubIcon } from './GitHubIcon';
+import { LinkedInIcon } from './LinkedInIcon';
+import { ChromeIcon } from './ChromeIcon';
 import {
   ExternalLink,
   Globe,
@@ -107,11 +114,34 @@ import {
   HelpCircle,
   CircleCheck,
   BadgeCheck,
-  type LucideIcon,
 } from 'lucide-react';
 
+// The common shape every ICON_MAP entry must satisfy: lucide-react's
+// LucideIcon (a ForwardRefExoticComponent accepting the full SVGProps
+// surface, of which `className` and `aria-hidden` are a subset) alongside
+// this repo's own hand-rolled icon components (GitHubIcon.tsx etc., plain
+// function components typed as `{ className?: string }`). DynamicIcon.tsx
+// always calls `createElement(Icon, { className, 'aria-hidden': true })`
+// regardless of which kind of icon it resolved to - both component shapes
+// accept that exact prop set (a hand-rolled icon's narrower prop type is
+// structurally a supertype of `{ className?, 'aria-hidden'? }`, so it's
+// assignable here without a wrapper), so no separate branching is needed
+// at render time. `ComponentType<P>` (not a hand-rolled union) is what
+// lets createElement's own overloads resolve P correctly - a raw union of
+// LucideIcon and a plain function type defeats overload resolution.
+export interface IconComponentProps {
+  className?: string;
+  'aria-hidden'?: boolean | 'true' | 'false';
+}
+
+export type IconComponent = ComponentType<IconComponentProps>;
+
 // Keys are exactly what content frontmatter writes as `icon: <name>`.
-export const ICON_MAP: Record<string, LucideIcon> = {
+export const ICON_MAP: Record<string, IconComponent> = {
+  // Hand-rolled brand icons - see the NOTE above import block.
+  github: GitHubIcon,
+  linkedin: LinkedInIcon,
+  chrome: ChromeIcon,
   'external-link': ExternalLink,
   globe: Globe,
   'file-text': FileText,
@@ -207,6 +237,6 @@ export function isValidIconName(name: string): boolean {
   return Object.prototype.hasOwnProperty.call(ICON_MAP, name);
 }
 
-export function resolveIcon(name: string): LucideIcon | undefined {
+export function resolveIcon(name: string): IconComponent | undefined {
   return ICON_MAP[name];
 }

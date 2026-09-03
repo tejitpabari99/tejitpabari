@@ -65,10 +65,9 @@ status: Completed                    # optional status pill
 links:
   - label: Chrome Web Store
     href: https://chromewebstore.google.com/detail/crunchy-filler/djbcknbbfoldifpllefimnnkfaogcnid
-    icon: puzzle                      # picked because it's a browser
-                                       # extension, not literally "chrome"
-                                       # (lucide-react doesn't ship brand
-                                       # logos, see note below)
+    icon: chrome                      # this site's own hand-rolled Chrome
+                                       # icon (lucide-react itself ships no
+                                       # brand logos, see note below)
     primary: true                     # the one obvious "try it" link
 date: "2022-01-01"
 ---
@@ -82,13 +81,18 @@ actively-maintained open-source icon set. Write the `icon:` value exactly
 as lucide.dev spells it, in kebab-case (lowercase, hyphens between words),
 for example the icon lucide.dev calls "External Link" is `external-link`.
 
-**Important limitation:** lucide-react does not include brand/company logos
-(no Chrome browser icon, no GitHub mark, no LinkedIn/Twitter/etc. logos,
-these were dropped from the project years ago). Pick a generic icon that
-fits the destination instead, for example `puzzle` for a browser-extension
-store link, or `code` / `git-branch` for a code repository link.
+**Brand/company logos:** lucide-react itself does not include these (no
+Chrome browser icon, no GitHub mark, no LinkedIn/Twitter/etc. logos, these
+were dropped from the lucide-react project years ago). This site fills in
+the three most commonly needed ones with its own hand-rolled icon
+components instead: `chrome`, `github`, and `linkedin` are all valid `icon:`
+values today (see `src/components/icons/ChromeIcon.tsx`,
+`GitHubIcon.tsx`, `LinkedInIcon.tsx`). For anything else brand-shaped, pick
+a generic icon that fits the destination instead, for example `code` /
+`git-branch` for a code repository link, or `puzzle` for some other kind of
+browser-extension store link.
 
-This site currently ships a hand-picked set of about 85 icon names (kept
+This site currently ships a hand-picked set of about 88 icon names (kept
 small on purpose, for a small, fast page instead of loading all ~1500
 lucide icons). If you want an icon not in this list, ask for it to be added
 to `ICON_MAP` in `src/components/icons/iconRegistry.ts`, it's a one-line
@@ -99,16 +103,17 @@ Names available today:
 ```
 activity, app-window, arrow-right, arrow-up-right, at-sign, award,
 badge-check, bar-chart, bar-chart-2, blocks, book-open, bookmark, boxes,
-brain, briefcase, building-2, calendar, chevron-right, circle-check, clock,
-cloud, code, code-2, compass, cpu, database, dna, download, external-link,
-file-badge, file-check, file-code, file-text, flask-conical, flask-round,
-folder-git-2, git-branch, git-fork, globe, graduation-cap, hash,
-heart-pulse, heart, help-circle, home, image, info, layers, line-chart,
-link-2, link, lock, mail, map-pin, map, message-square, microscope,
-monitor-smartphone, monitor, newspaper, notebook, package, phone, play,
-presentation, puzzle, rocket, school, scroll-text, send, server, settings,
-shield-check, smartphone, sparkles, star, stethoscope, tag, tags, target,
-terminal, trending-up, user, users, video, wrench, zap
+brain, briefcase, building-2, calendar, chevron-right, chrome, circle-check,
+clock, cloud, code, code-2, compass, cpu, database, dna, download,
+external-link, file-badge, file-check, file-code, file-text, flask-conical,
+flask-round, folder-git-2, git-branch, git-fork, github, globe,
+graduation-cap, hash, heart-pulse, heart, help-circle, home, image, info,
+layers, line-chart, link-2, link, linkedin, lock, mail, map-pin, map,
+message-square, microscope, monitor-smartphone, monitor, newspaper,
+notebook, package, phone, play, presentation, puzzle, rocket, school,
+scroll-text, send, server, settings, shield-check, smartphone, sparkles,
+star, stethoscope, tag, tags, target, terminal, trending-up, user, users,
+video, wrench, zap
 ```
 
 ## What's no longer part of the schema

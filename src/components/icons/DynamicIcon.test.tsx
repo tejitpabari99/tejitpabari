@@ -14,7 +14,7 @@ describe('DynamicIcon', () => {
     const svg = container.querySelector('svg');
     expect(svg).not.toBeNull();
     // lucide-react's createLucideIcon stamps a `lucide-<kebab-name>` class
-    // onto every rendered icon — a direct check that we resolved to the
+    // onto every rendered icon - a direct check that we resolved to the
     // BookOpen component specifically, not just "some svg".
     expect(svg).toHaveClass('lucide-book-open');
   });
@@ -26,5 +26,19 @@ describe('DynamicIcon', () => {
 
   it('throws a loud, named error for an unknown icon name', () => {
     expect(() => render(<DynamicIcon name="not-a-real-icon" />)).toThrow(/unknown icon name "not-a-real-icon"/);
+  });
+
+  // Round 3: "github"/"linkedin"/"chrome" resolve to this repo's own
+  // hand-rolled icon components (lucide-react ships no brand/logo icons -
+  // see iconRegistry.ts). These render real svgs but, unlike lucide icons,
+  // never carry a `lucide-*` class - the negative assertion is how
+  // LinksRow.test.tsx already distinguishes a hand-rolled icon from a
+  // DynamicIcon-resolved lucide one.
+  it.each(['github', 'linkedin', 'chrome'])('renders a hand-rolled (non-lucide) svg for "%s"', (name) => {
+    const { container } = render(<DynamicIcon name={name} className="h-4 w-4" />);
+    const svg = container.querySelector('svg');
+    expect(svg).not.toBeNull();
+    expect(svg?.getAttribute('class') ?? '').not.toContain('lucide-');
+    expect(svg).toHaveClass('h-4', 'w-4');
   });
 });
