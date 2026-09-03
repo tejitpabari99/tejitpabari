@@ -52,17 +52,62 @@ describe('parseProject', () => {
     );
   });
 
-  it('throws on a "liveUrl" that is not a URL at all', () => {
-    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nliveUrl: not-a-url\nlinks: []\ndate: "2024-01-01"\n---\n`;
-    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
-      /foo\.md.*"liveUrl" must be an absolute http\(s\) URL/is,
-    );
+  // Round 3 (r3-01-schema-icons-content): "liveUrl" is no longer a
+  // recognized frontmatter field at all (the /live subsystem was removed),
+  // so it now falls under the plain "unknown frontmatter key" guard rather
+  // than getting its own URL-shape validation.
+  it('throws on a "liveUrl" key at all, as an unrecognized frontmatter field', () => {
+    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nliveUrl: https://example.com\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/foo\.md.*unrecognized frontmatter field "liveUrl"/is);
   });
 
-  it('throws on a "liveUrl" using a non-http(s) protocol', () => {
-    const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nliveUrl: ftp://x\nlinks: []\ndate: "2024-01-01"\n---\n`;
-    expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
-      /foo\.md.*"liveUrl" must be an absolute http\(s\) URL/is,
-    );
+  describe('techTags', () => {
+    it('defaults to [] when absent', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+      expect(parseProject('/src/content/projects/foo.md', raw).techTags).toEqual([]);
+    });
+
+    it('is captured verbatim when present', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\ntechTags: [TypeScript, React]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+      expect(parseProject('/src/content/projects/foo.md', raw).techTags).toEqual(['TypeScript', 'React']);
+    });
+
+    it('throws, naming the file and field, when techTags contains a non-string entry', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\ntechTags: [TypeScript, 42]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+      expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/foo\.md.*"techTags"/is);
+    });
+  });
+
+  describe('links[].icon', () => {
+    it('accepts a recognized icon name', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "Site", href: "https://x.com", icon: "globe"}]\ndate: "2024-01-01"\n---\n`;
+      expect(parseProject('/src/content/projects/foo.md', raw).links[0].icon).toBe('globe');
+    });
+
+    it('throws, naming the file and the bad value, for an unrecognized icon name', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "Site", href: "https://x.com", icon: "not-a-real-icon"}]\ndate: "2024-01-01"\n---\n`;
+      expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(
+        /foo\.md.*"links\[0\]\.icon: not-a-real-icon" is not a recognized icon name/is,
+      );
+    });
+  });
+
+  describe('links[].primary', () => {
+    it('accepts exactly one primary link', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "Site", href: "https://x.com", primary: true}, {label: "Other", href: "https://y.com"}]\ndate: "2024-01-01"\n---\n`;
+      const result = parseProject('/src/content/projects/foo.md', raw);
+      expect(result.links[0].primary).toBe(true);
+      expect(result.links[1].primary).toBeUndefined();
+    });
+
+    it('throws when more than one link is marked primary', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "A", href: "https://a.com", primary: true}, {label: "B", href: "https://b.com", primary: true}]\ndate: "2024-01-01"\n---\n`;
+      expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/foo\.md.*more than one link has "primary: true"/is);
+    });
+
+    it('throws when "primary" is present but not exactly `true`', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "A", href: "https://a.com", primary: false}]\ndate: "2024-01-01"\n---\n`;
+      expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/foo\.md.*"links\[0\]\.primary" must be exactly `true`/is);
+    });
   });
 });

@@ -43,7 +43,7 @@ import { computeFeatured } from './featured';
 import type { Project } from '@/data';
 
 function proj(slug: string, date: string): Project {
-  return { slug, title: slug, description: 'd', image: '/x.png', tags: ['Others'], links: [], date, body: '' };
+  return { slug, title: slug, description: 'd', image: '/x.png', tags: ['Others'], techTags: [], links: [], date, body: '' };
 }
 
 const all: Project[] = [proj('a', '2024-06-01'), proj('b', '2024-05-01'), proj('c', '2024-04-01'), proj('d', '2024-03-01'), proj('e', '2024-02-01'), proj('f', '2024-01-01'), proj('g', '2023-12-01')];

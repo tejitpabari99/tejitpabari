@@ -52,6 +52,29 @@ describe('parseResearch', () => {
     const raw = `---\nslug: different\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\n---\n`;
     expect(() => parseResearch('/src/content/research/example.md', raw)).toThrow(/does not match filename/);
   });
+
+  // Round 3 (r3-01-schema-icons-content): techTags, links[].icon, and
+  // links[].primary are shared validation (src/data/shared.ts) exercised
+  // in depth against parseProject in src/data/shared.test.ts — these are a
+  // lighter symmetry check that parseResearch wires the same helpers up
+  // the same way.
+  it('defaults techTags to [] when absent, and captures it verbatim when present', () => {
+    const withoutTechTags = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(parseResearch('/src/content/research/example.md', withoutTechTags).techTags).toEqual([]);
+
+    const withTechTags = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\ntechTags: [Python, BERT]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+    expect(parseResearch('/src/content/research/example.md', withTechTags).techTags).toEqual(['Python', 'BERT']);
+  });
+
+  it('throws, naming the file, for an unrecognized links[].icon name', () => {
+    const raw = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: [{label: "Paper", href: "https://x.com", icon: "not-a-real-icon"}]\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseResearch('/src/content/research/example.md', raw)).toThrow(/example\.md.*is not a recognized icon name/is);
+  });
+
+  it('throws when more than one links[] entry is marked primary', () => {
+    const raw = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: [{label: "A", href: "https://a.com", primary: true}, {label: "B", href: "https://b.com", primary: true}]\ndate: "2024-01-01"\n---\n`;
+    expect(() => parseResearch('/src/content/research/example.md', raw)).toThrow(/example\.md.*more than one link has "primary: true"/is);
+  });
 });
 
 describe('migrated research corpus', () => {

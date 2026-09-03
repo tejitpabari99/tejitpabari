@@ -28,7 +28,7 @@ export function validateInternalLinks(projects: Project[], research: Research[],
       if (!href.startsWith('/')) continue;
       if (KNOWN_STATIC_ROUTES.includes(href)) continue;
 
-      const projectMatch = href.match(/^\/projects\/([a-z0-9-]+)(\/live)?$/);
+      const projectMatch = href.match(/^\/projects\/([a-z0-9-]+)$/);
       if (projectMatch) {
         if (!projectSlugs.has(projectMatch[1])) {
           throw new Error(`${path}: link href "${href}" points at unknown project slug "${projectMatch[1]}".`);
@@ -44,7 +44,7 @@ export function validateInternalLinks(projects: Project[], research: Research[],
       }
       throw new Error(
         `${path}: link href "${href}" looks internal (starts with "/") but doesn't match a known route pattern ` +
-        `(/projects/<slug>, /projects/<slug>/live, /research/<slug>, or a static route: ${KNOWN_STATIC_ROUTES.join(', ')}). ` +
+        `(/projects/<slug>, /research/<slug>, or a static route: ${KNOWN_STATIC_ROUTES.join(', ')}). ` +
         `Fix the typo, or extend KNOWN_STATIC_ROUTES / the pattern list in src/data/index.ts if this is a genuinely new internal route.`,
       );
     }

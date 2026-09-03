@@ -8,6 +8,7 @@ import {
   assertTags,
   assertOptionalStatus,
   assertLinks,
+  assertOptionalStringArray,
   normalizeDateField,
   assertImagePath,
 } from './shared';
@@ -21,13 +22,14 @@ export type Research = {
   description: string;
   image: string;
   tags: ResearchTag[];
+  techTags: string[];
   status?: ResearchStatus;
   links: Link[];
   date: string;
   body: string;
 };
 
-const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'status', 'links', 'date', 'body'];
+const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body'];
 const RESEARCH_TAGS: readonly ResearchTag[] = ['Health', 'Machine Learning', 'Other'];
 const RESEARCH_STATUSES: readonly ResearchStatus[] = ['Building', 'Not Started', 'Completed'];
 
@@ -40,10 +42,11 @@ export function parseResearch(path: string, raw: string): Research {
   const description = assertRequiredString(path, 'description', data.description);
   const image = assertImagePath(path, data.image);
   const tags = assertTags(path, data.tags, RESEARCH_TAGS) as ResearchTag[];
+  const techTags = assertOptionalStringArray(path, 'techTags', data.techTags);
   const status = assertOptionalStatus(path, data.status, RESEARCH_STATUSES) as ResearchStatus | undefined;
   const links = assertLinks(path, data.links);
   const date = normalizeDateField(path, 'date', data.date);
-  return { slug, title, description, image, tags, status, links, date, body: content.trim() };
+  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim() };
 }
 
 const files = import.meta.glob('/src/content/research/*.md', {

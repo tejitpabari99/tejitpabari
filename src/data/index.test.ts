@@ -3,7 +3,7 @@ import { validateInternalLinks, validateNavAndFooterLinks } from './index';
 import type { Project } from '@/data';
 
 function proj(slug: string, links: { label: string; href: string }[] = []): Project {
-  return { slug, title: slug, description: 'd', image: '/x.png', tags: ['Others'], links, date: '2024-01-01', body: '' };
+  return { slug, title: slug, description: 'd', image: '/x.png', tags: ['Others'], techTags: [], links, date: '2024-01-01', body: '' };
 }
 
 describe('validateInternalLinks', () => {

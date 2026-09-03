@@ -8,8 +8,8 @@ import {
   assertTags,
   assertOptionalStatus,
   assertLinks,
+  assertOptionalStringArray,
   normalizeDateField,
-  assertAbsoluteUrl,
   assertImagePath,
 } from './shared';
 
@@ -22,15 +22,14 @@ export type Project = {
   description: string;
   image: string;
   tags: ProjectTag[];
+  techTags: string[];
   status?: ProjectStatus;
-  liveUrl?: string;
   links: Link[];
   date: string;
   body: string;
-  demo?: true;
 };
 
-const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'status', 'liveUrl', 'links', 'date', 'body', 'demo'];
+const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body'];
 const PROJECT_TAGS: readonly ProjectTag[] = ['Health Tech', 'Developer Tools', 'Others'];
 const PROJECT_STATUSES: readonly ProjectStatus[] = ['Building', 'Not Started', 'Completed'];
 
@@ -43,14 +42,11 @@ export function parseProject(path: string, raw: string): Project {
   const description = assertRequiredString(path, 'description', data.description);
   const image = assertImagePath(path, data.image);
   const tags = assertTags(path, data.tags, PROJECT_TAGS) as ProjectTag[];
+  const techTags = assertOptionalStringArray(path, 'techTags', data.techTags);
   const status = assertOptionalStatus(path, data.status, PROJECT_STATUSES) as ProjectStatus | undefined;
-  const liveUrl = data.liveUrl !== undefined ? assertAbsoluteUrl(path, 'liveUrl', data.liveUrl) : undefined;
   const links = assertLinks(path, data.links);
   const date = normalizeDateField(path, 'date', data.date);
-  if (data.demo !== undefined && data.demo !== true) {
-    throw new Error(`${path}: "demo" must be exactly \`true\` if present, or omitted entirely.`);
-  }
-  return { slug, title, description, image, tags, status, liveUrl, links, date, body: content.trim(), demo: data.demo as true | undefined };
+  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim() };
 }
 
 const files = import.meta.glob('/src/content/projects/*.md', {
@@ -76,10 +72,4 @@ for (const p of projects) {
     throw new Error(`Duplicate slug "${p.slug}" across multiple files in src/content/projects/. Slugs must be unique.`);
   }
   seenProjectSlugs.add(p.slug);
-}
-
-export type LiveMode = { mode: 'redirect'; target: string } | { mode: 'hosted' };
-
-export function liveMode(project: Project): LiveMode {
-  return project.liveUrl ? { mode: 'redirect', target: project.liveUrl } : { mode: 'hosted' };
 }
