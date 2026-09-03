@@ -30,50 +30,57 @@ export function TimelineEntry({ entry, isCurrent, isLast }: TimelineEntryProps) 
         isCurrent ? 'before:bg-teal' : 'before:bg-teal-secondary/20 hover:before:bg-teal',
       ].join(' ')}
     >
-      <div className="flex items-center justify-between gap-3">
-        <span className="text-[0.64rem] font-semibold uppercase tracking-[0.15em] text-teal-secondary">
-          {entry.company}
-        </span>
-        <span className="shrink-0 text-[0.7rem] text-slate">
-          {formatWorkDate(entry.startDate)} &ndash;{' '}
-          {entry.endDate === 'Present' ? 'Present' : formatWorkDate(entry.endDate)}
-        </span>
-      </div>
-
-      <h3 className="mt-0.5 text-[0.95rem] font-bold tracking-tight text-ink">{entry.role}</h3>
-
-      {/* Deliberately NOT SP02's <ContentBody> — that wraps output in the
-          `prose` plugin, sized for a full write-up. This blurb renders at a
-          tighter, denser scale per the brief. See PRD §4.5/§9. */}
-      <div className="mt-2 text-[0.82rem] leading-5 text-body [&_p]:m-0 [&_p+p]:mt-1.5 sm:text-[0.86rem]">
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-          {entry.body}
-        </ReactMarkdown>
-      </div>
-
-      {entry.links.length > 0 && (
-        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
-          {entry.links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() =>
-                trackEvent('outbound_click', {
-                  url: link.href,
-                  context: 'content_external_link',
-                  label: link.label,
-                })
-              }
-              className="inline-flex items-center gap-1 text-[0.76rem] font-semibold text-teal-secondary hover:text-teal"
-            >
-              {link.label}
-              <ExternalLinkIcon className="h-3 w-3" />
-            </a>
-          ))}
+      {/* max-w caps only the text content's reading width — the spine/rail
+          above (border-l on the outer div) still spans the full width the
+          section wrapper gives it. Do not move this max-w onto the outer
+          div: that would re-narrow the whole timeline, which is exactly
+          what the owner asked to stop happening. */}
+      <div className="max-w-[42rem]">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-[0.64rem] font-semibold uppercase tracking-[0.15em] text-teal-secondary">
+            {entry.company}
+          </span>
+          <span className="shrink-0 text-[0.7rem] text-slate">
+            {formatWorkDate(entry.startDate)} &ndash;{' '}
+            {entry.endDate === 'Present' ? 'Present' : formatWorkDate(entry.endDate)}
+          </span>
         </div>
-      )}
+
+        <h3 className="mt-0.5 text-[0.95rem] font-bold tracking-tight text-ink">{entry.role}</h3>
+
+        {/* Deliberately NOT SP02's <ContentBody> — that wraps output in the
+            `prose` plugin, sized for a full write-up. This blurb renders at a
+            tighter, denser scale per the brief. See PRD §4.5/§9. */}
+        <div className="mt-2 text-[0.82rem] leading-5 text-body [&_p]:m-0 [&_p+p]:mt-1.5 sm:text-[0.86rem]">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {entry.body}
+          </ReactMarkdown>
+        </div>
+
+        {entry.links.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            {entry.links.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() =>
+                  trackEvent('outbound_click', {
+                    url: link.href,
+                    context: 'content_external_link',
+                    label: link.label,
+                  })
+                }
+                className="inline-flex items-center gap-1 text-[0.76rem] font-semibold text-teal-secondary hover:text-teal"
+              >
+                {link.label}
+                <ExternalLinkIcon className="h-3 w-3" />
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
