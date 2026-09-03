@@ -1,8 +1,7 @@
 // src/pages/ResearchPage.tsx
-import { BackButton } from '@/components/BackButton';
 import { SearchFilter } from '@/components/SearchFilter';
 import { EmptyState } from '@/components/EmptyState';
-import { ProjectCard } from '@/components/ProjectCard'; // same shared component, no fork
+import { ProjectListCard } from '@/components/ProjectListCard'; // round 3: same shared list-card, no fork
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { PageContainer } from '@/layout/PageContainer';
 import { useCollectionFilter } from '@/hooks/useCollectionFilter';
@@ -14,13 +13,12 @@ export function ResearchPage() {
     useCollectionFilter({ items: research, collection: 'research' });
 
   return (
-    <PageContainer chrome="full">
+    <PageContainer>
       <RouteMeta
         title="Research"
         description="Published and presented research, from flood-event NLP to a Google Science Fair project."
         path="/research"
       />
-      <BackButton />
       <h1 className="mt-6 text-[1.9rem] font-extrabold tracking-tight text-ink sm:text-[2.3rem]">Research</h1>
       <div className="mt-8">
         <SearchFilter
@@ -29,13 +27,13 @@ export function ResearchPage() {
           placeholder="Search research by title, topic, or tag"
         />
       </div>
-      <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-8 flex flex-col gap-4 sm:gap-5">
         {results.length === 0 ? (
           <EmptyState itemLabel="research entries" query={query} activeTag={activeTag}
             onClear={() => { setQuery(''); setActiveTag(null); }} />
         ) : (
           results.map((item) => (
-            <ProjectCard
+            <ProjectListCard
               key={item.slug}
               href={`/research/${item.slug}`}
               image={item.image}
@@ -43,11 +41,9 @@ export function ResearchPage() {
               title={item.title}
               description={item.description}
               tags={item.tags}
+              techTags={item.techTags}
               status={item.status}
-              // externalHref / externalLabel / onExternalClick: DELIBERATELY
-              // omitted — PRD §4.3 (resolves SP03's previously open item).
-              // A citation link is not a "try it now" affordance; the
-              // external-icon shortcut never appears on a Research card.
+              links={item.links}
               onCardClick={() =>
                 trackEvent('project_card_click', { slug: item.slug, collection: 'research', title: item.title })
               }
