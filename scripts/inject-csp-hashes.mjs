@@ -29,13 +29,44 @@
 // has finished writing dist/, mirroring how liveRedirectsPlugin already
 // rewrites firebase.json (JSON.parse -> mutate -> JSON.stringify(..., 2)).
 
-import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST_DIR = path.join(ROOT, 'dist');
 const FIREBASE_JSON_PATH = path.join(ROOT, 'firebase.json');
+
+// --- 404 promotion --------------------------------------------------------
+//
+// Firebase Hosting's automatic 404 fallback requires a file literally named
+// `404.html` (optionally per-directory) at the root of `public`. This
+// project's vite.config.ts sets `dirStyle: 'nested'`, so vite-react-ssg
+// writes every route, including a `404` route, as `<path>/index.html`,
+// never as a bare `<path>.html`. So `src/routes.tsx` needs an enumerable
+// route (`{ path: '404', element: <NotFoundPage /> }`, alongside the
+// existing `path: '*'` catch-all which stays for client-side navigation)
+// that produces `dist/404/index.html`, and this step promotes that file to
+// `dist/404.html`. Runs BEFORE hash collection below so the CSP hash scan
+// also covers the promoted file.
+function promote404() {
+  const src = path.join(DIST_DIR, '404', 'index.html');
+  const dest = path.join(DIST_DIR, '404.html');
+  if (!existsSync(src)) {
+    throw new Error(
+      'inject-csp-hashes: dist/404/index.html not found - cannot produce dist/404.html for Firebase Hosting\'s ' +
+        'automatic 404 fallback (see firebase.json, which no longer has a catch-all rewrite to fall back on). ' +
+        'This means src/routes.tsx is missing an enumerable 404 route, e.g.:\n' +
+        "    { path: '404', element: <NotFoundPage /> }\n" +
+        "added alongside the existing `{ path: '*', element: <NotFoundPage /> }` catch-all (which must stay, for " +
+        'client-side navigation to unknown paths after hydration). See .dev/website-revamp-r3/BUGFIX-NOTES.md, ' +
+        '"Handoff" section, for the exact change. Until that route lands in src/routes.tsx, this build is expected ' +
+        'to fail here rather than silently ship with no 404 page.',
+    );
+  }
+  copyFileSync(src, dest);
+  console.log("[inject-csp-hashes] promoted dist/404/index.html -> dist/404.html for Firebase Hosting's automatic 404 fallback.");
+}
 
 // Matches any <script ...> opening tag plus its body, non-greedy, across the
 // whole file (script bodies never contain a literal "</script>" in this
@@ -63,27 +94,75 @@ function sha256Base64(text) {
   return createHash('sha256').update(text, 'utf-8').digest('base64');
 }
 
+// Returns { hashSources, perFile }: hashSources is the deduped, sorted list
+// of `'sha256-...'` source tokens to write into script-src; perFile is a
+// flat list of { file, hash } entries (one per inline script found,
+// duplicates included) used later to report exactly which file/script is
+// missing if verification ever fails.
 function collectInlineScriptHashes(htmlFiles) {
   const hashes = new Set();
+  const perFile = [];
   for (const file of htmlFiles) {
     const html = readFileSync(file, 'utf-8');
     for (const match of html.matchAll(SCRIPT_RE)) {
       const [, attrs, body] = match;
       if (/\bsrc\s*=/.test(attrs)) continue; // external script — governed by script-src's origin list, not a hash
       if (body.trim() === '') continue; // no inline content to authorize
-      hashes.add(`'sha256-${sha256Base64(body)}'`);
+      const hash = `'sha256-${sha256Base64(body)}'`;
+      hashes.add(hash);
+      perFile.push({ file, hash });
     }
   }
-  return [...hashes].sort(); // stable ordering -> stable diffs across builds when content repeats
+  return { hashSources: [...hashes].sort(), perFile }; // stable ordering -> stable diffs across builds when content repeats
+}
+
+// Safety net: re-reads firebase.json fresh from disk (not the in-memory
+// `config` object this script just wrote) and confirms every inline
+// <script> found in dist/**/*.html actually has its hash present in the
+// written script-src directive. Without this, a future refactor of this
+// script, a partial/failed write, or any build path that bypasses this
+// script entirely could silently ship a firebase.json whose CSP blocks a
+// real inline script, exactly the failure mode that broke /projects'
+// tag-filter and search hydration in production. Fails loudly, naming the
+// offending file, rather than warning.
+function verifyHashesLanded(perFile) {
+  const config = JSON.parse(readFileSync(FIREBASE_JSON_PATH, 'utf-8'));
+  const headerRule = config.hosting?.headers?.find((rule) => rule.source === '**');
+  const cspHeader = headerRule?.headers?.find((h) => h.key === 'Content-Security-Policy');
+  if (!cspHeader) {
+    throw new Error('inject-csp-hashes: verification failed - could not re-read a Content-Security-Policy header from firebase.json after writing it.');
+  }
+  const directives = cspHeader.value.split(';').map((d) => d.trim());
+  const scriptSrcDirective = directives.find((d) => d === 'script-src' || d.startsWith('script-src '));
+  if (!scriptSrcDirective) {
+    throw new Error('inject-csp-hashes: verification failed - firebase.json has no script-src directive after writing it.');
+  }
+  const writtenSources = new Set(scriptSrcDirective.split(/\s+/).slice(1));
+
+  const missing = perFile.filter(({ hash }) => !writtenSources.has(hash));
+  if (missing.length > 0) {
+    const detail = missing
+      .map(({ file, hash }) => `  - ${path.relative(ROOT, file)}: missing ${hash}`)
+      .join('\n');
+    throw new Error(
+      `inject-csp-hashes: verification FAILED after writing firebase.json - ${missing.length} inline <script> tag(s) ` +
+        `in dist/**/*.html do not have a matching 'sha256-...' entry in the Content-Security-Policy script-src ` +
+        `directive that was just written:\n${detail}\n` +
+        'A real browser would refuse to execute these scripts, breaking hydration (this is exactly the bug that made ' +
+        '/projects\' tag filters and search appear to do nothing). Do not deploy this dist/firebase.json pair.',
+    );
+  }
 }
 
 function main() {
+  promote404();
+
   const htmlFiles = walkHtmlFiles(DIST_DIR);
   if (htmlFiles.length === 0) {
     throw new Error(`inject-csp-hashes: no .html files found under ${DIST_DIR} — did vite-react-ssg build run first?`);
   }
 
-  const hashSources = collectInlineScriptHashes(htmlFiles);
+  const { hashSources, perFile } = collectInlineScriptHashes(htmlFiles);
   if (hashSources.length === 0) {
     throw new Error(
       'inject-csp-hashes: found zero inline <script> tags across the built pages. ' +
@@ -123,6 +202,11 @@ function main() {
   writeFileSync(FIREBASE_JSON_PATH, JSON.stringify(config, null, 2) + '\n');
   console.log(
     `[inject-csp-hashes] wrote ${hashSources.length} inline-script hash(es) into firebase.json's Content-Security-Policy script-src (scanned ${htmlFiles.length} HTML files).`,
+  );
+
+  verifyHashesLanded(perFile);
+  console.log(
+    `[inject-csp-hashes] verified: all ${perFile.length} inline <script> tag(s) across ${htmlFiles.length} HTML files have a matching sha256 source in firebase.json's script-src.`,
   );
 }
 
