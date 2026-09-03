@@ -18,7 +18,7 @@ export function FeaturedProjectsSection() {
           Selected work, in health tech and beyond.
         </h2>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:mt-10 xl:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
           {featuredProjects.map((project) => (
             <ProjectCard
               key={project.slug}
