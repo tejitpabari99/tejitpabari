@@ -2,7 +2,7 @@
 //
 // Task 16 (filtering + analytics) and Task 17 (URL sync) per
 // .dev/website-revamp/04-projects-research-pages/TASKS.md. Fixture data
-// only — never the real loaded `projects`/`research` arrays.
+// only - never the real loaded `projects`/`research` arrays.
 //
 // Kept as a .ts file (no JSX syntax) per the task's file name; router
 // wrapper components are built with `createElement` instead of JSX.
@@ -23,12 +23,13 @@ interface FixtureItem {
   title: string;
   description: string;
   tags: string[];
+  techTags?: string[];
   body: string;
 }
 
 const FIXTURE_ITEMS: FixtureItem[] = [
-  { slug: 'a', title: 'Juno', description: 'health app', tags: ['Health Tech'], body: '' },
-  { slug: 'b', title: 'Other', description: '', tags: ['Developer Tools'], body: '' },
+  { slug: 'a', title: 'Juno', description: 'health app', tags: ['Health Tech'], techTags: ['React', 'TypeScript'], body: '' },
+  { slug: 'b', title: 'Other', description: '', tags: ['Developer Tools'], techTags: ['Python'], body: '' },
 ];
 
 function memoryRouterWrapper(initialEntries?: string[]) {
@@ -72,7 +73,7 @@ describe('useCollectionFilter', () => {
       expect(result.current.results.map((i) => i.slug)).toEqual(['a']);
     });
 
-    it('tag + search compose as AND — a query matching an item outside the active tag returns []', () => {
+    it('tag + search compose as AND - a query matching an item outside the active tag returns []', () => {
       const { result } = renderFilter();
       act(() => {
         result.current.setActiveTag('Developer Tools');
@@ -107,6 +108,42 @@ describe('useCollectionFilter', () => {
     });
   });
 
+  // Round 3, PRD item 3: verify techTags never leak into the filter-pill
+  // row (allTags) or become clickable filters, and - deliberately -
+  // ARE searchable via the search box, at a low Fuse.js weight.
+  describe('techTags', () => {
+    it('allTags derives only from the category `tags` field - techTags never appear as a filter pill', () => {
+      const { result } = renderFilter();
+      expect(result.current.allTags).toEqual(['Developer Tools', 'Health Tech']);
+      expect(result.current.allTags).not.toContain('React');
+      expect(result.current.allTags).not.toContain('TypeScript');
+      expect(result.current.allTags).not.toContain('Python');
+    });
+
+    it('a search term that only matches a techTags value still finds the right item', () => {
+      const { result } = renderFilter();
+      act(() => {
+        result.current.setQuery('TypeScript');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(result.current.results.map((i) => i.slug)).toEqual(['a']);
+    });
+
+    it('techTags search results still never populate allTags with a techTags value', () => {
+      const { result } = renderFilter();
+      act(() => {
+        result.current.setQuery('Python');
+      });
+      act(() => {
+        vi.advanceTimersByTime(200);
+      });
+      expect(result.current.results.map((i) => i.slug)).toEqual(['b']);
+      expect(result.current.allTags).not.toContain('Python');
+    });
+  });
+
   describe('search_query analytics', () => {
     it('fires once, 600ms after a settled non-empty query, with the correct collection/query/result_count', () => {
       const { result } = renderFilter('research');
@@ -116,7 +153,7 @@ describe('useCollectionFilter', () => {
       // Two chained real-macrotask boundaries: the 200ms UI debounce first
       // (which narrows `results` and, via that dependency, resets the
       // separate 600ms analytics timer), then the 600ms analytics timer
-      // itself — staged as two advances so each gets its own React flush,
+      // itself - staged as two advances so each gets its own React flush,
       // matching how two independent real setTimeouts actually interleave.
       act(() => {
         vi.advanceTimersByTime(200);
@@ -132,7 +169,7 @@ describe('useCollectionFilter', () => {
       });
     });
 
-    it('does not fire once per keystroke — only once after rapid typing settles, with the final query', () => {
+    it('does not fire once per keystroke - only once after rapid typing settles, with the final query', () => {
       const { result } = renderFilter();
       act(() => {
         result.current.setQuery('j');
@@ -190,7 +227,7 @@ describe('useCollectionFilter', () => {
   describe('URL sync (Task 17)', () => {
     it('adopts ?q=/?tag= from the URL only after the mount effect runs, not on the very first synchronous render', () => {
       // renderHook wraps the initial render in act(), which flushes the
-      // mount effect before returning — result.current alone would only
+      // mount effect before returning - result.current alone would only
       // ever show the settled value. Capture every render's return value to
       // honestly observe the pre-effect-flush state too (same technique as
       // src/hooks/useContactMailto.test.ts).
@@ -211,7 +248,7 @@ describe('useCollectionFilter', () => {
 
     it('updates the URL via replace, not push, across several sequential query changes', () => {
       // @remix-run/router's MemoryHistory doesn't expose `.length` directly,
-      // only `.index` — but that's an equally valid proxy here: `.replace`
+      // only `.index` - but that's an equally valid proxy here: `.replace`
       // never advances it, only `.push` does, so an unchanging `.index`
       // across several updates proves the URL is never growing the stack.
       const history = createMemoryHistory({ initialEntries: ['/'] });

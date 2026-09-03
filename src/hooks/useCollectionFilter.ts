@@ -9,6 +9,13 @@ interface Searchable {
   title: string;
   description: string;
   tags: string[];
+  // Optional (not just missing from FixtureItem-shaped test data - real
+  // Project/Research items always carry it as a required string[], see
+  // src/data/projects.ts / research.ts). Deliberately included in the
+  // Fuse.js search index at a LOW weight (round 3, PRD item 3: "searching
+  // 'React' should find React projects"), but never in `allTags` below -
+  // techTags stays out of the filter-pill row entirely.
+  techTags?: string[];
   body: string;
 }
 
@@ -17,6 +24,11 @@ const FUSE_OPTIONS: IFuseOptions<Searchable> = {
     { name: 'title', weight: 0.4 },
     { name: 'description', weight: 0.3 },
     { name: 'tags', weight: 0.2 },
+    // Low weight, deliberately below every other field (including body):
+    // techTags is searchable so a term like "React" surfaces matching
+    // projects, but it should never dominate a match the way title/
+    // description/category tags do.
+    { name: 'techTags', weight: 0.1 },
     { name: 'body', weight: 0.1 },
   ],
   threshold: 0.35,
@@ -44,7 +56,7 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
 }: UseCollectionFilterArgs<T>): UseCollectionFilterResult<T> {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Hydration-safe defaults — see PRD §4.2's "why not read searchParams
+  // Hydration-safe defaults - see PRD §4.2's "why not read searchParams
   // synchronously" note. Real ?q=/?tag= values are adopted post-mount only.
   const [query, setQuery] = useState('');
   const [activeTag, setActiveTag] = useState<string | null>(null);
@@ -55,7 +67,7 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
     // Wrapped in startTransition (not a bare setState-in-effect) so this
     // post-mount hydration is deprioritized rather than forcing an urgent
     // cascading re-render right after the hydration-safe empty-default paint
-    // above — same one-time adoption, just scheduled the way React's own
+    // above - same one-time adoption, just scheduled the way React's own
     // guidance for effect-driven external-sync updates recommends.
     startTransition(() => {
       if (q) setQuery(q);
@@ -94,7 +106,7 @@ export function useCollectionFilter<T extends Searchable & { slug: string }>({
     );
   }, [debouncedQuery, activeTag, setSearchParams]);
 
-  // search_query — a SECOND, INDEPENDENT 600ms timer, deliberately separate
+  // search_query - a SECOND, INDEPENDENT 600ms timer, deliberately separate
   // from the 200ms useDebouncedValue instance above. That 200ms debounce is
   // for UI responsiveness (how fast the grid narrows); this 600ms timer is
   // for analytics (don't count a query as "typed" until the visitor pauses
