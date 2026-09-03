@@ -48,6 +48,26 @@ export default {
       maxWidth: {
         content: '72rem',
       },
+      spacing: {
+        // Half-steps used in ContactSection.tsx / Nav.tsx (p-4.5,
+        // sm:px-4.5) that Tailwind's default spacing scale skips (it jumps
+        // 4 -> 5 with no 4.5). Value follows Tailwind's own linear
+        // spacing[n] = n * 0.25rem formula, the same formula that produces
+        // the adjacent real defaults 3.5 = .875rem and 5 = 1.25rem.
+        '4.5': '1.125rem',
+        // ContactSection.tsx also uses leading-6.5, which needs the exact
+        // same value in the lineHeight scale below, not this scale, kept
+        // here too since spacing and lineHeight share the same 0.25rem-step
+        // numbering convention in this design.
+        '6.5': '1.625rem',
+      },
+      lineHeight: {
+        // leading-6.5 (ContactSection.tsx:24): Tailwind's default leading
+        // scale is integers only. Value follows the same 0.25rem-per-half-
+        // step spacing already used by the integer scale: leading-6 =
+        // 1.5rem, leading-7 = 1.75rem, so (6 + 0.5) * 0.25rem = 1.625rem.
+        '6.5': '1.625rem',
+      },
       typography: () => ({
         DEFAULT: {
           css: {
