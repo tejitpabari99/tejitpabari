@@ -1,12 +1,25 @@
 import { Button } from '@/components/Button';
 import { GitHubIcon } from '@/components/icons/GitHubIcon';
 import { LinkedInIcon } from '@/components/icons/LinkedInIcon';
-import { CONTACT_EMAIL_DISPLAY, LINKEDIN_URL, GITHUB_URL } from '@/config/contact';
+import { LINKEDIN_URL, GITHUB_URL, getContactEmailAddress } from '@/config/contact';
 import { useContactMailto } from '@/hooks/useContactMailto';
 import { trackEvent } from '@/lib/analytics';
 
 export function ContactSection() {
   const emailHref = useContactMailto();
+
+  // Pre-hydration (and no-JS) state: a real <button>, not a link, since
+  // there's no href to offer yet. Assembles the address on click only,
+  // via getContactEmailAddress(), never a plain literal in this file or
+  // the compiled bundle. See src/config/contact.ts for why the address is
+  // split into two constants.
+  function handleEmailButtonClick() {
+    // 'email_click' isn't a member of AnalyticsEventName (src/lib/analytics.ts
+    // is out of scope for this change), so 'outbound_click' is the closest
+    // existing category, matching the GitHub/LinkedIn click tracking below.
+    trackEvent('outbound_click', { url: 'mailto:', context: 'contact_email', label: 'Email Me' });
+    window.location.href = `mailto:${getContactEmailAddress()}`;
+  }
 
   return (
     <section
@@ -27,11 +40,24 @@ export function ContactSection() {
           </p>
           <div className="mt-6 flex flex-wrap gap-2.5">
             {emailHref ? (
-              <Button href={emailHref}>Email Me</Button>
+              // Upgraded, post-hydration state: a real mailto: <a> so
+              // middle-click and "copy link address" work for real users.
+              <Button
+                href={emailHref}
+                onClick={() =>
+                  trackEvent('outbound_click', {
+                    url: emailHref,
+                    context: 'contact_email',
+                    label: 'Email Me',
+                  })
+                }
+              >
+                Email Me
+              </Button>
             ) : (
-              <span className="select-all rounded-full border border-teal-secondary/20 px-5 py-2 text-[0.82rem] font-semibold text-teal-secondary">
-                {CONTACT_EMAIL_DISPLAY}
-              </span>
+              <Button type="button" onClick={handleEmailButtonClick}>
+                Email Me
+              </Button>
             )}
           </div>
         </div>

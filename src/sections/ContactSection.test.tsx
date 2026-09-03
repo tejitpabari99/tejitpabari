@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ContactSection } from './ContactSection';
-import { CONTACT_EMAIL_DISPLAY } from '@/config/contact';
 
 const contactMailto = vi.hoisted(() => ({ href: null as string | null }));
 
@@ -15,25 +14,26 @@ vi.mock('@/hooks/useContactMailto', () => ({
 }));
 
 describe('ContactSection', () => {
-  it('shows the obfuscated text before the mailto effect settles, then exposes the mailto affordance', async () => {
+  it('renders an always-present "Email Me" button before the mailto effect settles, then upgrades to a real mailto: link', async () => {
+    contactMailto.href = null;
     const view = render(
       <MemoryRouter>
         <ContactSection />
       </MemoryRouter>,
     );
 
-    // Before the hook supplies a client-only href, the left column's
-    // fallback stays plain text so prerendered HTML cannot contain a
-    // mailto href. The Connect aside no longer renders an email node at
-    // all (R4's Connect-panel rebuild moved email out of the aside
-    // entirely, keeping only Profiles there) — CONTACT_EMAIL_DISPLAY now
-    // appears exactly once, not twice.
-    const initialNodes = screen.getAllByText(CONTACT_EMAIL_DISPLAY);
-    expect(initialNodes).toHaveLength(1);
-    expect(initialNodes[0].closest('a')).toBeNull();
+    // Before the hook supplies a client-only href (this is also byte-
+    // identical to the prerendered/SSR HTML and the no-JS state), an
+    // "Email Me" affordance is always present. It's a real <button> here
+    // (not a link, since there is no href to offer yet), never the raw
+    // obfuscated address literal.
+    const button = screen.getByRole('button', { name: 'Email Me' });
+    expect(button).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Email Me' })).toBeNull();
 
-    // Once useContactMailto's effect settles, rerender with its
-    // resulting value and verify the "Email Me" button by its label/href.
+    // Once useContactMailto's effect settles, ContactSection upgrades the
+    // same affordance to a real mailto: <a> so middle-click / "copy link
+    // address" work for real users.
     contactMailto.href = 'mailto:tejitpabari99@gmail.com';
     view.rerender(
       <MemoryRouter>
@@ -45,6 +45,49 @@ describe('ContactSection', () => {
         'href',
         'mailto:tejitpabari99@gmail.com',
       );
+    });
+    expect(screen.queryByRole('button', { name: 'Email Me' })).toBeNull();
+  });
+
+  it('never renders a plain, contiguous user@domain email literal in the markup', () => {
+    contactMailto.href = null;
+    const { container } = render(
+      <MemoryRouter>
+        <ContactSection />
+      </MemoryRouter>,
+    );
+    expect(container.innerHTML).not.toMatch(/tejitpabari99@gmail\.com/);
+    expect(container.innerHTML).not.toMatch(/tejitpabari99\s*_at_\s*gmail/);
+  });
+
+  it('assembles the address and navigates on click of the pre-hydration button', () => {
+    contactMailto.href = null;
+    render(
+      <MemoryRouter>
+        <ContactSection />
+      </MemoryRouter>,
+    );
+
+    const originalHref = window.location.href;
+    // jsdom throws "Not implemented: navigation" on a real assignment to
+    // window.location.href; stub it out for this one assertion so the click
+    // handler's assignment can be observed without jsdom's navigation noise.
+    const hrefSetter = vi.fn();
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, set href(value: string) {
+        hrefSetter(value);
+      } },
+    });
+
+    screen.getByRole('button', { name: 'Email Me' }).click();
+    expect(hrefSetter).toHaveBeenCalledWith('mailto:tejitpabari99@gmail.com');
+
+    // Restore, so this test doesn't leak a stubbed window.location into
+    // other tests in the file/run.
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, href: originalHref },
     });
   });
 });
