@@ -98,4 +98,81 @@ describe('LinksRow', () => {
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
+
+  // Round 3.1 (/live subsystem restoration): the Live button LinksRow
+  // prepends when a `live` prop is passed.
+  describe('live', () => {
+    it('renders nothing extra when "live" is omitted, even with links present', () => {
+      renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
+      expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
+    });
+
+    it('renders a Live button first, using an INTERNAL href, never the resolved external target', () => {
+      renderLinksRow({
+        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
+        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+      });
+      const links = screen.getAllByRole('link');
+      expect(links[0]).toHaveTextContent('Live');
+      expect(links[0]).toHaveAttribute('href', '/projects/juno/live');
+    });
+
+    it('renders the Live button even when links is empty', () => {
+      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' } });
+      expect(screen.getByRole('link', { name: /^Live$/i })).toHaveAttribute('href', '/projects/juno/live');
+    });
+
+    it('makes Live the filled/primary button when no links[] entry is already primary', () => {
+      renderLinksRow({
+        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
+        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+      });
+      const liveLink = screen.getByRole('link', { name: /^Live$/i });
+      expect(liveLink.className).toContain('bg-teal');
+    });
+
+    it('keeps an existing primary: true link[] entry primary, rendering Live as a secondary/outlined button instead', () => {
+      renderLinksRow({
+        links: [{ label: 'Website', href: 'https://example.com', primary: true }],
+        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+      });
+      const liveLink = screen.getByRole('link', { name: /^Live$/i });
+      const websiteLink = screen.getByRole('link', { name: /Website/i });
+      // Trailing space disambiguates the filled "bg-teal " class from the
+      // secondary style's own "hover:bg-teal-secondary" (which otherwise
+      // also contains the substring "bg-teal") - same technique the
+      // primary/secondary style test above this one uses.
+      expect(liveLink.className).not.toContain('bg-teal ');
+      expect(liveLink.className).toContain('border-teal-secondary');
+      expect(websiteLink.className).toContain('bg-teal ');
+    });
+
+    it('uses live.label and live.icon for the button content', () => {
+      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Try Juno', icon: 'rocket' } });
+      const liveLink = screen.getByRole('link', { name: /Try Juno/i });
+      expect(liveLink.querySelector('svg')).toHaveClass('lucide-rocket');
+    });
+
+    it("clicking the Live button fires trackEvent('live_link_click'), not outbound_click", () => {
+      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' } });
+      fireEvent.click(screen.getByRole('link', { name: /^Live$/i }));
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('live_link_click', { url: '/projects/juno/live', label: 'Live' });
+    });
+
+    it('still fires outbound_click/content_external_link for a real links[] entry when Live is also present', () => {
+      renderLinksRow({
+        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
+        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+      });
+      fireEvent.click(screen.getByRole('link', { name: /GitHub/i }));
+
+      expect(trackEvent).toHaveBeenCalledWith('outbound_click', {
+        url: 'https://github.com/x',
+        context: 'content_external_link',
+        label: 'GitHub',
+      });
+    });
+  });
 });

@@ -15,8 +15,20 @@ import { trackEvent } from '@/lib/analytics';
 
 export type LinkButtonSize = 'sm' | 'md';
 
+// Round 3.1 (/live subsystem restoration): LinksRow prepends one synthetic
+// entry for the detail page's "Live" button, built from live.label/icon
+// and an INTERNAL href (/projects/<slug>/live or /research/<slug>/live) -
+// never the resolved external target (see ProjectDetailPage/
+// ResearchDetailPage). `isLive` is never set on a real links[] content
+// entry; it exists purely so this component's click handler can log
+// live_link_click instead of outbound_click/content_external_link for
+// that one entry, without forking the whole render path over it.
+export interface LinkButtonEntry extends ContentLink {
+  isLive?: boolean;
+}
+
 export interface LinkButtonsProps {
-  links: ContentLink[];
+  links: LinkButtonEntry[];
   /** @default 'md' - LinksRow's existing detail-page size. ProjectListCard
    *  passes 'sm' for the smaller, index-card link buttons (PRD item 1). */
   size?: LinkButtonSize;
@@ -54,7 +66,11 @@ export function LinkButtons({ links, size = 'md' }: LinkButtonsProps) {
             // would also fire the card's own navigation. Harmless where
             // there's no such overlay (LinksRow's detail-page usage).
             event.stopPropagation();
-            trackEvent('outbound_click', { url: link.href, context: 'content_external_link', label: link.label });
+            if (link.isLive) {
+              trackEvent('live_link_click', { url: link.href, label: link.label });
+            } else {
+              trackEvent('outbound_click', { url: link.href, context: 'content_external_link', label: link.label });
+            }
           }}
           className={`${BASE_CLASSES} ${SIZE_CLASSES[size]} ${link.primary ? PRIMARY_CLASSES : SECONDARY_CLASSES}`}
         >

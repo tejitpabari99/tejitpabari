@@ -131,7 +131,15 @@ export type AnalyticsEventName =
   | 'project_card_click'
   | 'resume_click'
   | 'search_query'
-  | 'section_view';
+  | 'section_view'
+  // Round 3.1 (/live subsystem restoration): fired when a visitor clicks
+  // a detail page's "Live" button. Deliberately distinct from
+  // outbound_click — that internal href (/projects/<slug>/live or
+  // /research/<slug>/live) is never itself the outbound destination, only
+  // a stable, owner-controlled indirection to one (see
+  // LiveRedirectFallback, which fires its own outbound_click/live_redirect
+  // event once the actual external destination is known).
+  | 'live_link_click';
 
 export function trackEvent(
   name: AnalyticsEventName,

@@ -4,8 +4,8 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { routes } from './routes';
 
 const paths = [
-  '/', '/projects', '/projects/anything',
-  '/work-experience', '/research', '/research/anything', '/privacy', '/terms',
+  '/', '/projects', '/projects/anything', '/projects/anything/live',
+  '/work-experience', '/research', '/research/anything', '/research/anything/live', '/privacy', '/terms',
   '/404', '/this-does-not-exist',
 ];
 
