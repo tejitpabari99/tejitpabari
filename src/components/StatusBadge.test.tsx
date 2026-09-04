@@ -4,19 +4,25 @@ import { render, screen } from '@testing-library/react';
 import { StatusBadge } from './StatusBadge';
 
 describe('StatusBadge', () => {
-  it('renders "Completed" with the teal background and white text', () => {
+  it('renders "Completed" with the solid teal background and white text, no opacity modifier', () => {
     render(<StatusBadge status="Completed" />);
-    expect(screen.getByText('Completed')).toHaveClass('bg-teal/92', 'text-white');
+    const badge = screen.getByText('Completed');
+    expect(badge).toHaveClass('bg-teal', 'text-white');
+    expect(badge).not.toHaveClass('bg-teal/92');
   });
 
-  it('renders "Building" with the status-building background and white text', () => {
+  it('renders "Building" with the solid status-building background and white text, no opacity modifier', () => {
     render(<StatusBadge status="Building" />);
-    expect(screen.getByText('Building')).toHaveClass('bg-status-building/92', 'text-white');
+    const badge = screen.getByText('Building');
+    expect(badge).toHaveClass('bg-status-building', 'text-white');
+    expect(badge).not.toHaveClass('bg-status-building/92');
   });
 
-  it('renders "Not Started" with the slate-dark background and white text', () => {
+  it('renders "Not Started" with the solid slate-dark background and white text, no opacity modifier', () => {
     render(<StatusBadge status="Not Started" />);
-    expect(screen.getByText('Not Started')).toHaveClass('bg-slate-dark/92', 'text-white');
+    const badge = screen.getByText('Not Started');
+    expect(badge).toHaveClass('bg-slate-dark', 'text-white');
+    expect(badge).not.toHaveClass('bg-slate-dark/92');
   });
 
   it('defaults to size="md" padding/font-size classes', () => {
@@ -32,7 +38,7 @@ describe('StatusBadge', () => {
   it("composes a caller-supplied className alongside the component's own classes", () => {
     render(<StatusBadge status="Building" className="absolute left-3 top-3" />);
     expect(screen.getByText('Building')).toHaveClass(
-      'absolute', 'left-3', 'top-3', 'bg-status-building/92', 'rounded-md',
+      'absolute', 'left-3', 'top-3', 'bg-status-building',
     );
   });
 
@@ -44,10 +50,10 @@ describe('StatusBadge', () => {
     });
   });
 
-  it('renders a rounded-md box, not a rounded-full pill', () => {
+  it('renders with square corners (no rounded-* utility of any kind)', () => {
     render(<StatusBadge status="Completed" />);
     const badge = screen.getByText('Completed');
-    expect(badge).toHaveClass('rounded-md');
+    expect(badge).not.toHaveClass('rounded-md');
     expect(badge).not.toHaveClass('rounded-full');
   });
 });

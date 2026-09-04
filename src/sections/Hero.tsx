@@ -9,7 +9,7 @@ import { HeroPortrait } from './HeroPortrait';
 
 export function Hero() {
   return (
-    <section className="relative bg-cream px-6 pb-14 pt-28 sm:px-8 sm:pt-32 md:px-10 lg:px-12 lg:pt-36">
+    <section className="relative bg-cream px-8 pb-14 pt-28 sm:pt-32 md:px-10 lg:px-12 lg:pt-36">
       <div className="mx-auto grid w-full max-w-content grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)] lg:gap-8">
         {/* Portrait renders first in the DOM so it appears above the
             headline text on mobile/small screens, matching the intended

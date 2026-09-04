@@ -9,7 +9,7 @@ export function FeaturedProjectsSection() {
   return (
     <section
       id="projects"
-      className="scroll-mt-24 bg-sage px-6 py-16 sm:px-8 sm:py-20 md:px-10 lg:px-12 lg:py-24"
+      className="scroll-mt-24 bg-sage px-8 py-16 sm:py-20 md:px-10 lg:px-12 lg:py-24"
     >
       <div className="mx-auto w-full max-w-content">
         <p className="text-[0.72rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary">

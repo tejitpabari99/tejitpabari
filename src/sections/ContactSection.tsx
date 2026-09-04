@@ -24,7 +24,7 @@ export function ContactSection() {
   return (
     <section
       id="contact"
-      className="scroll-mt-24 bg-cream px-6 py-16 sm:px-8 sm:py-20 md:px-10 lg:px-12 lg:py-24"
+      className="scroll-mt-24 bg-cream px-8 py-16 sm:py-20 md:px-10 lg:px-12 lg:py-24"
     >
       <div className="mx-auto grid w-full max-w-content grid-cols-1 gap-10 lg:grid-cols-[minmax(0,0.95fr)_minmax(260px,0.6fr)] lg:gap-14">
         <div className="max-w-[540px]">

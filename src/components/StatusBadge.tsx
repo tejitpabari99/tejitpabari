@@ -20,10 +20,16 @@ type StatusBadgeSize = 'sm' | 'md';
 // status cannot reach this component through any type-checked path — see
 // PRD §4.2/§9 item 2 for why no runtime fallback color is added on top of
 // this (deliberate, not an oversight).
+//
+// No `/NN` opacity modifier on any of these (round 4 fix): the badge sits
+// `absolute` on top of a project image, so any opacity let the photo bleed
+// through and washed the color out — most visibly on "Completed", where
+// the brand teal read as a lighter, faded green instead of the real
+// `#043439`. Solid colors here render exactly the named brand token.
 const STATUS_STYLES = {
-  'Not Started': 'bg-slate-dark/92 text-white',
-  Building: 'bg-status-building/92 text-white',
-  Completed: 'bg-teal/92 text-white',
+  'Not Started': 'bg-slate-dark text-white',
+  Building: 'bg-status-building text-white',
+  Completed: 'bg-teal text-white',
 } satisfies Record<BadgeStatus, string>;
 
 const SIZE_STYLES: Record<StatusBadgeSize, string> = {
@@ -43,7 +49,7 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, size = 'md', className = '' }: StatusBadgeProps) {
   return (
     <span
-      className={`rounded-md font-semibold uppercase tracking-wide ${SIZE_STYLES[size]} ${STATUS_STYLES[status]} ${className}`}
+      className={`font-semibold uppercase tracking-wide ${SIZE_STYLES[size]} ${STATUS_STYLES[status]} ${className}`}
     >
       {status}
     </span>
