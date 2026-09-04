@@ -18,7 +18,7 @@ interface TimelineEntryProps {
 
 const entryBaseClasses =
   "relative border-l-2 border-teal-secondary/15 pl-[22px] pt-[18px] transition-colors duration-200 hover:border-teal-secondary/28 " +
-  "before:absolute before:-left-[5px] before:top-[22px] before:h-2 before:w-2 before:rounded-full before:border-2 before:border-cream before:content-[''] before:transition-colors before:duration-200";
+  "before:absolute before:-left-[5px] before:top-[22px] before:h-2 before:w-2 before:border-2 before:border-cream before:content-[''] before:transition-colors before:duration-200";
 
 export function TimelineEntry({ entry, isCurrent, isLast }: TimelineEntryProps) {
   return (

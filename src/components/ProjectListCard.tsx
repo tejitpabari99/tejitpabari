@@ -53,13 +53,13 @@ export function ProjectListCard({
 }: ProjectListCardProps) {
   const resolvedLinks = resolveCardLinks({ live, links, slug, collection });
   return (
-    <article className="group relative flex w-full flex-col overflow-hidden rounded-card border border-teal-secondary/12 bg-cream shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:flex-row">
+    <article className="group relative flex w-full flex-col overflow-hidden border border-teal-secondary/12 bg-cream shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:flex-row">
       {/* Image: full width on top for mobile, fixed-width column on the
           left from sm up (owner: "image on left ... card that spans
           horizontally", and "on mobile the image should come above the
-          text"). A 4:3 frame at both sizes, rounded-xl2 + bg-placeholder to
-          match the rest of the design system's media frames. */}
-      <div className="relative m-3.5 h-[180px] shrink-0 overflow-hidden rounded-xl2 bg-placeholder sm:m-4 sm:h-[154px] sm:w-[220px] lg:h-[180px] lg:w-[240px]">
+          text"). A 4:3 frame at both sizes, bg-placeholder to match the
+          rest of the design system's media frames. */}
+      <div className="relative m-3.5 h-[180px] shrink-0 overflow-hidden bg-placeholder sm:m-4 sm:h-[154px] sm:w-[220px] lg:h-[180px] lg:w-[240px]">
         <img
           src={image}
           alt={imageAlt}

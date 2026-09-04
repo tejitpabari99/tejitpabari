@@ -32,12 +32,15 @@ export default {
           'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif',
         ],
       },
-      borderRadius: {
-        xl2: '1rem',       // inner media frames
-        card: '1.05rem',   // landing project cards
-        panel: '1.15rem',  // About/Contact aside panels
-        section: '1.25rem',// detail-page content sections
-      },
+      // borderRadius extend block removed (owner: "I like square more than
+      // round" — see PRD/BRIEF for the site-wide switch to 0-radius). The
+      // xl2/card/panel/section tokens it defined (inner media frames,
+      // landing project cards, About/Contact aside panels, detail-page
+      // content sections) had every one of their rounded-xl2/rounded-card/
+      // rounded-panel/rounded-section usages removed from components in the
+      // same pass — deleting the tokens here without doing that would have
+      // silently dropped those utilities with no build error (the same
+      // class of bug documented below for the opacity scale).
       boxShadow: {
         pill: '0 14px 40px rgba(22,43,38,0.08)',        // nav pill
         panel: '0 16px 34px rgba(22,43,38,0.06)',        // About/Contact aside

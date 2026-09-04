@@ -17,7 +17,7 @@ interface DetailHeaderProps {
 export function DetailHeader({ image, imageAlt = '', title, status, tags, techTags = [] }: DetailHeaderProps) {
   return (
     <header className="mt-6">
-      <div className="relative overflow-hidden rounded-section bg-placeholder">
+      <div className="relative overflow-hidden bg-placeholder">
         <img src={image} alt={imageAlt} className="h-[200px] w-full object-cover sm:h-[260px] lg:h-[320px]" />
         {status && <StatusBadge status={status} size="md" className="absolute left-3 top-3" />}
       </div>

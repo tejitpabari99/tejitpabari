@@ -21,14 +21,14 @@ export function ConsentBanner() {
           <button
             type="button"
             onClick={decline}
-            className="rounded-full border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
+            className="border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
           >
             Decline
           </button>
           <button
             type="button"
             onClick={grant}
-            className="rounded-full bg-teal px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+            className="bg-teal px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
           >
             Accept
           </button>

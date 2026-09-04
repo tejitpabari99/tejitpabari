@@ -18,7 +18,7 @@ export function TechTagList({ techTags, className = '' }: TechTagListProps) {
       {techTags.map((tag) => (
         <span
           key={tag}
-          className="rounded-full border border-teal-secondary/10 px-2 py-0.5 text-[0.62rem] font-medium text-slate"
+          className="border border-teal-secondary/10 px-2 py-0.5 text-[0.62rem] font-medium text-slate"
         >
           {tag}
         </span>

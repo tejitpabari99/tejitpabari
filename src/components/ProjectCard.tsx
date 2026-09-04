@@ -32,8 +32,8 @@ export function ProjectCard({
   onExternalClick,
 }: ProjectCardProps) {
   return (
-    <article className="group relative w-full rounded-card border border-teal-secondary/12 bg-cream p-3.5 text-center shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:p-4">
-      <div className="relative mb-3 overflow-hidden rounded-xl2 bg-placeholder">
+    <article className="group relative w-full border border-teal-secondary/12 bg-cream p-3.5 text-center shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:p-4">
+      <div className="relative mb-3 overflow-hidden bg-placeholder">
         <img
           src={image}
           alt={imageAlt}
@@ -53,7 +53,7 @@ export function ProjectCard({
               event.stopPropagation();
               onExternalClick?.();
             }}
-            className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-teal-secondary/15 bg-cream/90 text-teal-secondary backdrop-blur-sm transition hover:bg-teal-secondary hover:text-white"
+            className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center border border-teal-secondary/15 bg-cream/90 text-teal-secondary backdrop-blur-sm transition hover:bg-teal-secondary hover:text-white"
           >
             <ExternalLinkIcon className="h-3.5 w-3.5" />
           </a>

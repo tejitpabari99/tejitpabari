@@ -19,7 +19,7 @@ export function HeroPortrait({ src }: HeroPortraitProps) {
   return (
     <div
       aria-hidden="true"
-      className="flex aspect-square w-full max-w-[160px] items-center justify-center rounded-panel border border-teal-secondary/15 bg-placeholder text-[2.5rem] font-extrabold tracking-tight text-teal-secondary sm:max-w-[190px] md:max-w-[210px] lg:max-w-[230px]"
+      className="flex aspect-square w-full max-w-[160px] items-center justify-center border border-teal-secondary/15 bg-placeholder text-[2.5rem] font-extrabold tracking-tight text-teal-secondary sm:max-w-[190px] md:max-w-[210px] lg:max-w-[230px]"
     >
       TP
     </div>
