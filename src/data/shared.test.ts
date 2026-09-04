@@ -92,6 +92,31 @@ describe('parseProject', () => {
     });
   });
 
+  // Round 3.1 (/live subsystem restoration): "live" is a recognized
+  // frontmatter field again — full assertOptionalLive coverage (valid
+  // self/external, every error path) lives in shared.live.test.ts, which
+  // calls that function directly with a fixture registry; these two
+  // integration checks only prove parseProject actually wires "live"
+  // through end to end (recognized as an allowed key, and a validation
+  // error surfaces with the real file path).
+  describe('live', () => {
+    it('does NOT throw on an unrecognized-field error for a "live" key — it is now a recognized field', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\nlive:\n  type: external\n  href: https://example.com\n---\n`;
+      const result = parseProject('/src/content/projects/foo.md', raw);
+      expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: 'Live', icon: 'globe' });
+    });
+
+    it('is undefined when "live" is omitted entirely', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\n---\n`;
+      expect(parseProject('/src/content/projects/foo.md', raw).live).toBeUndefined();
+    });
+
+    it('throws, naming the real file path, for an invalid "live.href"', () => {
+      const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\nlive:\n  type: external\n  href: not-a-url\n---\n`;
+      expect(() => parseProject('/src/content/projects/foo.md', raw)).toThrow(/foo\.md.*live\.href/is);
+    });
+  });
+
   describe('links[].primary', () => {
     it('accepts exactly one primary link', () => {
       const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: [{label: "Site", href: "https://x.com", primary: true}, {label: "Other", href: "https://y.com"}]\ndate: "2024-01-01"\n---\n`;

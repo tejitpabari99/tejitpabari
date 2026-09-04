@@ -2,6 +2,7 @@
 import matter from 'gray-matter';
 import {
   type Link,
+  type LiveConfig,
   assertNoUnknownKeys,
   assertSlugMatchesFilename,
   assertRequiredString,
@@ -11,7 +12,9 @@ import {
   assertOptionalStringArray,
   normalizeDateField,
   assertImagePath,
+  assertOptionalLive,
 } from './shared';
+import { HOSTED_LIVE_PAGES } from '@/pages/live/registry';
 
 export type ProjectStatus = 'Building' | 'Not Started' | 'Completed';
 export type ProjectTag = 'Health Tech' | 'Developer Tools' | 'Others';
@@ -27,11 +30,20 @@ export type Project = {
   links: Link[];
   date: string;
   body: string;
+  /** Round 3.1: optional "live" mapping, see src/data/shared.ts's
+   *  assertOptionalLive for the full contract. `/projects/<slug>/live`
+   *  always exists as a route regardless of whether this is set — see
+   *  src/routes.tsx and vite.config.ts's live-redirects plugin. */
+  live?: LiveConfig;
 };
 
-const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body'];
+const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body', 'live'];
 const PROJECT_TAGS: readonly ProjectTag[] = ['Health Tech', 'Developer Tools', 'Others'];
 const PROJECT_STATUSES: readonly ProjectStatus[] = ['Building', 'Not Started', 'Completed'];
+// Passed into assertOptionalLive so a "live.page" typo/omission fails at
+// content-parse time — see that function's own header comment for why
+// this is parameterized rather than imported directly inside shared.ts.
+const HOSTED_LIVE_PAGE_KEYS = Object.keys(HOSTED_LIVE_PAGES);
 
 export function parseProject(path: string, raw: string): Project {
   const filenameSlug = path.split('/').pop()!.replace(/\.md$/, '');
@@ -46,7 +58,8 @@ export function parseProject(path: string, raw: string): Project {
   const status = assertOptionalStatus(path, data.status, PROJECT_STATUSES) as ProjectStatus | undefined;
   const links = assertLinks(path, data.links);
   const date = normalizeDateField(path, 'date', data.date);
-  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim() };
+  const live = assertOptionalLive(path, data.live, HOSTED_LIVE_PAGE_KEYS);
+  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim(), live };
 }
 
 const files = import.meta.glob('/src/content/projects/*.md', {

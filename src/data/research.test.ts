@@ -75,6 +75,17 @@ describe('parseResearch', () => {
     const raw = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: [{label: "A", href: "https://a.com", primary: true}, {label: "B", href: "https://b.com", primary: true}]\ndate: "2024-01-01"\n---\n`;
     expect(() => parseResearch('/src/content/research/example.md', raw)).toThrow(/example\.md.*more than one link has "primary: true"/is);
   });
+
+  // Round 3.1 (/live subsystem restoration): full assertOptionalLive
+  // coverage lives in src/data/shared.live.test.ts — this is a lighter
+  // symmetry check that parseResearch wires "live" through the same as
+  // parseProject does (src/data/shared.test.ts's own "live" describe
+  // block).
+  it('wires "live" through, recognizing it as an allowed field and defaulting label/icon', () => {
+    const raw = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\nlive:\n  type: external\n  href: https://example.com\n---\n`;
+    const result = parseResearch('/src/content/research/example.md', raw);
+    expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: 'Live', icon: 'globe' });
+  });
 });
 
 describe('migrated research corpus', () => {

@@ -2,6 +2,7 @@
 import matter from 'gray-matter';
 import {
   type Link,
+  type LiveConfig,
   assertNoUnknownKeys,
   assertSlugMatchesFilename,
   assertRequiredString,
@@ -11,7 +12,9 @@ import {
   assertOptionalStringArray,
   normalizeDateField,
   assertImagePath,
+  assertOptionalLive,
 } from './shared';
+import { HOSTED_LIVE_PAGES } from '@/pages/live/registry';
 
 export type ResearchTag = 'Health' | 'Machine Learning' | 'Other';
 export type ResearchStatus = 'Building' | 'Not Started' | 'Completed';
@@ -27,11 +30,17 @@ export type Research = {
   links: Link[];
   date: string;
   body: string;
+  /** Round 3.1: optional "live" mapping, see src/data/shared.ts's
+   *  assertOptionalLive for the full contract. `/research/<slug>/live`
+   *  always exists as a route regardless of whether this is set — see
+   *  src/routes.tsx and vite.config.ts's live-redirects plugin. */
+  live?: LiveConfig;
 };
 
-const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body'];
+const ALLOWED_KEYS = ['slug', 'title', 'description', 'image', 'tags', 'techTags', 'status', 'links', 'date', 'body', 'live'];
 const RESEARCH_TAGS: readonly ResearchTag[] = ['Health', 'Machine Learning', 'Other'];
 const RESEARCH_STATUSES: readonly ResearchStatus[] = ['Building', 'Not Started', 'Completed'];
+const HOSTED_LIVE_PAGE_KEYS = Object.keys(HOSTED_LIVE_PAGES);
 
 export function parseResearch(path: string, raw: string): Research {
   const filenameSlug = path.split('/').pop()!.replace(/\.md$/, '');
@@ -46,7 +55,8 @@ export function parseResearch(path: string, raw: string): Research {
   const status = assertOptionalStatus(path, data.status, RESEARCH_STATUSES) as ResearchStatus | undefined;
   const links = assertLinks(path, data.links);
   const date = normalizeDateField(path, 'date', data.date);
-  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim() };
+  const live = assertOptionalLive(path, data.live, HOSTED_LIVE_PAGE_KEYS);
+  return { slug, title, description, image, tags, techTags, status, links, date, body: content.trim(), live };
 }
 
 const files = import.meta.glob('/src/content/research/*.md', {
