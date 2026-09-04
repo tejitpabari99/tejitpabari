@@ -146,8 +146,12 @@ live:
   type: external
   href: https://smarttest.example.com   # required for type: external.
                                           # Must be an absolute http(s) URL.
-  label: Live                            # optional, defaults to "Live"
-  icon: globe                            # optional, defaults to "globe".
+  label: Live                            # optional - see "Label and icon:
+                                          # what the button actually says",
+                                          # below, for what happens if you
+                                          # leave this out (it is NOT
+                                          # simply "Live").
+  icon: globe                            # optional, same story as label.
                                           # Same icon list as links[].icon.
 
 # Render a page you've written yourself, on this domain:
@@ -160,13 +164,11 @@ live:
   icon: globe
 ```
 
-Both variants accept the same optional `label`/`icon`, with the same
-defaults (`"Live"` / `"globe"`). The detail page's "Live" button (shown
-first, before your other `links[]` buttons, only when `live` is set at
-all) uses those to render its label and icon — but its `href` is always
-the internal `/projects/<slug>/live` (or `/research/<slug>/live`) URL,
-never the resolved destination. That's the whole point: the link you hand
-out never has to change even if where it points does.
+Both variants accept the same optional `label`/`icon`. Wherever a live
+link renders, its `href` is always the internal `/projects/<slug>/live`
+(or `/research/<slug>/live`) URL, never the resolved destination directly
+— that's the whole point: the link you hand out, and the link every card
+shows, never has to change even if where it points does.
 
 A build fails loudly, naming the file, for: an unrecognized `live.type`;
 `href` missing or not an absolute http(s) URL for `type: external`; `page`
@@ -174,6 +176,64 @@ missing, or not a key in `HOSTED_LIVE_PAGES`, for `type: self`; an
 unrecognized icon name; or an unrecognized key inside `live` (including
 mixing `href` into a `type: self` entry, or `page` into a `type: external`
 one — pick exactly one).
+
+### Label and icon: what the button actually says
+
+The live button is deliberately **not branded "Live"** by default — a
+button that always says "Live" reads wrong once it's actually pointing at
+a Chrome Web Store listing, a GitHub repo, or whatever else `live`
+resolves to. Instead, when you don't set `live.label`/`live.icon`
+explicitly, the button inherits its label and icon from your own
+`links[]`, in this order:
+
+1. `live.label` / `live.icon`, if you set them — these always win, full
+   stop, regardless of anything below.
+2. Otherwise, if `live.href` (type: external only) exactly matches the
+   `href` of one of your `links[]` entries, that entry's label/icon —
+   see "Dedupe", below, since that entry is also removed from the list
+   once absorbed into the live button this way.
+3. Otherwise, the `links[]` entry marked `primary: true`, if you have one.
+4. Otherwise, the first entry in `links[]` (array order), if you have any
+   links at all.
+5. Only if `links[]` is completely empty (nothing anywhere to inherit
+   from) does the button fall back to the literal defaults, `"Live"` /
+   `"globe"`.
+
+So in practice: if your `primary: true` link is your Chrome Web Store
+listing, the live button reads "Chrome Web Store" with that link's icon —
+not "Live". Set `live.label`/`live.icon` explicitly any time you want the
+live button to say something different from what it would otherwise
+inherit.
+
+### Dedupe
+
+If a `links[]` entry's `href` is *exactly* the same as `live.href`
+(`type: external` only — `type: self` has no href to compare against),
+that `links[]` entry is dropped: the live button already covers that
+destination, indirected through the internal `/live` URL, so no card or
+detail page ever shows the same destination twice. This is also where
+rule 2 above comes from — the removed entry's own label/icon are what the
+live button inherits when you haven't set your own.
+
+### Where the live link shows up
+
+- **Detail pages** (`/projects/<slug>`, `/research/<slug>`): the live
+  button renders first, ahead of every `links[]` button, in the same row.
+- **The `/projects` and `/research` index cards**: same thing — the live
+  button renders first, ahead of every `links[]` button, on each card.
+- **The home page's featured project cards**: these cards only ever show
+  ONE link at all (a small icon-only overlay on the card's image, no
+  visible label). When the project declares `live`, that overlay becomes
+  the live link; when it doesn't, there is no overlay, exactly as before.
+- If an entry has no `live` field at all, every one of the above renders
+  exactly as it always has — no live button anywhere, `links[]` shown
+  unchanged. Nothing about this feature is opt-out; it is entirely
+  opt-in, per entry, by adding `live` to that entry's frontmatter.
+
+All of the above (inheritance, dedupe, ordering) is implemented in exactly
+one place, `src/lib/resolveLiveLinks.ts`, shared by every page and card
+component that renders link buttons — so an entry's live link behaves
+identically wherever it appears.
 
 ### Adding a self-hosted live page
 
