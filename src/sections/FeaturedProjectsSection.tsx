@@ -3,7 +3,7 @@ import { ProjectCard } from '@/components/ProjectCard';
 import { ArrowIcon } from '@/components/icons/ArrowIcon';
 import { featuredProjects } from '@/config/featured';
 import { trackEvent } from '@/lib/analytics';
-import { resolveLiveLinks } from '@/lib/resolveLiveLinks';
+import { buildLiveHref } from '@/lib/resolveLiveLinks';
 
 export function FeaturedProjectsSection() {
   return (
@@ -21,22 +21,18 @@ export function FeaturedProjectsSection() {
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
           {featuredProjects.map((project) => {
-            // Round 3.2 (owner: card links surface the live link too):
-            // a featured card shows at most ONE link - ProjectCard's own
-            // small overlay icon-button (externalHref/externalLabel/
-            // onExternalClick). When this project declares `live`, that
-            // one link becomes the live link - the same shared
-            // src/lib/resolveLiveLinks.ts detail pages and index cards
-            // use, so label/icon inheritance and href dedupe never drift
-            // between a project's featured card and its other pages. Only
-            // `resolved[0]` (the live entry itself) is used here; the rest
-            // of the resolved list (any remaining links[] entries) has no
-            // slot on this card and is intentionally not shown. When the
-            // project has no `live` field at all, `liveLink` stays
-            // undefined and the card shows no overlay, exactly as before.
-            const liveLink = project.live
-              ? resolveLiveLinks({ live: project.live, links: project.links, slug: project.slug, collection: 'projects' })[0]
-              : undefined;
+            // Round 3.3 (owner clarification): a featured card's one link
+            // - ProjectCard's own small overlay icon-button (externalHref/
+            // externalLabel/onExternalClick) - ALWAYS points at the
+            // internal /projects/<slug>/live URL, for every featured
+            // project, regardless of whether it declares `live` at all.
+            // Rules 2/3 in src/lib/resolveLiveLinks.ts guarantee that URL
+            // resolves somewhere sensible (a links[] entry, or the detail
+            // page as a last resort) even with no `live` field - the card
+            // body's title link still goes straight to the detail page,
+            // unchanged; this overlay is the separate "open the app"
+            // affordance.
+            const liveHref = buildLiveHref('projects', project.slug);
 
             return (
               <ProjectCard
@@ -48,8 +44,8 @@ export function FeaturedProjectsSection() {
                 description={project.description}
                 tags={project.tags}
                 status={project.status}
-                externalHref={liveLink?.href}
-                externalLabel={liveLink ? `Open ${project.title} live` : undefined}
+                externalHref={liveHref}
+                externalLabel={`Open ${project.title} live`}
                 onCardClick={() =>
                   trackEvent('project_card_click', {
                     slug: project.slug,
@@ -57,11 +53,7 @@ export function FeaturedProjectsSection() {
                     title: project.title,
                   })
                 }
-                onExternalClick={
-                  liveLink
-                    ? () => trackEvent('live_link_click', { url: liveLink.href, label: liveLink.label })
-                    : undefined
-                }
+                onExternalClick={() => trackEvent('live_link_click', { url: liveHref, label: project.title })}
               />
             );
           })}

@@ -7,12 +7,17 @@
 // otherwise). Still fires trackEvent('outbound_click', ...) with
 // context: 'content_external_link' on every link click.
 //
-// Round 3.2: LinksRow's own "live" behavior is now a thin wrapper around
-// src/lib/resolveLiveLinks.ts (label/icon inheritance, dedupe, primary/
-// secondary resolution all live there and are exhaustively unit-tested in
-// resolveLiveLinks.test.ts) - the "live" describe block below only proves
-// LinksRow actually calls that helper and renders its result, not the
-// resolution rules themselves.
+// Round 3.3 (owner clarification: "/live is a routing concept, not a
+// button" — Links shown, but used to define what live is ... but don't
+// need to show live"): LinksRow went through two intermediate shapes
+// (round 3.1 added a live button, round 3.2 reworked its label/icon
+// inheritance) and has now been reverted all the way back to this exact
+// plain-rendering behavior — no `live`/`slug`/`collection` props at all,
+// links[] rendered exactly as authored, nothing more. `live` (when an
+// entry sets it) only steers where that entry's separate /live route
+// goes — see src/lib/resolveLiveLinks.ts, used by
+// src/pages/ProjectLivePage.tsx/ResearchLivePage.tsx and
+// vite.config.ts's redirect generator, never by this component.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -27,7 +32,7 @@ vi.mock('@/lib/analytics', () => ({
 function renderLinksRow(props: Partial<React.ComponentProps<typeof LinksRow>> = {}) {
   return render(
     <MemoryRouter>
-      <LinksRow links={[]} slug="foo" collection="projects" {...props} />
+      <LinksRow links={[]} {...props} />
     </MemoryRouter>,
   );
 }
@@ -37,7 +42,7 @@ describe('LinksRow', () => {
     vi.clearAllMocks();
   });
 
-  it('renders nothing when links is empty and there is no "live" field', () => {
+  it('renders nothing when links is empty', () => {
     const { container } = renderLinksRow({ links: [] });
     expect(container).toBeEmptyDOMElement();
   });
@@ -105,71 +110,14 @@ describe('LinksRow', () => {
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
 
-  // Round 3.1/3.2 (/live subsystem restoration + label/icon inheritance):
-  // wiring-level coverage only - LinksRow passes {live, links, slug,
-  // collection} straight through to resolveLiveLinks and renders whatever
-  // comes back. The inheritance/dedupe/primary rules themselves are
-  // exhaustively covered in src/lib/resolveLiveLinks.test.ts.
-  describe('live', () => {
-    it('renders nothing extra when "live" is omitted, even with links present', () => {
-      renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
-      expect(screen.getAllByRole('link')).toHaveLength(1);
-    });
-
-    it('renders a live button first, using the INTERNAL /<collection>/<slug>/live href built from slug+collection, never live.href', () => {
-      renderLinksRow({
-        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { type: 'external', href: 'https://app.meetjuno.health' },
-        slug: 'juno',
-        collection: 'projects',
-      });
-      const links = screen.getAllByRole('link');
-      expect(links[0]).toHaveAttribute('href', '/projects/juno/live');
-    });
-
-    it('uses the "research" collection to build the internal href when collection="research"', () => {
-      renderLinksRow({
-        links: [],
-        live: { type: 'self', page: 'whatever' },
-        slug: 'flood-nlp',
-        collection: 'research',
-      });
-      expect(screen.getByRole('link')).toHaveAttribute('href', '/research/flood-nlp/live');
-    });
-
-    it("clicking the live button fires trackEvent('live_link_click'), not outbound_click", () => {
-      renderLinksRow({
-        links: [],
-        live: { type: 'external', href: 'https://app.meetjuno.health', label: 'Open app' },
-        slug: 'juno',
-        collection: 'projects',
-      });
-      fireEvent.click(screen.getByRole('link', { name: /Open app/i }));
-
-      expect(trackEvent).toHaveBeenCalledTimes(1);
-      expect(trackEvent).toHaveBeenCalledWith('live_link_click', { url: '/projects/juno/live', label: 'Open app' });
-    });
-
-    it('still fires outbound_click/content_external_link for a real links[] entry when a live button is also present', () => {
-      const { container } = renderLinksRow({
-        // Two DISTINCT labels here on purpose: with only one links[] entry
-        // and no explicit live.label, resolveLiveLinks would inherit that
-        // entry's own label onto the live button too (correct behavior,
-        // see resolveLiveLinks.test.ts), which would make both buttons
-        // read "GitHub" and defeat a name-based query below.
-        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { type: 'external', href: 'https://app.meetjuno.health', label: 'Live' },
-        slug: 'juno',
-        collection: 'projects',
-      });
-      const githubLink = container.querySelector('a[href="https://github.com/x"]')!;
-      fireEvent.click(githubLink);
-
-      expect(trackEvent).toHaveBeenCalledWith('outbound_click', {
-        url: 'https://github.com/x',
-        context: 'content_external_link',
-        label: 'GitHub',
-      });
-    });
+  // Round 3.3: an entry declaring `live` gets no special treatment here at
+  // all — LinksRowProps no longer even accepts a `live` prop. This is the
+  // negative-space proof: links render identically whether or not the
+  // underlying content entry happens to have a `live` field, since
+  // LinksRow never sees it.
+  it('does not accept or render anything related to "live" — links[] is the only input', () => {
+    renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
+    expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('link')).toHaveLength(1);
   });
 });

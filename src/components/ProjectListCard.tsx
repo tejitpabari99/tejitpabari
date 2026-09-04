@@ -11,7 +11,7 @@ import { TechTagList } from './TechTagList';
 import { StatusBadge, type BadgeStatus } from './StatusBadge';
 import { LinkButtons } from './LinkButtons';
 import type { Link as ContentLink, LiveConfig } from '@/data';
-import { resolveLiveLinks, type LiveLinkCollection } from '@/lib/resolveLiveLinks';
+import { resolveCardLinks, type LiveLinkCollection } from '@/lib/resolveLiveLinks';
 
 export interface ProjectListCardProps {
   href: string;
@@ -25,11 +25,11 @@ export interface ProjectListCardProps {
   techTags?: string[];
   status?: BadgeStatus;
   links: ContentLink[];
-  /** Round 3.2: the entry's own optional `live` field. When present, the
-   *  live link button renders FIRST, ahead of every links[] button - see
-   *  src/lib/resolveLiveLinks.ts for the full inheritance/dedupe contract
-   *  this delegates to (the same one detail pages use, so card and detail
-   *  page behavior for a given entry can never drift apart). */
+  /** Round 3.3: the entry's own optional `live` field. Renders links[]
+   *  unchanged whenever there's at least one - `live` only matters here
+   *  as the label/icon source for the ONE fallback case: an entry with no
+   *  links[] at all gets a single live-link button instead of nothing.
+   *  See src/lib/resolveLiveLinks.ts's resolveCardLinks. */
   live?: LiveConfig;
   slug: string;
   collection: LiveLinkCollection;
@@ -51,7 +51,7 @@ export function ProjectListCard({
   collection,
   onCardClick,
 }: ProjectListCardProps) {
-  const resolvedLinks = resolveLiveLinks({ live, links, slug, collection });
+  const resolvedLinks = resolveCardLinks({ live, links, slug, collection });
   return (
     <article className="group relative flex w-full flex-col overflow-hidden rounded-card border border-teal-secondary/12 bg-cream shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:flex-row">
       {/* Image: full width on top for mobile, fixed-width column on the

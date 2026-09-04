@@ -1,11 +1,12 @@
 // src/sections/FeaturedProjectsSection.test.tsx
 //
-// Round 3.2 (owner: featured cards surface the live link too, as the
-// card's one existing overlay icon-link — never branded "Live" since
-// that overlay has no visible text at all, just an icon). Mocks
+// Round 3.3 (owner clarification): every featured card's one overlay
+// icon-link ALWAYS points at the internal /projects/<slug>/live URL, for
+// every featured project, regardless of whether it declares `live` at
+// all - rules 2/3 in src/lib/resolveLiveLinks.ts guarantee that URL
+// resolves somewhere sensible even with no `live` field. Mocks
 // @/config/featured with fixture projects so this only exercises the
-// wiring: does the overlay appear/not appear, does it point at the
-// internal /live href, and does clicking it fire live_link_click.
+// wiring: the overlay's href, and the live_link_click analytics call.
 import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -64,18 +65,18 @@ describe('FeaturedProjectsSection', () => {
     expect(screen.getByRole('link', { name: /Open Has Live live/i })).toHaveAttribute('href', '/projects/has-live/live');
   });
 
-  it('shows no overlay link at all for a project with no "live" field', () => {
+  it('ALSO shows the overlay link, pointed at the internal /live href, for a project with no "live" field at all', () => {
     renderSection();
-    expect(screen.queryByRole('link', { name: /Open No Live live/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Open No Live live/i })).toHaveAttribute('href', '/projects/no-live/live');
   });
 
-  it("clicking the overlay fires trackEvent('live_link_click'), not outbound_click", () => {
+  it("clicking the overlay fires trackEvent('live_link_click') with the project's title as the label, not outbound_click", () => {
     renderSection();
     fireEvent.click(screen.getByRole('link', { name: /Open Has Live live/i }));
 
     expect(trackEvent).toHaveBeenCalledWith('live_link_click', {
       url: '/projects/has-live/live',
-      label: 'GitHub', // inherited from the only (and therefore "first") links[] entry
+      label: 'Has Live',
     });
   });
 });

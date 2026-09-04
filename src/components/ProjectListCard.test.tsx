@@ -2,6 +2,15 @@
 //
 // Round 3, PRD item 1: the horizontal list-card layout replacing the
 // 3-across ProjectCard grid on /projects and /research.
+//
+// Round 3.3 (owner clarification: "/live is a routing concept, not a
+// button"): ProjectListCard renders links[] EXACTLY as authored whenever
+// it has at least one entry - no live button prepended, no reordering, no
+// dedupe, no label/icon inheritance (all removed from round 3.2's
+// behavior). The ONLY place `live` still affects this card is the single
+// fallback case covered in the "live" describe block below: an entry with
+// no links[] at all gets one live-link button instead of nothing, via
+// src/lib/resolveLiveLinks.ts's resolveCardLinks.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -12,6 +21,15 @@ vi.mock('@/lib/analytics', () => ({
   trackEvent: vi.fn(),
 }));
 
+// A non-empty default `links` fixture, deliberately: with round 3.3's
+// "empty links[] gets a fallback live button" rule, a default of `links:
+// []` would silently give every test below (title, status, tags,
+// techTags - none of which care about link-button behavior) an extra,
+// unrelated fallback button to account for. Tests that specifically want
+// the empty-links[] case override `links: []` explicitly, in the "live"
+// describe block below.
+const DEFAULT_LINKS = [{ label: 'Website', href: 'https://example.com' }];
+
 function renderCard(props: Partial<React.ComponentProps<typeof ProjectListCard>> = {}) {
   return render(
     <MemoryRouter>
@@ -21,7 +39,7 @@ function renderCard(props: Partial<React.ComponentProps<typeof ProjectListCard>>
         title="Foo"
         description="A project."
         tags={['Health Tech']}
-        links={[]}
+        links={DEFAULT_LINKS}
         slug="foo"
         collection="projects"
         {...props}
@@ -50,7 +68,7 @@ describe('ProjectListCard', () => {
 
     rerender(
       <MemoryRouter>
-        <ProjectListCard href="/projects/foo" image="/x.png" title="Foo" description="A project." tags={[]} links={[]} slug="foo" collection="projects" />
+        <ProjectListCard href="/projects/foo" image="/x.png" title="Foo" description="A project." tags={[]} links={DEFAULT_LINKS} slug="foo" collection="projects" />
       </MemoryRouter>,
     );
     expect(screen.queryByText('Building')).not.toBeInTheDocument();
@@ -73,18 +91,34 @@ describe('ProjectListCard', () => {
   it('handles an empty techTags array (renders no tech tag group)', () => {
     const { container } = renderCard({ tags: ['Health Tech'], techTags: [] });
     expect(screen.getByText('Health Tech')).toBeInTheDocument();
-    // Only one flex-wrap tag row (the category tags) should exist.
-    expect(container.querySelectorAll('.flex-wrap')).toHaveLength(1);
+    // Two flex-wrap rows: the category tags, and the (always-present,
+    // since DEFAULT_LINKS is non-empty) link-buttons row - no third row
+    // for the empty techTags group.
+    expect(container.querySelectorAll('.flex-wrap')).toHaveLength(2);
   });
 
   it('handles an omitted techTags prop the same as empty', () => {
     const { container } = renderCard({ tags: [] });
-    expect(container.querySelectorAll('.flex-wrap')).toHaveLength(0);
+    // Only the link-buttons row (DEFAULT_LINKS is non-empty) - no
+    // category-tags row (tags: []) and no techTags row (omitted).
+    expect(container.querySelectorAll('.flex-wrap')).toHaveLength(1);
   });
 
-  it('handles an empty links array (renders no link buttons)', () => {
-    renderCard({ links: [] });
-    expect(screen.queryAllByRole('link')).toHaveLength(1); // just the title link
+  it('renders links[] exactly as authored - no reordering, no extra button, regardless of "live"', () => {
+    renderCard({
+      links: [
+        { label: 'Website', href: 'https://example.com', primary: true },
+        { label: 'GitHub', href: 'https://github.com/x' },
+      ],
+      live: { type: 'external', href: 'https://app.example.com' },
+    });
+    // Title link + exactly the two authored links - three total, in
+    // author order, live.href nowhere among them.
+    const links = screen.getAllByRole('link');
+    expect(links).toHaveLength(3);
+    expect(links[1]).toHaveAttribute('href', 'https://example.com');
+    expect(links[2]).toHaveAttribute('href', 'https://github.com/x');
+    expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
   });
 
   it('the link marked primary gets the filled dark-green treatment; others render outlined', () => {
@@ -140,54 +174,51 @@ describe('ProjectListCard', () => {
     expect(onCardClick).toHaveBeenCalledTimes(1);
   });
 
-  // Round 3.2 (owner: index cards surface the live link too, first,
-  // inheriting label/icon rather than being branded "Live"). Wiring-level
-  // only - the underlying inheritance/dedupe rules are exhaustively
+  // Round 3.3: the ONLY place `live` affects this card - an entry with no
+  // links[] at all gets a single live-link button instead of showing
+  // nothing. Wiring-level only - resolveCardLinks itself is exhaustively
   // covered in src/lib/resolveLiveLinks.test.ts.
-  describe('live', () => {
-    it('renders the live button first (before every links[] button), using the internal href built from slug+collection', () => {
-      renderCard({
-        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { type: 'external', href: 'https://app.example.com' },
-        slug: 'sample-project',
-        collection: 'projects',
-      });
-      // links[0] is the title link ("Foo"); links[1] is the first button.
-      const buttons = screen.getAllByRole('link').slice(1);
-      expect(buttons[0]).toHaveAttribute('href', '/projects/sample-project/live');
+  describe('live (empty-links[] fallback only)', () => {
+    it('renders a single live-link button, pointed at the internal /live href, when links[] is empty', () => {
+      renderCard({ links: [], slug: 'sample-project', collection: 'projects' });
+      const links = screen.getAllByRole('link');
+      expect(links).toHaveLength(2); // title link + the one fallback button
+      expect(links[1]).toHaveAttribute('href', '/projects/sample-project/live');
+      expect(links[1]).toHaveTextContent('Live');
     });
 
-    it('inherits the label/icon from the primary links[] entry instead of saying "Live"', () => {
+    it('uses live.label/live.icon for that fallback button when set', () => {
       renderCard({
-        links: [{ label: 'Chrome Web Store', href: 'https://chromewebstore.google.com/x', icon: 'puzzle', primary: true }],
-        live: { type: 'external', href: 'https://app.example.com' },
+        links: [],
+        live: { type: 'external', href: 'https://app.example.com', label: 'Open app', icon: 'rocket' },
         slug: 'sample-project',
         collection: 'projects',
       });
-      expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
-      // The live button (first non-title link) reads "Chrome Web Store"
-      // and points at the internal /live href - since live.href
-      // ("https://app.example.com") differs from the original entry's
-      // href, that original entry ALSO still renders (dedupe only
-      // removes an entry sharing live's exact href - covered separately
-      // below), so two "Chrome Web Store"-labeled buttons legitimately
-      // coexist here with two different hrefs.
-      const chromeWebStoreLinks = screen.getAllByRole('link', { name: /Chrome Web Store/i });
-      expect(chromeWebStoreLinks).toHaveLength(2);
-      expect(chromeWebStoreLinks[0]).toHaveAttribute('href', '/projects/sample-project/live');
-      expect(chromeWebStoreLinks[1]).toHaveAttribute('href', 'https://chromewebstore.google.com/x');
+      const button = screen.getByRole('link', { name: /Open app/i });
+      expect(button).toHaveAttribute('href', '/projects/sample-project/live');
+      expect(button.querySelector('svg')).toHaveClass('lucide-rocket');
     });
 
-    it('dedupes a links[] entry whose href matches live.href — it never appears twice', () => {
-      renderCard({
-        links: [{ label: 'Try it', href: 'https://app.example.com', icon: 'rocket' }],
-        live: { type: 'external', href: 'https://app.example.com' },
-        slug: 'sample-project',
-        collection: 'projects',
+    it('falls back to "Live"/globe when links[] is empty and "live" is entirely absent too', () => {
+      renderCard({ links: [], live: undefined, slug: 'sample-project', collection: 'projects' });
+      const button = screen.getByRole('link', { name: /^Live$/i });
+      expect(button.querySelector('svg')).toHaveClass('lucide-globe');
+    });
+
+    it('uses the "research" collection to build the fallback href', () => {
+      renderCard({ links: [], slug: 'flood-nlp', collection: 'research', href: '/research/flood-nlp' });
+      expect(screen.getByRole('link', { name: /^Live$/i })).toHaveAttribute('href', '/research/flood-nlp/live');
+    });
+
+    it("clicking the fallback button fires trackEvent('live_link_click'), not outbound_click", () => {
+      renderCard({ links: [], slug: 'sample-project', collection: 'projects' });
+      fireEvent.click(screen.getByRole('link', { name: /^Live$/i }));
+
+      expect(trackEvent).toHaveBeenCalledTimes(1);
+      expect(trackEvent).toHaveBeenCalledWith('live_link_click', {
+        url: '/projects/sample-project/live',
+        label: 'Live',
       });
-      const tryItLinks = screen.getAllByRole('link', { name: /Try it/i });
-      expect(tryItLinks).toHaveLength(1);
-      expect(tryItLinks[0]).toHaveAttribute('href', '/projects/sample-project/live');
     });
   });
 });

@@ -1,27 +1,24 @@
 // src/components/LinksRow.tsx
-import type { Link as ContentLink, LiveConfig } from '@/data'; // { label, href, icon?, primary? } - src/data/shared.ts
+//
+// Round 3.3 (owner: "Links shown, but used to define what live is ... but
+// dont need to show live"): renders links[] exactly as authored - no live
+// button, no reordering, no dedupe, no label/icon inheritance. `live` (if
+// set) only steers where the entry's separate /live route goes (see
+// src/lib/resolveLiveLinks.ts, used by src/pages/ProjectLivePage.tsx /
+// ResearchLivePage.tsx and vite.config.ts's redirect generator, not by
+// this component at all).
+import type { Link as ContentLink } from '@/data'; // { label, href, icon?, primary? } - src/data/shared.ts
 import { LinkButtons } from './LinkButtons';
-import { resolveLiveLinks, type LiveLinkCollection } from '@/lib/resolveLiveLinks';
 
 interface LinksRowProps {
   links: ContentLink[];
-  /** Round 3.1/3.2 (/live subsystem restoration + label/icon inheritance):
-   *  the entry's own optional `live` field, unmodified - all label/icon
-   *  defaulting, inheritance, dedupe, and internal-href construction is
-   *  handled by the one shared src/lib/resolveLiveLinks.ts, not here.
-   *  `slug`/`collection` are only used to build that internal href. */
-  live?: LiveConfig;
-  slug: string;
-  collection: LiveLinkCollection;
 }
 
-export function LinksRow({ links, live, slug, collection }: LinksRowProps) {
-  const entries = resolveLiveLinks({ live, links, slug, collection });
-
-  if (entries.length === 0) return null;
+export function LinksRow({ links }: LinksRowProps) {
+  if (links.length === 0) return null;
   return (
     <div className="mt-6 flex flex-wrap gap-3">
-      <LinkButtons links={entries} size="md" />
+      <LinkButtons links={links} size="md" />
     </div>
   );
 }
