@@ -120,25 +120,22 @@ video, wrench, zap
 ## The `live` field
 
 Every project and research entry has a canonical, stable URL:
-`/projects/<slug>/live` (or `/research/<slug>/live`). This is meant to be
-the one link you hand out and share, wherever "check out my live project"
-comes up. It is guaranteed to exist and to go somewhere sensible, whether
-or not you set `live` in that entry's frontmatter at all:
+`/projects/<slug>/live` (or `/research/<slug>/live`). This is a ROUTE, not
+a button that appears on the page — it is meant to be the one link you
+hand out and share, wherever "check out my live project" comes up. It is
+guaranteed to resolve to something sensible no matter what, in this exact
+order:
 
-- **`live` omitted entirely** — the URL quietly redirects to the entry's
-  own detail page (`/projects/<slug>`). This is the default; a shared
-  `/live` link never dead-ends, even for an entry that has nothing special
-  configured.
-- **`live.type: external`** — the URL redirects to an address you own
-  elsewhere (your own domain, a short link, an app store listing,
-  whatever). Use this for the common case: the project already lives
-  somewhere else and you just want a short, stable, on-brand URL that
-  points at it.
-- **`live.type: self`** — the URL renders a page you've written yourself,
-  hosted directly on this site, inside the normal site chrome (nav and
-  footer, same as any other page). Use this only for something small and
-  self-contained enough to live in this codebase — most projects should
-  use `type: external` instead.
+1. **`live` declared in frontmatter** — `live.type: external` redirects
+   to an address you own elsewhere (your own domain, a short link, an app
+   store listing, whatever). `live.type: self` renders a page you've
+   written yourself, hosted directly on this site, inside the normal site
+   chrome (nav and footer, same as any other page).
+2. **No `live` field, but `links[]` is non-empty** — redirects to
+   whichever `links[]` entry is marked `primary: true`, or `links[0]` if
+   none is marked.
+3. **No `live` field and no `links[]` at all** — redirects to the entry's
+   own detail page (`/projects/<slug>` or `/research/<slug>`).
 
 ```yaml
 # Redirect to somewhere you host elsewhere:
@@ -146,13 +143,6 @@ live:
   type: external
   href: https://smarttest.example.com   # required for type: external.
                                           # Must be an absolute http(s) URL.
-  label: Live                            # optional - see "Label and icon:
-                                          # what the button actually says",
-                                          # below, for what happens if you
-                                          # leave this out (it is NOT
-                                          # simply "Live").
-  icon: globe                            # optional, same story as label.
-                                          # Same icon list as links[].icon.
 
 # Render a page you've written yourself, on this domain:
 live:
@@ -160,15 +150,15 @@ live:
   page: crunchy-filler   # required for type: self. Must match a key in
                           # src/pages/live/registry.ts's HOSTED_LIVE_PAGES
                           # (see "Adding a self-hosted live page", below).
-  label: Live
-  icon: globe
 ```
 
-Both variants accept the same optional `label`/`icon`. Wherever a live
-link renders, its `href` is always the internal `/projects/<slug>/live`
-(or `/research/<slug>/live`) URL, never the resolved destination directly
-— that's the whole point: the link you hand out, and the link every card
-shows, never has to change even if where it points does.
+`label`/`icon` are also accepted on both variants (`live.label`,
+`live.icon`, same icon list as `links[].icon`) — they matter only for the
+one card surface that ever synthesizes a button from `live` (the
+`/projects`/`/research` index cards' empty-`links[]` fallback, see
+"Where the live link shows up" below); everywhere else `live` only steers
+where the `/live` route goes and never shows up as a labeled button of
+its own.
 
 A build fails loudly, naming the file, for: an unrecognized `live.type`;
 `href` missing or not an absolute http(s) URL for `type: external`; `page`
@@ -177,63 +167,37 @@ unrecognized icon name; or an unrecognized key inside `live` (including
 mixing `href` into a `type: self` entry, or `page` into a `type: external`
 one — pick exactly one).
 
-### Label and icon: what the button actually says
-
-The live button is deliberately **not branded "Live"** by default — a
-button that always says "Live" reads wrong once it's actually pointing at
-a Chrome Web Store listing, a GitHub repo, or whatever else `live`
-resolves to. Instead, when you don't set `live.label`/`live.icon`
-explicitly, the button inherits its label and icon from your own
-`links[]`, in this order:
-
-1. `live.label` / `live.icon`, if you set them — these always win, full
-   stop, regardless of anything below.
-2. Otherwise, if `live.href` (type: external only) exactly matches the
-   `href` of one of your `links[]` entries, that entry's label/icon —
-   see "Dedupe", below, since that entry is also removed from the list
-   once absorbed into the live button this way.
-3. Otherwise, the `links[]` entry marked `primary: true`, if you have one.
-4. Otherwise, the first entry in `links[]` (array order), if you have any
-   links at all.
-5. Only if `links[]` is completely empty (nothing anywhere to inherit
-   from) does the button fall back to the literal defaults, `"Live"` /
-   `"globe"`.
-
-So in practice: if your `primary: true` link is your Chrome Web Store
-listing, the live button reads "Chrome Web Store" with that link's icon —
-not "Live". Set `live.label`/`live.icon` explicitly any time you want the
-live button to say something different from what it would otherwise
-inherit.
-
-### Dedupe
-
-If a `links[]` entry's `href` is *exactly* the same as `live.href`
-(`type: external` only — `type: self` has no href to compare against),
-that `links[]` entry is dropped: the live button already covers that
-destination, indirected through the internal `/live` URL, so no card or
-detail page ever shows the same destination twice. This is also where
-rule 2 above comes from — the removed entry's own label/icon are what the
-live button inherits when you haven't set your own.
-
 ### Where the live link shows up
 
-- **Detail pages** (`/projects/<slug>`, `/research/<slug>`): the live
-  button renders first, ahead of every `links[]` button, in the same row.
-- **The `/projects` and `/research` index cards**: same thing — the live
-  button renders first, ahead of every `links[]` button, on each card.
-- **The home page's featured project cards**: these cards only ever show
-  ONE link at all (a small icon-only overlay on the card's image, no
-  visible label). When the project declares `live`, that overlay becomes
-  the live link; when it doesn't, there is no overlay, exactly as before.
-- If an entry has no `live` field at all, every one of the above renders
-  exactly as it always has — no live button anywhere, `links[]` shown
-  unchanged. Nothing about this feature is opt-out; it is entirely
-  opt-in, per entry, by adding `live` to that entry's frontmatter.
+- **Detail pages** (`/projects/<slug>`, `/research/<slug>`): `links[]`
+  renders exactly as authored — no live button, no reordering, no label
+  inheritance. `live` (when set) only decides where the separate `/live`
+  route goes; it never adds anything to this row. Links are "shown, but
+  used to define what live is" when there's no explicit `live` field
+  (rule 2 above) — they don't need to additionally show a live button of
+  their own.
+- **The `/projects` and `/research` index cards**: same as detail pages —
+  `links[]` renders exactly as authored, unchanged, whenever it has at
+  least one entry. The ONLY exception: an entry with NO `links[]` at all
+  gets a single live-link button instead of showing nothing, pointed at
+  the internal `/live` URL and labeled from `live.label`/`live.icon` if
+  set, `"Live"`/`"globe"` otherwise.
+- **The home page's featured project cards**: these cards show exactly
+  ONE link (a small icon-only overlay on the card's image, no visible
+  label) — and it ALWAYS points at the internal `/live` URL, for every
+  featured project, whether or not it declares `live` at all. Rules 2/3
+  above guarantee that URL resolves somewhere real either way. The card
+  body's title still goes straight to the detail page, unchanged; the
+  overlay is a separate "open the app" affordance.
 
-All of the above (inheritance, dedupe, ordering) is implemented in exactly
-one place, `src/lib/resolveLiveLinks.ts`, shared by every page and card
-component that renders link buttons — so an entry's live link behaves
-identically wherever it appears.
+The target-resolution rules (1/2/3 above) are implemented in exactly one
+place, `src/lib/resolveLiveLinks.ts`'s `resolveLiveTarget`, shared by the
+client-side `/live` dispatch pages and the build-time Firebase Hosting
+redirect generator (`vite.config.ts`), so a real deployed hit and the
+`npm run dev` fallback can never disagree about where a given `/live`
+goes. The much smaller card-only logic (the index-card empty-`links[]`
+fallback, and the featured-card internal href) lives in that same file's
+`resolveCardLinks` and `buildLiveHref`.
 
 ### Adding a self-hosted live page
 
