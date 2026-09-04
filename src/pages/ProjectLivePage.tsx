@@ -64,6 +64,9 @@ export function ProjectLivePage() {
           description={project.description}
           path={`/projects/${project.slug}/live`}
           image={`/og/projects/${project.slug}.png`}
+          imageAlt={`${project.title} project preview image`}
+          type="article"
+          publishedTime={`${project.date}T00:00:00.000Z`}
         />
         <HostedComponent />
       </>
@@ -74,5 +77,28 @@ export function ProjectLivePage() {
   // regardless of which rule produced `target.destination` - a stable,
   // human-readable description of where the visitor is headed, not any
   // button label from `live` or `links[]`.
-  return <LiveRedirectFallback to={target.destination} label={project.title} />;
+  //
+  // RouteMeta here too, not just on the 'self' branch above: on a real
+  // deployed hit this HTML is never served (Firebase's 301, per this
+  // file's header comment, intercepts first) — but `npm run dev`/`vite
+  // preview` and a client-side navigation post-hydration both DO render
+  // this branch directly, and until SP08's fix below this landed with a
+  // completely bare <head> (no <title> at all, not even a generic one) -
+  // a real coverage gap for "every route renders RouteMeta" given
+  // HOSTED_LIVE_PAGES is empty today, so every current /live URL takes
+  // this branch, not the 'self' one above.
+  return (
+    <>
+      <RouteMeta
+        title={project.title}
+        description={project.description}
+        path={`/projects/${project.slug}/live`}
+        image={`/og/projects/${project.slug}.png`}
+        imageAlt={`${project.title} project preview image`}
+        type="article"
+        publishedTime={`${project.date}T00:00:00.000Z`}
+      />
+      <LiveRedirectFallback to={target.destination} label={project.title} />
+    </>
+  );
 }

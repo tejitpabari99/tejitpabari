@@ -34,11 +34,31 @@ export function ResearchLivePage() {
           description={item.description}
           path={`/research/${item.slug}/live`}
           image={`/og/research/${item.slug}.png`}
+          imageAlt={`${item.title} research preview image`}
+          type="article"
+          publishedTime={`${item.date}T00:00:00.000Z`}
         />
         <HostedComponent />
       </>
     );
   }
 
-  return <LiveRedirectFallback to={target.destination} label={item.title} />;
+  // RouteMeta here too - see ProjectLivePage's matching branch for why:
+  // HOSTED_LIVE_PAGES is empty today, so every current /research/*/live
+  // URL takes this redirect branch, and it previously shipped with no
+  // <title> at all.
+  return (
+    <>
+      <RouteMeta
+        title={item.title}
+        description={item.description}
+        path={`/research/${item.slug}/live`}
+        image={`/og/research/${item.slug}.png`}
+        imageAlt={`${item.title} research preview image`}
+        type="article"
+        publishedTime={`${item.date}T00:00:00.000Z`}
+      />
+      <LiveRedirectFallback to={target.destination} label={item.title} />
+    </>
+  );
 }

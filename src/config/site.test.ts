@@ -25,4 +25,11 @@ describe('absoluteUrl', () => {
   it('handles a path missing its leading slash defensively', () => {
     expect(absoluteUrl('projects')).toBe('https://tejitpabari.com/projects');
   });
+
+  it('normalizes a protocol-relative URL to https:// instead of rooting it on this site’s own origin', () => {
+    // Regression guard: without this branch, "//host/path" starts with "/"
+    // and would fall into the root-relative case, producing the malformed
+    // "https://tejitpabari.com//host/path" instead of "https://host/path".
+    expect(absoluteUrl('//images.example.com/photo.jpg')).toBe('https://images.example.com/photo.jpg');
+  });
 });

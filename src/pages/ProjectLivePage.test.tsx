@@ -110,6 +110,15 @@ describe('ProjectLivePage dispatch', () => {
     expect(screen.queryByTestId('hosted-sample-project')).not.toBeInTheDocument();
   });
 
+  it('still renders RouteMeta (a real <title>) on the redirect branch, not just the hosted-component branch', () => {
+    // Regression guard: this branch previously rendered no RouteMeta at
+    // all, so the prerendered HTML for every /live URL that isn't
+    // registered in HOSTED_LIVE_PAGES (all of them today) shipped with no
+    // <title> whatsoever.
+    renderLivePage('juno');
+    expect(document.title).toBe('Juno · Tejit Pabari');
+  });
+
   it('renders LiveRedirectFallback pointed at the detail page for a project with no "live" field and no links[] (rule 3)', () => {
     renderLivePage('no-live-field');
     expect(screen.getByText(/Redirecting you to No Live Field/i)).toBeInTheDocument();

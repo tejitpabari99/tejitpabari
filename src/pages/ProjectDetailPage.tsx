@@ -24,10 +24,17 @@ export function ProjectDetailPage() {
         description={project.description}
         path={`/projects/${project.slug}`}
         image={`/og/projects/${project.slug}.png`}
+        imageAlt={`${project.title} project preview image`}
+        type="article"
+        publishedTime={`${project.date}T00:00:00.000Z`}
       />
       {/* image is the build-generated OG card path, NOT project.image (the
           frontmatter placeholder/thumbnail used below in DetailHeader and on
-          the card grid) - PRD §4.5/§9. */}
+          the card grid) - PRD §4.5/§9. `date` is a required frontmatter
+          field (src/data/shared.ts's normalizeDateField) formatted as a
+          full ISO-8601 timestamp for article:published_time - not an
+          invented date, just the existing YYYY-MM-DD normalized to the
+          timestamp shape the tag expects. */}
       <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} techTags={project.techTags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{project.description}</p>
       <LinksRow links={project.links} />

@@ -95,6 +95,11 @@ describe('ResearchLivePage dispatch', () => {
     expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', 'https://example.com/study');
   });
 
+  it('still renders RouteMeta (a real <title>) on the redirect branch, not just the hosted-component branch', () => {
+    renderLivePage('external-research');
+    expect(document.title).toBe('External Research · Tejit Pabari');
+  });
+
   it('renders LiveRedirectFallback pointed at the detail page for a research entry with no "live" field and no links[] (rule 3)', () => {
     renderLivePage('no-live-field');
     expect(screen.getByText(/Redirecting you to No Live Field/i)).toBeInTheDocument();
