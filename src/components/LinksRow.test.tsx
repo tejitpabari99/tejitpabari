@@ -1,12 +1,18 @@
 // src/components/LinksRow.test.tsx
 //
-// Round 3, r3-01-schema-icons-content: the "Open Live" CTA is gone (the
-// whole /live subsystem was removed). LinksRow now renders one button per
+// Round 3, r3-01-schema-icons-content: LinksRow renders one button per
 // `links` entry — filled/dark-green (`bg-teal`) for the entry with
 // `primary: true`, outlined otherwise — with an optional per-link icon
 // (DynamicIcon when `icon` is set, the existing ExternalLinkIcon fallback
 // otherwise). Still fires trackEvent('outbound_click', ...) with
 // context: 'content_external_link' on every link click.
+//
+// Round 3.2: LinksRow's own "live" behavior is now a thin wrapper around
+// src/lib/resolveLiveLinks.ts (label/icon inheritance, dedupe, primary/
+// secondary resolution all live there and are exhaustively unit-tested in
+// resolveLiveLinks.test.ts) - the "live" describe block below only proves
+// LinksRow actually calls that helper and renders its result, not the
+// resolution rules themselves.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
@@ -21,7 +27,7 @@ vi.mock('@/lib/analytics', () => ({
 function renderLinksRow(props: Partial<React.ComponentProps<typeof LinksRow>> = {}) {
   return render(
     <MemoryRouter>
-      <LinksRow links={[]} {...props} />
+      <LinksRow links={[]} slug="foo" collection="projects" {...props} />
     </MemoryRouter>,
   );
 }
@@ -31,7 +37,7 @@ describe('LinksRow', () => {
     vi.clearAllMocks();
   });
 
-  it('renders nothing when links is empty', () => {
+  it('renders nothing when links is empty and there is no "live" field', () => {
     const { container } = renderLinksRow({ links: [] });
     expect(container).toBeEmptyDOMElement();
   });
@@ -99,74 +105,65 @@ describe('LinksRow', () => {
     expect(link).toHaveAttribute('rel', 'noreferrer');
   });
 
-  // Round 3.1 (/live subsystem restoration): the Live button LinksRow
-  // prepends when a `live` prop is passed.
+  // Round 3.1/3.2 (/live subsystem restoration + label/icon inheritance):
+  // wiring-level coverage only - LinksRow passes {live, links, slug,
+  // collection} straight through to resolveLiveLinks and renders whatever
+  // comes back. The inheritance/dedupe/primary rules themselves are
+  // exhaustively covered in src/lib/resolveLiveLinks.test.ts.
   describe('live', () => {
     it('renders nothing extra when "live" is omitted, even with links present', () => {
       renderLinksRow({ links: [{ label: 'GitHub', href: 'https://github.com/x' }] });
-      expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
+      expect(screen.getAllByRole('link')).toHaveLength(1);
     });
 
-    it('renders a Live button first, using an INTERNAL href, never the resolved external target', () => {
+    it('renders a live button first, using the INTERNAL /<collection>/<slug>/live href built from slug+collection, never live.href', () => {
       renderLinksRow({
         links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+        live: { type: 'external', href: 'https://app.meetjuno.health' },
+        slug: 'juno',
+        collection: 'projects',
       });
       const links = screen.getAllByRole('link');
-      expect(links[0]).toHaveTextContent('Live');
       expect(links[0]).toHaveAttribute('href', '/projects/juno/live');
     });
 
-    it('renders the Live button even when links is empty', () => {
-      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' } });
-      expect(screen.getByRole('link', { name: /^Live$/i })).toHaveAttribute('href', '/projects/juno/live');
-    });
-
-    it('makes Live the filled/primary button when no links[] entry is already primary', () => {
+    it('uses the "research" collection to build the internal href when collection="research"', () => {
       renderLinksRow({
-        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+        links: [],
+        live: { type: 'self', page: 'whatever' },
+        slug: 'flood-nlp',
+        collection: 'research',
       });
-      const liveLink = screen.getByRole('link', { name: /^Live$/i });
-      expect(liveLink.className).toContain('bg-teal');
+      expect(screen.getByRole('link')).toHaveAttribute('href', '/research/flood-nlp/live');
     });
 
-    it('keeps an existing primary: true link[] entry primary, rendering Live as a secondary/outlined button instead', () => {
+    it("clicking the live button fires trackEvent('live_link_click'), not outbound_click", () => {
       renderLinksRow({
-        links: [{ label: 'Website', href: 'https://example.com', primary: true }],
-        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+        links: [],
+        live: { type: 'external', href: 'https://app.meetjuno.health', label: 'Open app' },
+        slug: 'juno',
+        collection: 'projects',
       });
-      const liveLink = screen.getByRole('link', { name: /^Live$/i });
-      const websiteLink = screen.getByRole('link', { name: /Website/i });
-      // Trailing space disambiguates the filled "bg-teal " class from the
-      // secondary style's own "hover:bg-teal-secondary" (which otherwise
-      // also contains the substring "bg-teal") - same technique the
-      // primary/secondary style test above this one uses.
-      expect(liveLink.className).not.toContain('bg-teal ');
-      expect(liveLink.className).toContain('border-teal-secondary');
-      expect(websiteLink.className).toContain('bg-teal ');
-    });
-
-    it('uses live.label and live.icon for the button content', () => {
-      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Try Juno', icon: 'rocket' } });
-      const liveLink = screen.getByRole('link', { name: /Try Juno/i });
-      expect(liveLink.querySelector('svg')).toHaveClass('lucide-rocket');
-    });
-
-    it("clicking the Live button fires trackEvent('live_link_click'), not outbound_click", () => {
-      renderLinksRow({ links: [], live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' } });
-      fireEvent.click(screen.getByRole('link', { name: /^Live$/i }));
+      fireEvent.click(screen.getByRole('link', { name: /Open app/i }));
 
       expect(trackEvent).toHaveBeenCalledTimes(1);
-      expect(trackEvent).toHaveBeenCalledWith('live_link_click', { url: '/projects/juno/live', label: 'Live' });
+      expect(trackEvent).toHaveBeenCalledWith('live_link_click', { url: '/projects/juno/live', label: 'Open app' });
     });
 
-    it('still fires outbound_click/content_external_link for a real links[] entry when Live is also present', () => {
-      renderLinksRow({
+    it('still fires outbound_click/content_external_link for a real links[] entry when a live button is also present', () => {
+      const { container } = renderLinksRow({
+        // Two DISTINCT labels here on purpose: with only one links[] entry
+        // and no explicit live.label, resolveLiveLinks would inherit that
+        // entry's own label onto the live button too (correct behavior,
+        // see resolveLiveLinks.test.ts), which would make both buttons
+        // read "GitHub" and defeat a name-based query below.
         links: [{ label: 'GitHub', href: 'https://github.com/x' }],
-        live: { href: '/projects/juno/live', label: 'Live', icon: 'globe' },
+        live: { type: 'external', href: 'https://app.meetjuno.health', label: 'Live' },
+        slug: 'juno',
+        collection: 'projects',
       });
-      fireEvent.click(screen.getByRole('link', { name: /GitHub/i }));
+      const githubLink = container.querySelector('a[href="https://github.com/x"]')!;
+      fireEvent.click(githubLink);
 
       expect(trackEvent).toHaveBeenCalledWith('outbound_click', {
         url: 'https://github.com/x',

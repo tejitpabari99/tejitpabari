@@ -44,6 +44,9 @@ export function ResearchPage() {
               techTags={item.techTags}
               status={item.status}
               links={item.links}
+              live={item.live}
+              slug={item.slug}
+              collection="research"
               onCardClick={() =>
                 trackEvent('project_card_click', { slug: item.slug, collection: 'research', title: item.title })
               }

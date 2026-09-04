@@ -21,10 +21,7 @@ export function ResearchDetailPage() {
       <RouteMeta title={item.title} description={item.description} path={`/research/${item.slug}`} image={`/og/research/${item.slug}.png`} />
       <DetailHeader image={item.image} imageAlt={`${item.title} preview`} title={item.title} status={item.status} tags={item.tags} techTags={item.techTags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{item.description}</p>
-      <LinksRow
-        links={item.links}
-        live={item.live ? { href: `/research/${item.slug}/live`, label: item.live.label, icon: item.live.icon } : undefined}
-      />
+      <LinksRow links={item.links} live={item.live} slug={item.slug} collection="research" />
       <ContentBody body={item.body} />
     </PageContainer>
   );

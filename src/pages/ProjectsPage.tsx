@@ -47,6 +47,9 @@ export function ProjectsPage() {
               techTags={project.techTags}
               status={project.status}
               links={project.links}
+              live={project.live}
+              slug={project.slug}
+              collection="projects"
               onCardClick={() =>
                 trackEvent('project_card_click', { slug: project.slug, collection: 'projects', title: project.title })
               }

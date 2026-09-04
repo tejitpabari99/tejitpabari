@@ -30,10 +30,7 @@ export function ProjectDetailPage() {
           the card grid) - PRD §4.5/§9. */}
       <DetailHeader image={project.image} imageAlt={`${project.title} preview`} title={project.title} status={project.status} tags={project.tags} techTags={project.techTags} />
       <p className="mt-4 max-w-[52rem] text-[0.98rem] leading-7 text-body">{project.description}</p>
-      <LinksRow
-        links={project.links}
-        live={project.live ? { href: `/projects/${project.slug}/live`, label: project.live.label, icon: project.live.icon } : undefined}
-      />
+      <LinksRow links={project.links} live={project.live} slug={project.slug} collection="projects" />
       <ContentBody body={project.body} />
     </PageContainer>
   );

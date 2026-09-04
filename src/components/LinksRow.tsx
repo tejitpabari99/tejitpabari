@@ -1,28 +1,22 @@
 // src/components/LinksRow.tsx
-import type { Link as ContentLink } from '@/data'; // { label, href, icon?, primary? } - src/data/shared.ts
-import { LinkButtons, type LinkButtonEntry } from './LinkButtons';
+import type { Link as ContentLink, LiveConfig } from '@/data'; // { label, href, icon?, primary? } - src/data/shared.ts
+import { LinkButtons } from './LinkButtons';
+import { resolveLiveLinks, type LiveLinkCollection } from '@/lib/resolveLiveLinks';
 
 interface LinksRowProps {
   links: ContentLink[];
-  /** Round 3.1 (/live subsystem restoration): present only when the entry
-   *  declares a `live` field. `href` is ALWAYS the internal
-   *  /projects/<slug>/live or /research/<slug>/live path — never the
-   *  resolved external target, which stays owner-controlled and can
-   *  change without touching this page - see ProjectDetailPage/
-   *  ResearchDetailPage, which build this from `project.live`/`item.live`
-   *  (already defaulted by src/data/shared.ts's assertOptionalLive). */
-  live?: { href: string; label: string; icon: string };
+  /** Round 3.1/3.2 (/live subsystem restoration + label/icon inheritance):
+   *  the entry's own optional `live` field, unmodified - all label/icon
+   *  defaulting, inheritance, dedupe, and internal-href construction is
+   *  handled by the one shared src/lib/resolveLiveLinks.ts, not here.
+   *  `slug`/`collection` are only used to build that internal href. */
+  live?: LiveConfig;
+  slug: string;
+  collection: LiveLinkCollection;
 }
 
-export function LinksRow({ links, live }: LinksRowProps) {
-  // The Live button sits first in the row. If a links[] entry is already
-  // marked primary: true, that one keeps the filled/dark-green style and
-  // Live renders as the first secondary (outlined) button instead -
-  // exactly one filled button is ever shown, never two.
-  const hasExistingPrimary = links.some((link) => link.primary);
-  const entries: LinkButtonEntry[] = live
-    ? [{ label: live.label, href: live.href, icon: live.icon, primary: !hasExistingPrimary, isLive: true }, ...links]
-    : links;
+export function LinksRow({ links, live, slug, collection }: LinksRowProps) {
+  const entries = resolveLiveLinks({ live, links, slug, collection });
 
   if (entries.length === 0) return null;
   return (

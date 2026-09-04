@@ -3,6 +3,7 @@ import { ProjectCard } from '@/components/ProjectCard';
 import { ArrowIcon } from '@/components/icons/ArrowIcon';
 import { featuredProjects } from '@/config/featured';
 import { trackEvent } from '@/lib/analytics';
+import { resolveLiveLinks } from '@/lib/resolveLiveLinks';
 
 export function FeaturedProjectsSection() {
   return (
@@ -19,25 +20,51 @@ export function FeaturedProjectsSection() {
         </h2>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3">
-          {featuredProjects.map((project) => (
-            <ProjectCard
-              key={project.slug}
-              href={`/projects/${project.slug}`}
-              image={project.image}
-              imageAlt={`${project.title} preview`}
-              title={project.title}
-              description={project.description}
-              tags={project.tags}
-              status={project.status}
-              onCardClick={() =>
-                trackEvent('project_card_click', {
-                  slug: project.slug,
-                  collection: 'projects',
-                  title: project.title,
-                })
-              }
-            />
-          ))}
+          {featuredProjects.map((project) => {
+            // Round 3.2 (owner: card links surface the live link too):
+            // a featured card shows at most ONE link - ProjectCard's own
+            // small overlay icon-button (externalHref/externalLabel/
+            // onExternalClick). When this project declares `live`, that
+            // one link becomes the live link - the same shared
+            // src/lib/resolveLiveLinks.ts detail pages and index cards
+            // use, so label/icon inheritance and href dedupe never drift
+            // between a project's featured card and its other pages. Only
+            // `resolved[0]` (the live entry itself) is used here; the rest
+            // of the resolved list (any remaining links[] entries) has no
+            // slot on this card and is intentionally not shown. When the
+            // project has no `live` field at all, `liveLink` stays
+            // undefined and the card shows no overlay, exactly as before.
+            const liveLink = project.live
+              ? resolveLiveLinks({ live: project.live, links: project.links, slug: project.slug, collection: 'projects' })[0]
+              : undefined;
+
+            return (
+              <ProjectCard
+                key={project.slug}
+                href={`/projects/${project.slug}`}
+                image={project.image}
+                imageAlt={`${project.title} preview`}
+                title={project.title}
+                description={project.description}
+                tags={project.tags}
+                status={project.status}
+                externalHref={liveLink?.href}
+                externalLabel={liveLink ? `Open ${project.title} live` : undefined}
+                onCardClick={() =>
+                  trackEvent('project_card_click', {
+                    slug: project.slug,
+                    collection: 'projects',
+                    title: project.title,
+                  })
+                }
+                onExternalClick={
+                  liveLink
+                    ? () => trackEvent('live_link_click', { url: liveLink.href, label: liveLink.label })
+                    : undefined
+                }
+              />
+            );
+          })}
         </div>
 
         <div className="mt-8 flex justify-center lg:mt-10">

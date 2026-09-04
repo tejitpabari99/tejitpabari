@@ -10,7 +10,8 @@ import { TagPill } from './TagPill';
 import { TechTagList } from './TechTagList';
 import { StatusBadge, type BadgeStatus } from './StatusBadge';
 import { LinkButtons } from './LinkButtons';
-import type { Link as ContentLink } from '@/data';
+import type { Link as ContentLink, LiveConfig } from '@/data';
+import { resolveLiveLinks, type LiveLinkCollection } from '@/lib/resolveLiveLinks';
 
 export interface ProjectListCardProps {
   href: string;
@@ -24,6 +25,14 @@ export interface ProjectListCardProps {
   techTags?: string[];
   status?: BadgeStatus;
   links: ContentLink[];
+  /** Round 3.2: the entry's own optional `live` field. When present, the
+   *  live link button renders FIRST, ahead of every links[] button - see
+   *  src/lib/resolveLiveLinks.ts for the full inheritance/dedupe contract
+   *  this delegates to (the same one detail pages use, so card and detail
+   *  page behavior for a given entry can never drift apart). */
+  live?: LiveConfig;
+  slug: string;
+  collection: LiveLinkCollection;
   onCardClick?: () => void;
 }
 
@@ -37,8 +46,12 @@ export function ProjectListCard({
   techTags = [],
   status,
   links,
+  live,
+  slug,
+  collection,
   onCardClick,
 }: ProjectListCardProps) {
+  const resolvedLinks = resolveLiveLinks({ live, links, slug, collection });
   return (
     <article className="group relative flex w-full flex-col overflow-hidden rounded-card border border-teal-secondary/12 bg-cream shadow-card transition duration-200 hover:-translate-y-1 hover:border-teal-secondary/22 hover:shadow-card-hover sm:flex-row">
       {/* Image: full width on top for mobile, fixed-width column on the
@@ -77,9 +90,9 @@ export function ProjectListCard({
 
         <TechTagList techTags={techTags} />
 
-        {links.length > 0 && (
+        {resolvedLinks.length > 0 && (
           <div className="mt-1 flex flex-wrap gap-2">
-            <LinkButtons links={links} size="sm" />
+            <LinkButtons links={resolvedLinks} size="sm" />
           </div>
         )}
       </div>

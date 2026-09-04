@@ -22,6 +22,8 @@ function renderCard(props: Partial<React.ComponentProps<typeof ProjectListCard>>
         description="A project."
         tags={['Health Tech']}
         links={[]}
+        slug="foo"
+        collection="projects"
         {...props}
       />
     </MemoryRouter>,
@@ -48,7 +50,7 @@ describe('ProjectListCard', () => {
 
     rerender(
       <MemoryRouter>
-        <ProjectListCard href="/projects/foo" image="/x.png" title="Foo" description="A project." tags={[]} links={[]} />
+        <ProjectListCard href="/projects/foo" image="/x.png" title="Foo" description="A project." tags={[]} links={[]} slug="foo" collection="projects" />
       </MemoryRouter>,
     );
     expect(screen.queryByText('Building')).not.toBeInTheDocument();
@@ -136,5 +138,56 @@ describe('ProjectListCard', () => {
     renderCard({ onCardClick });
     fireEvent.click(screen.getByRole('link', { name: 'Foo' }));
     expect(onCardClick).toHaveBeenCalledTimes(1);
+  });
+
+  // Round 3.2 (owner: index cards surface the live link too, first,
+  // inheriting label/icon rather than being branded "Live"). Wiring-level
+  // only - the underlying inheritance/dedupe rules are exhaustively
+  // covered in src/lib/resolveLiveLinks.test.ts.
+  describe('live', () => {
+    it('renders the live button first (before every links[] button), using the internal href built from slug+collection', () => {
+      renderCard({
+        links: [{ label: 'GitHub', href: 'https://github.com/x' }],
+        live: { type: 'external', href: 'https://app.example.com' },
+        slug: 'sample-project',
+        collection: 'projects',
+      });
+      // links[0] is the title link ("Foo"); links[1] is the first button.
+      const buttons = screen.getAllByRole('link').slice(1);
+      expect(buttons[0]).toHaveAttribute('href', '/projects/sample-project/live');
+    });
+
+    it('inherits the label/icon from the primary links[] entry instead of saying "Live"', () => {
+      renderCard({
+        links: [{ label: 'Chrome Web Store', href: 'https://chromewebstore.google.com/x', icon: 'puzzle', primary: true }],
+        live: { type: 'external', href: 'https://app.example.com' },
+        slug: 'sample-project',
+        collection: 'projects',
+      });
+      expect(screen.queryByRole('link', { name: /^Live$/i })).not.toBeInTheDocument();
+      // The live button (first non-title link) reads "Chrome Web Store"
+      // and points at the internal /live href - since live.href
+      // ("https://app.example.com") differs from the original entry's
+      // href, that original entry ALSO still renders (dedupe only
+      // removes an entry sharing live's exact href - covered separately
+      // below), so two "Chrome Web Store"-labeled buttons legitimately
+      // coexist here with two different hrefs.
+      const chromeWebStoreLinks = screen.getAllByRole('link', { name: /Chrome Web Store/i });
+      expect(chromeWebStoreLinks).toHaveLength(2);
+      expect(chromeWebStoreLinks[0]).toHaveAttribute('href', '/projects/sample-project/live');
+      expect(chromeWebStoreLinks[1]).toHaveAttribute('href', 'https://chromewebstore.google.com/x');
+    });
+
+    it('dedupes a links[] entry whose href matches live.href — it never appears twice', () => {
+      renderCard({
+        links: [{ label: 'Try it', href: 'https://app.example.com', icon: 'rocket' }],
+        live: { type: 'external', href: 'https://app.example.com' },
+        slug: 'sample-project',
+        collection: 'projects',
+      });
+      const tryItLinks = screen.getAllByRole('link', { name: /Try it/i });
+      expect(tryItLinks).toHaveLength(1);
+      expect(tryItLinks[0]).toHaveAttribute('href', '/projects/sample-project/live');
+    });
   });
 });
