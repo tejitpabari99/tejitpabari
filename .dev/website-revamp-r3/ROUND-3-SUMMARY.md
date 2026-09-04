@@ -182,3 +182,7 @@ build served through `firebase emulators:start --only hosting`, saved at
   and test files today. The polyfill (`src/lib/bufferPolyfill.ts`) is a
   correct, minimal, well-contained fix for the immediate correctness
   bug; the bundle-size question is left as a note for a future round.
+
+---
+
+> **Note added 2026-09-04 (deploy target confirmation, not a rewrite of the analysis above):** re-ran `grep -ri netlify` (excluding `node_modules`/`.git`/`dist`) as part of a separate owner request to confirm Firebase-only deployment. The conclusion above still holds exactly as written: no live Netlify configuration exists anywhere in this repository. The only Netlify mentions repo-wide remain the historical ones in `.dev/website-revamp/BRIEF.md` and `.dev/website-revamp/01-app-shell-design-system-deploy/{PRD,TASKS}.md`, describing the completed round-1 migration off Netlify onto Firebase Hosting — left untouched, same as this file's own original reasoning for leaving them. Deploy is, and remains, Firebase Hosting only (`firebase.json` rewrites/headers, `firebase deploy`, project `tejitpabari-99`).

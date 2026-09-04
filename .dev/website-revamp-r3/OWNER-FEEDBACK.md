@@ -96,3 +96,7 @@ Owns the functional defects: category tags and search not filtering on
 404 page (a random path currently falls back to the home page instead of a
 real not-found page), the duplicated "Tejit Pabari · Tejit Pabari" browser
 tab title, and removing the leftover Netlify step from GitHub Actions.
+
+---
+
+> **Note added 2026-09-04 (deploy target, not a rewrite of the feedback above):** the owner asked, separately from this round's feedback, to confirm the Netlify-related cleanup this file already discusses (item 16 above, resolved in `ROUND-3-SUMMARY.md`'s "The Netlify question"). Re-verified directly: the repository has no live Netlify configuration of any kind (no `netlify.toml`, no `_redirects`/`_headers`, no Netlify Forms markup, no `netlify-shortener` or other Netlify package, nothing in `.github/workflows/`). The site deploys exclusively via Firebase Hosting (`firebase.json`, `firebase deploy`, project `tejitpabari-99`). The remaining Netlify-shaped item is not code: whether the owner's original Netlify site/account for tejitpabari.com has been decommissioned once DNS fully points at Firebase — that is an owner-only action outside this repo's scope, tracked in the `01-app-shell-design-system-deploy/PRD.md` launch-blocker section, not here.
