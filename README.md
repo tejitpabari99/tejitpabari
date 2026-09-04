@@ -4,6 +4,8 @@
 
 See `.dev/website-revamp/BRIEF.md` for the full design record — palette, routes, content model, and every settled decision behind this rewrite.
 
+See `.dev/IMAGE-SPECS.md` for the pixel dimensions, format, and file-size budget to source real project/research photos at, replacing the current shared Unsplash placeholder.
+
 ## Commands
 
 - `npm run dev` — start the dev server
