@@ -20,6 +20,7 @@ can do all of this from the markdown file itself, no code changes needed.
 | `status` | no | string | One of: `Building`, `Not Started`, `Completed`. Omit for no status pill. |
 | `links` | yes | array | Use `links: []` for none. See below for the shape of each entry. |
 | `date` | yes | string | `YYYY-MM-DD`, quoted. |
+| `live` | no | mapping | Controls where `/projects/<slug>/live` goes. Omit entirely for no special handling. See "The `live` field", below, for the full shape. |
 
 ### Research (`src/content/research/<slug>.md`)
 
@@ -116,10 +117,80 @@ star, stethoscope, tag, tags, target, terminal, trending-up, user, users,
 video, wrench, zap
 ```
 
+## The `live` field
+
+Every project and research entry has a canonical, stable URL:
+`/projects/<slug>/live` (or `/research/<slug>/live`). This is meant to be
+the one link you hand out and share, wherever "check out my live project"
+comes up. It is guaranteed to exist and to go somewhere sensible, whether
+or not you set `live` in that entry's frontmatter at all:
+
+- **`live` omitted entirely** — the URL quietly redirects to the entry's
+  own detail page (`/projects/<slug>`). This is the default; a shared
+  `/live` link never dead-ends, even for an entry that has nothing special
+  configured.
+- **`live.type: external`** — the URL redirects to an address you own
+  elsewhere (your own domain, a short link, an app store listing,
+  whatever). Use this for the common case: the project already lives
+  somewhere else and you just want a short, stable, on-brand URL that
+  points at it.
+- **`live.type: self`** — the URL renders a page you've written yourself,
+  hosted directly on this site, inside the normal site chrome (nav and
+  footer, same as any other page). Use this only for something small and
+  self-contained enough to live in this codebase — most projects should
+  use `type: external` instead.
+
+```yaml
+# Redirect to somewhere you host elsewhere:
+live:
+  type: external
+  href: https://smarttest.example.com   # required for type: external.
+                                          # Must be an absolute http(s) URL.
+  label: Live                            # optional, defaults to "Live"
+  icon: globe                            # optional, defaults to "globe".
+                                          # Same icon list as links[].icon.
+
+# Render a page you've written yourself, on this domain:
+live:
+  type: self
+  page: crunchy-filler   # required for type: self. Must match a key in
+                          # src/pages/live/registry.ts's HOSTED_LIVE_PAGES
+                          # (see "Adding a self-hosted live page", below).
+  label: Live
+  icon: globe
+```
+
+Both variants accept the same optional `label`/`icon`, with the same
+defaults (`"Live"` / `"globe"`). The detail page's "Live" button (shown
+first, before your other `links[]` buttons, only when `live` is set at
+all) uses those to render its label and icon — but its `href` is always
+the internal `/projects/<slug>/live` (or `/research/<slug>/live`) URL,
+never the resolved destination. That's the whole point: the link you hand
+out never has to change even if where it points does.
+
+A build fails loudly, naming the file, for: an unrecognized `live.type`;
+`href` missing or not an absolute http(s) URL for `type: external`; `page`
+missing, or not a key in `HOSTED_LIVE_PAGES`, for `type: self`; an
+unrecognized icon name; or an unrecognized key inside `live` (including
+mixing `href` into a `type: self` entry, or `page` into a `type: external`
+one — pick exactly one).
+
+### Adding a self-hosted live page
+
+1. Write `src/pages/live/<name>.tsx`, exporting one component that takes
+   no required props. It renders inside the normal site shell (nav/footer
+   already there) — just write the page's own content.
+2. Add one line to `HOSTED_LIVE_PAGES` in `src/pages/live/registry.ts`:
+   `'<name>': YourComponent`.
+3. In the entry's frontmatter, set `live: { type: self, page: <name> }`.
+
+That registry is also what `scripts/check-no-forms.sh` guards: every file
+under `src/pages/live/` must stay free of `<input>`/`<textarea>`/`<form>`/
+file-upload markup, because `/privacy` and `/terms` both currently state
+this site has no forms anywhere. If a self-hosted live page ever genuinely
+needs one, update those two pages (and their "Last updated" date) before
+that page ships, not after.
+
 ## What's no longer part of the schema
 
-- `liveUrl` and the whole `/projects/<slug>/live` page/redirect system are
-  gone. If a project has a live version somewhere, just add it as a link
-  in `links[]`, mark it `primary: true` if it's the main destination, and
-  pick a fitting `icon`.
 - `demo` is gone (it was unused by any page).
