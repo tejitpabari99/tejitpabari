@@ -9,7 +9,7 @@ import type { Link } from './shared';
 export * from './projects';
 export * from './research';
 export * from './workExperience';
-export type { Link } from './shared';
+export type { Link, LiveConfig } from './shared';
 
 export const KNOWN_STATIC_ROUTES = ['/', '/projects', '/research', '/work-experience', '/privacy', '/terms'];
 

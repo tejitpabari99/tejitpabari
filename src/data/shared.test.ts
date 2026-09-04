@@ -103,7 +103,10 @@ describe('parseProject', () => {
     it('does NOT throw on an unrecognized-field error for a "live" key — it is now a recognized field', () => {
       const raw = `---\nslug: foo\ntitle: Foo\ndescription: D\nimage: /x.png\ntags: [Health Tech]\nlinks: []\ndate: "2024-01-01"\nlive:\n  type: external\n  href: https://example.com\n---\n`;
       const result = parseProject('/src/content/projects/foo.md', raw);
-      expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: 'Live', icon: 'globe' });
+      // label/icon are left undefined here (not defaulted at parse time
+      // any more, round 3.2) — see src/lib/resolveLiveLinks.ts for where
+      // the "Live"/"globe" default and links[]-inheritance now live.
+      expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: undefined, icon: undefined });
     });
 
     it('is undefined when "live" is omitted entirely', () => {

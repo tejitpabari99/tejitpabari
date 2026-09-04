@@ -152,15 +152,19 @@ export function assertImagePath(path: string, value: unknown): string {
 //   - type: external -> redirects to an owner-supplied absolute href.
 //   - type: self -> renders an owner-written React page, looked up by
 //     `page` in src/pages/live/registry.ts's HOSTED_LIVE_PAGES.
-// `label`/`icon` are optional on both variants, defaulting to "Live" /
-// "globe" — always present (defaulted) on the returned value so callers
-// (DetailHeader/LinksRow) never need to re-apply the defaults themselves.
+// `label`/`icon` are left OPTIONAL (undefined, not defaulted) on the
+// returned value here on purpose — round 3.2 (owner: "it is not a live
+// button, the button doesn't say live") moved the "Live"/"globe" defaults
+// out of parse-time validation and into src/lib/resolveLiveLinks.ts's
+// inheritance chain (explicit live.label/icon > the matching/primary/first
+// links[] entry's label/icon > "Live"/"globe" as the last resort). This
+// validator only needs to prove label/icon are well-formed IF present; it
+// has no way to know here whether links[] will end up supplying something
+// better to inherit, so baking a default in at this layer would make that
+// inheritance impossible to implement downstream.
 export type LiveConfig =
-  | { type: 'external'; href: string; label: string; icon: string }
-  | { type: 'self'; page: string; label: string; icon: string };
-
-const LIVE_DEFAULT_LABEL = 'Live';
-const LIVE_DEFAULT_ICON = 'globe';
+  | { type: 'external'; href: string; label?: string; icon?: string }
+  | { type: 'self'; page: string; label?: string; icon?: string };
 
 // `hostedPageKeys` is passed in (rather than imported directly here) so
 // this validator stays parameterized/testable the same way assertTags and
@@ -190,7 +194,7 @@ export function assertOptionalLive(path: string, value: unknown, hostedPageKeys:
     throw new Error(`${path}: "live.type" must be "external" or "self". Got ${JSON.stringify(type)}.`);
   }
 
-  let resolvedLabel = LIVE_DEFAULT_LABEL;
+  let resolvedLabel: string | undefined;
   if (label !== undefined) {
     if (typeof label !== 'string' || !label.trim()) {
       throw new Error(`${path}: "live.label" must be a non-empty string if present.`);
@@ -198,7 +202,7 @@ export function assertOptionalLive(path: string, value: unknown, hostedPageKeys:
     resolvedLabel = label;
   }
 
-  let resolvedIcon = LIVE_DEFAULT_ICON;
+  let resolvedIcon: string | undefined;
   if (icon !== undefined) {
     if (typeof icon !== 'string' || !icon.trim()) {
       throw new Error(`${path}: "live.icon" must be a non-empty string if present.`);

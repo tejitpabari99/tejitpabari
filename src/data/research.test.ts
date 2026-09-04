@@ -81,10 +81,10 @@ describe('parseResearch', () => {
   // symmetry check that parseResearch wires "live" through the same as
   // parseProject does (src/data/shared.test.ts's own "live" describe
   // block).
-  it('wires "live" through, recognizing it as an allowed field and defaulting label/icon', () => {
+  it('wires "live" through, recognizing it as an allowed field (label/icon left undefined here, not defaulted until src/lib/resolveLiveLinks.ts)', () => {
     const raw = `---\nslug: example\ntitle: Example Research\ndescription: D\nimage: /x.png\ntags: [Other]\nlinks: []\ndate: "2024-01-01"\nlive:\n  type: external\n  href: https://example.com\n---\n`;
     const result = parseResearch('/src/content/research/example.md', raw);
-    expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: 'Live', icon: 'globe' });
+    expect(result.live).toEqual({ type: 'external', href: 'https://example.com', label: undefined, icon: undefined });
   });
 });
 

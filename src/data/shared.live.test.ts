@@ -9,6 +9,13 @@
 // whatever real src/pages/live/registry.ts happens to contain at any
 // given time (it ships empty — see that file — so a "valid type: self"
 // case could never be exercised through the real registry at all).
+//
+// Round 3.2: assertOptionalLive no longer defaults `label`/`icon` to
+// "Live"/"globe" when absent — it leaves them `undefined` and validates
+// them only when present. The actual "Live"/"globe" last-resort default,
+// plus the fuller inheritance-from-links[] chain, now lives in
+// src/lib/resolveLiveLinks.ts (see resolveLiveLinks.test.ts) — this file
+// only proves assertOptionalLive itself is a well-formed pass-through.
 import { describe, it, expect } from 'vitest';
 import { assertOptionalLive } from './shared';
 
@@ -21,12 +28,12 @@ describe('assertOptionalLive', () => {
   });
 
   describe('type: external', () => {
-    it('accepts a valid external entry, defaulting label to "Live" and icon to "globe"', () => {
+    it('accepts a valid external entry with no label/icon, leaving both undefined (not defaulted here)', () => {
       const result = assertOptionalLive(PATH, { type: 'external', href: 'https://example.com' }, HOSTED_KEYS);
-      expect(result).toEqual({ type: 'external', href: 'https://example.com', label: 'Live', icon: 'globe' });
+      expect(result).toEqual({ type: 'external', href: 'https://example.com', label: undefined, icon: undefined });
     });
 
-    it('accepts an explicit label and icon, overriding the defaults', () => {
+    it('accepts an explicit label and icon, passing them through unchanged', () => {
       const result = assertOptionalLive(
         PATH,
         { type: 'external', href: 'https://example.com', label: 'Try it', icon: 'rocket' },
@@ -53,9 +60,9 @@ describe('assertOptionalLive', () => {
   });
 
   describe('type: self', () => {
-    it('accepts a valid self entry whose "page" is registered, defaulting label/icon', () => {
+    it('accepts a valid self entry whose "page" is registered, leaving label/icon undefined when absent', () => {
       const result = assertOptionalLive(PATH, { type: 'self', page: 'crunchy-filler' }, HOSTED_KEYS);
-      expect(result).toEqual({ type: 'self', page: 'crunchy-filler', label: 'Live', icon: 'globe' });
+      expect(result).toEqual({ type: 'self', page: 'crunchy-filler', label: undefined, icon: undefined });
     });
 
     it('accepts an explicit label and icon', () => {
