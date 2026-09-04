@@ -26,7 +26,7 @@
           },
           {
             "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-+Ozb/ItuZAdaQgJd2RebN2rKWj1XkBuXVaV6/lT4Juo=' 'sha256-+t5Z3fJi7uJxARWEzFEVaSRgtaAn0r97XkxpJNbQiK0=' 'sha256-3T3SNxfkVCsSXLoqWCnMnaafmqifqcz/19S077omPB0=' 'sha256-Ed6Lei7deBSXT1iYYw0V36YZXaA4v7OsRknNjmNl/9c=' 'sha256-FHfozmosNdt5yUG9l8OmVM1S/oTxw2TNWHPejSjEr58=' 'sha256-Gu9zTsfluGJpkymXgR9+InomERohT7wqIZHED60BNEk=' 'sha256-S6wmYHJnHLN8bUgDFzGTw0ZpwUWUXsqLebjcjIjFqEw=' 'sha256-fGiNU6ZDUVs8auPa32WHrwMBEI5iKGxJo40pNCeaA5M=' 'sha256-o3PO2Uj+l6qA5UkqZnoq72tcLmaqx3OzI7KOrzMQ2Vk=' 'sha256-z0X5LPrfvX6G2I7DI8t+2LiBGSEpYw2Ji3UbggChwc0='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
+            "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-+Ozb/ItuZAdaQgJd2RebN2rKWj1XkBuXVaV6/lT4Juo=' 'sha256-+t5Z3fJi7uJxARWEzFEVaSRgtaAn0r97XkxpJNbQiK0=' 'sha256-16hytVw2SSX3hkefJiVxan9CS+QkbJsd2H4IUWw8haw=' 'sha256-3T3SNxfkVCsSXLoqWCnMnaafmqifqcz/19S077omPB0=' 'sha256-Ed6Lei7deBSXT1iYYw0V36YZXaA4v7OsRknNjmNl/9c=' 'sha256-FHfozmosNdt5yUG9l8OmVM1S/oTxw2TNWHPejSjEr58=' 'sha256-Gu9zTsfluGJpkymXgR9+InomERohT7wqIZHED60BNEk=' 'sha256-NstGg4M7bLgFzxT3XlFvs9BQT3gnsFlFA5URfyiDVrI=' 'sha256-S6wmYHJnHLN8bUgDFzGTw0ZpwUWUXsqLebjcjIjFqEw=' 'sha256-fGiNU6ZDUVs8auPa32WHrwMBEI5iKGxJo40pNCeaA5M=' 'sha256-kBRcNsbW8crj0MoebA9/qbHgRipNw3Gmn2wC/R9EQ1M=' 'sha256-z0X5LPrfvX6G2I7DI8t+2LiBGSEpYw2Ji3UbggChwc0='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
           }
         ]
       },
@@ -47,6 +47,63 @@
             "value": "no-cache"
           }
         ]
+      }
+    ],
+    "redirects": [
+      {
+        "source": "/projects/clip-verse/live",
+        "destination": "/projects/clip-verse",
+        "type": 301
+      },
+      {
+        "source": "/projects/columbia-virtual-campus/live",
+        "destination": "/projects/columbia-virtual-campus",
+        "type": 301
+      },
+      {
+        "source": "/projects/crunchy-filler/live",
+        "destination": "/projects/crunchy-filler",
+        "type": 301
+      },
+      {
+        "source": "/projects/juno/live",
+        "destination": "/projects/juno",
+        "type": 301
+      },
+      {
+        "source": "/projects/med-doc-tracker/live",
+        "destination": "/projects/med-doc-tracker",
+        "type": 301
+      },
+      {
+        "source": "/projects/smarttest/live",
+        "destination": "/projects/smarttest",
+        "type": 301
+      },
+      {
+        "source": "/research/dvmm-lab/live",
+        "destination": "/research/dvmm-lab",
+        "type": 301
+      },
+      {
+        "source": "/research/flood-event-extraction-bangladesh/live",
+        "destination": "/research/flood-event-extraction-bangladesh",
+        "type": 301
+      },
+      {
+        "source": "/research/incite-labs/live",
+        "destination": "/research/incite-labs",
+        "type": 301
+      },
+      {
+        "source": "/research/pill-recognition-prescription-extraction/live",
+        "destination": "/research/pill-recognition-prescription-extraction",
+        "type": 301
+      },
+      {
+        "source": "/research/solar-illumination-water-bottle/live",
+        "destination": "/research/solar-illumination-water-bottle",
+        "type": 301
       }
     ]
   }
