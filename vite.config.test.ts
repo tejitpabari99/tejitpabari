@@ -1,11 +1,14 @@
 // vite.config.test.ts
 //
-// Round 3.1 restoration of the /live subsystem (see
+// Round 3.1 restoration of the /live subsystem, revised in round 3.3 (see
 // .dev/website-revamp-r3/CONTENT-AUTHORING.md's "The `live` field"
-// section). Exercises `readLiveRedirects` (vite.config.ts's exported
-// build-time scanner) directly against a fixture temp directory of .md
-// files, and separately exercises the exact `entries.map(...)` transform
-// `liveRedirectsPlugin`'s `closeBundle` hook uses to build
+// section for the three-rule resolution order this exercises: rule 1 -
+// `live` declared; rule 2 - no `live`, links[] non-empty, falls back to
+// the primary/first link; rule 3 - no `live` and no links[], falls back
+// to the detail page). Exercises `readLiveRedirects` (vite.config.ts's
+// exported build-time scanner) directly against a fixture temp directory
+// of .md files, and separately exercises the exact `entries.map(...)`
+// transform `liveRedirectsPlugin`'s `closeBundle` hook uses to build
 // `hosting.redirects` — reimplemented inline here (not called through the
 // real plugin) because `liveRedirectsPlugin` itself is deliberately NOT
 // exported (keep vite.config.ts's own exports minimal; only
@@ -42,10 +45,52 @@ describe('readLiveRedirects', () => {
     ]);
   });
 
-  it('redirects an entry with no "live" field at all to its own detail page (the guaranteed-URL fallback)', () => {
+  it('redirects an entry with no "live" field and no links[] to its own detail page (rule 3)', () => {
     writeMdFile(dir, 'plain.md', 'slug: plain\ntitle: Plain');
 
     expect(readLiveRedirects(dir, 'projects')).toEqual([{ source: '/projects/plain/live', destination: '/projects/plain' }]);
+  });
+
+  // Rule 2 (owner clarification, round 3.3): no `live` field, but links[]
+  // non-empty -> redirect to the primary: true entry, or links[0] if none
+  // is marked. This MUST match src/lib/resolveLiveLinks.ts's
+  // resolveLiveTarget exactly, or a real deployed cold hit (this
+  // function) and the client-side fallback (which calls resolveLiveTarget
+  // directly) could disagree about where a given /live goes.
+  it('redirects to the primary: true links[] entry when there is no "live" field (rule 2)', () => {
+    writeMdFile(
+      dir,
+      'plain.md',
+      'slug: plain\ntitle: Plain\nlinks:\n  - label: GitHub\n    href: https://github.com/x\n  - label: Website\n    href: https://example.com\n    primary: true',
+    );
+
+    expect(readLiveRedirects(dir, 'projects')).toEqual([{ source: '/projects/plain/live', destination: 'https://example.com' }]);
+  });
+
+  it('redirects to links[0] when there is no "live" field and no entry is marked primary (rule 2)', () => {
+    writeMdFile(
+      dir,
+      'plain.md',
+      'slug: plain\ntitle: Plain\nlinks:\n  - label: Chrome Web Store\n    href: https://chromewebstore.google.com/x\n  - label: GitHub\n    href: https://github.com/x',
+    );
+
+    expect(readLiveRedirects(dir, 'projects')).toEqual([{ source: '/projects/plain/live', destination: 'https://chromewebstore.google.com/x' }]);
+  });
+
+  it('falls through to the detail page (rule 3) when links[] is present but empty', () => {
+    writeMdFile(dir, 'plain.md', 'slug: plain\ntitle: Plain\nlinks: []');
+
+    expect(readLiveRedirects(dir, 'projects')).toEqual([{ source: '/projects/plain/live', destination: '/projects/plain' }]);
+  });
+
+  it('a "live" field takes priority over links[] even when a primary link exists (rule 1 beats rule 2)', () => {
+    writeMdFile(
+      dir,
+      'juno.md',
+      'slug: juno\ntitle: Juno\nlive:\n  type: external\n  href: https://app.meetjuno.health\nlinks:\n  - label: Website\n    href: https://example.com\n    primary: true',
+    );
+
+    expect(readLiveRedirects(dir, 'projects')).toEqual([{ source: '/projects/juno/live', destination: 'https://app.meetjuno.health' }]);
   });
 
   it('excludes a type: self entry entirely — no redirect entry, it renders its own prerendered page', () => {

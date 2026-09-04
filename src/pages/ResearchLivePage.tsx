@@ -7,6 +7,7 @@ import { useParams } from 'react-router-dom';
 import { research } from '@/data';
 import { LiveRedirectFallback } from '@/components/LiveRedirectFallback';
 import { RouteMeta } from '@/components/RouteMeta';
+import { resolveLiveTarget } from '@/lib/resolveLiveLinks';
 import { HOSTED_LIVE_PAGES } from './live/registry';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -16,13 +17,13 @@ export function ResearchLivePage() {
 
   if (!item) return <NotFoundPage />;
 
-  const live = item.live;
+  const target = resolveLiveTarget({ live: item.live, links: item.links, slug: item.slug, collection: 'research' });
 
-  if (live?.type === 'self') {
-    const HostedComponent = HOSTED_LIVE_PAGES[live.page];
+  if (target.mode === 'self') {
+    const HostedComponent = HOSTED_LIVE_PAGES[target.page];
     if (!HostedComponent) {
       throw new Error(
-        `ResearchLivePage: "${live.page}" is not in HOSTED_LIVE_PAGES (src/pages/live/registry.ts). This should ` +
+        `ResearchLivePage: "${target.page}" is not in HOSTED_LIVE_PAGES (src/pages/live/registry.ts). This should ` +
         'have been caught at content-parse time by assertOptionalLive (src/data/shared.ts).',
       );
     }
@@ -39,11 +40,5 @@ export function ResearchLivePage() {
     );
   }
 
-  // `label` here is the entry's own title ("Redirecting you to X…"), not
-  // live.label - see ProjectLivePage's identical comment.
-  if (live?.type === 'external') {
-    return <LiveRedirectFallback to={live.href} label={item.title} />;
-  }
-
-  return <LiveRedirectFallback to={`/research/${item.slug}`} label={item.title} />;
+  return <LiveRedirectFallback to={target.destination} label={item.title} />;
 }

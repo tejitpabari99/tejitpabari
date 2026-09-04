@@ -25,24 +25,37 @@ export interface LiveRedirectEntry {
   destination: string;
 }
 
-// Round 3.1 restoration of the /live subsystem, redesigned around a
-// discriminated `live` frontmatter field instead of the old bare `liveUrl`
-// string (see .dev/website-revamp-r3/CONTENT-AUTHORING.md's "The `live`
-// field" section for the full authoring contract). Every project/research
-// entry gets a canonical, stable `/projects/<slug>/live` (or
-// `/research/<slug>/live`) URL - this function computes the Firebase
+// Round 3.1 restoration of the /live subsystem, revised in round 3.3 per
+// the owner's clarified resolution rules (see
+// .dev/website-revamp-r3/CONTENT-AUTHORING.md's "The `live` field"
+// section for the full authoring contract, and
+// src/lib/resolveLiveLinks.ts's header comment for the same three-rule
+// order implemented there for the client-side dispatch pages). Every
+// project/research entry gets a canonical, stable `/projects/<slug>/live`
+// (or `/research/<slug>/live`) URL - this function computes the Firebase
 // Hosting redirect table entry for every slug that needs an ACTUAL
-// redirect, which is every slug except a `live.type === 'self'` one (a
-// self-hosted page renders its own prerendered HTML at that exact path -
-// a redirect there would just be wrong).
+// redirect:
+//   1. `live.type: external` -> redirect to live.href. `live.type: self`
+//      renders its own prerendered HTML at this exact path - no redirect
+//      entry at all for that case (a redirect there would be wrong).
+//   2. No `live` field, but links[] non-empty -> redirect to whichever
+//      entry is marked primary: true, or links[0] if none is.
+//   3. No `live` field and no links[] at all -> redirect to the entry's
+//      own detail page.
+// This MUST implement the exact same resolution order as
+// src/lib/resolveLiveLinks.ts's resolveLiveTarget, or a real deployed
+// cold /live hit (this plugin) and the client-side fallback
+// (ProjectLivePage/ResearchLivePage, which calls resolveLiveTarget
+// directly) could disagree about where a given /live goes.
 //
-// Independent of src/data/*.ts on purpose - same reasoning
-// juno-landing-page's own sitemapPlugin documents (and
+// Independent of src/data/*.ts and src/lib/resolveLiveLinks.ts on purpose
+// - same reasoning juno-landing-page's own sitemapPlugin documents (and
 // scripts/generate-sitemap.mjs's own header comment repeats): import.meta.glob
 // is a Vite *application*-build-pipeline macro, not guaranteed to resolve
 // from vite.config.ts's own lighter esbuild-based load path, and this
 // project's TS path alias ('@/...') isn't guaranteed to resolve here
-// either. This plugin does its own small fs + gray-matter scan instead.
+// either. This plugin does its own small fs + gray-matter scan and
+// reimplements the (small) resolution logic locally instead.
 //
 // It DOES validate `live.href` itself (mirroring src/data/shared.ts's
 // assertAbsoluteUrl) rather than deferring to the main build's loader
@@ -53,7 +66,11 @@ export interface LiveRedirectEntry {
 // Hosting would serve as an open redirect off tejitpabari.com) would
 // otherwise be written into firebase.json's hosting.redirects BEFORE the
 // SSR step ever gets a chance to reject it - leaving a corrupted
-// firebase.json on disk even though the build then aborts.
+// firebase.json on disk even though the build then aborts. A links[]
+// entry's href has no such absolute-URL requirement in the schema (an
+// internal "/projects/other-slug" link is valid too), so - matching
+// assertLinks (src/data/shared.ts), which doesn't require one either -
+// only `live.href` gets that stricter check here.
 export function readLiveRedirects(dir: string, routePrefix: 'projects' | 'research'): LiveRedirectEntry[] {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
@@ -66,28 +83,41 @@ export function readLiveRedirects(dir: string, routePrefix: 'projects' | 'resear
       const source = `/${routePrefix}/${slug}/live`;
       const live = data.live as Record<string, unknown> | undefined;
 
-      // Guaranteed-URL behavior: no `live` field at all -> redirect to the
-      // entry's own detail page. A shared /live link must never dead-end.
-      if (live === undefined) {
-        return [{ source, destination: `/${routePrefix}/${slug}` }];
-      }
-      // Self-hosted: renders its own prerendered page at this exact path -
-      // no redirect entry at all.
-      if (live.type === 'self') {
-        return [];
-      }
-      if (live.type === 'external') {
-        const href = live.href;
-        if (typeof href !== 'string' || !/^https?:\/\//.test(href)) {
-          throw new Error(
-            `readLiveRedirects: ${path.join(dir, file)}: "live.href" must be an absolute http(s) URL. Got ${JSON.stringify(href)}.`,
-          );
+      // Rule 1.
+      if (live !== undefined) {
+        if (live.type === 'self') {
+          return []; // self-hosted: renders its own page, no redirect at all
         }
-        return [{ source, destination: href }];
+        if (live.type === 'external') {
+          const href = live.href;
+          if (typeof href !== 'string' || !/^https?:\/\//.test(href)) {
+            throw new Error(
+              `readLiveRedirects: ${path.join(dir, file)}: "live.href" must be an absolute http(s) URL. Got ${JSON.stringify(href)}.`,
+            );
+          }
+          return [{ source, destination: href }];
+        }
+        throw new Error(
+          `readLiveRedirects: ${path.join(dir, file)}: "live.type" must be "self" or "external". Got ${JSON.stringify(live.type)}.`,
+        );
       }
-      throw new Error(
-        `readLiveRedirects: ${path.join(dir, file)}: "live.type" must be "self" or "external". Got ${JSON.stringify(live.type)}.`,
-      );
+
+      // Rules 2/3: no `live` field - fall back to links[], then to the
+      // entry's own detail page. `links` is a required field in the real
+      // schema (assertLinks, src/data/shared.ts), but this script reads
+      // raw, not-yet-validated frontmatter, so it tolerates a missing/
+      // malformed value defensively rather than assuming the schema
+      // already held by the time this runs.
+      const rawLinks = Array.isArray(data.links) ? (data.links as Record<string, unknown>[]) : [];
+      const primary = rawLinks.find((link) => link && link.primary === true && typeof link.href === 'string' && link.href);
+      if (primary) {
+        return [{ source, destination: primary.href as string }];
+      }
+      const first = rawLinks.find((link) => link && typeof link.href === 'string' && link.href);
+      if (first) {
+        return [{ source, destination: first.href as string }];
+      }
+      return [{ source, destination: `/${routePrefix}/${slug}` }];
     });
 }
 

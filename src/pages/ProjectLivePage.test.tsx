@@ -1,13 +1,17 @@
 // src/pages/ProjectLivePage.test.tsx
 //
-// Round 3.1 restoration of the /live subsystem. ProjectLivePage is the
-// dispatch point: a `live.type === 'self'` project renders its
-// HOSTED_LIVE_PAGES component, a `live.type === 'external'` project
-// renders LiveRedirectFallback pointed at its href, a project with no
-// `live` field at all renders LiveRedirectFallback pointed at its own
-// detail page, and an unknown slug renders NotFoundPage. `@/data` and
-// `./live/registry` are mocked per-test so each branch is exercised in
-// isolation from real content.
+// Round 3.1 restoration of the /live subsystem, revised in round 3.3 (see
+// src/lib/resolveLiveLinks.ts's header comment for the three-rule
+// resolution order this dispatches on). ProjectLivePage: a
+// `live.type === 'self'` project renders its HOSTED_LIVE_PAGES component
+// (rule 1); a `live.type === 'external'` project renders
+// LiveRedirectFallback pointed at its href (rule 1); a project with no
+// `live` field but a non-empty links[] renders LiveRedirectFallback
+// pointed at the primary/first link (rule 2); a project with neither
+// renders LiveRedirectFallback pointed at its own detail page (rule 3);
+// and an unknown slug renders NotFoundPage. `@/data` and `./live/registry`
+// are mocked per-test so each branch is exercised in isolation from real
+// content.
 import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
@@ -50,6 +54,21 @@ const { FIXTURE_PROJECTS } = vi.hoisted(() => ({
       date: '2024-01-01',
       body: '',
     },
+    {
+      slug: 'links-fallback',
+      title: 'Links Fallback',
+      description: 'd',
+      image: '/x.png',
+      tags: ['Others'],
+      techTags: [],
+      links: [
+        { label: 'GitHub', href: 'https://github.com/x' },
+        { label: 'Website', href: 'https://example.com', primary: true },
+      ],
+      date: '2024-01-01',
+      body: '',
+      // No `live` field at all - rule 2 should pick the primary link.
+    },
   ] satisfies Project[],
 }));
 
@@ -91,10 +110,16 @@ describe('ProjectLivePage dispatch', () => {
     expect(screen.queryByTestId('hosted-sample-project')).not.toBeInTheDocument();
   });
 
-  it('renders LiveRedirectFallback pointed at the detail page for a project with no "live" field at all', () => {
+  it('renders LiveRedirectFallback pointed at the detail page for a project with no "live" field and no links[] (rule 3)', () => {
     renderLivePage('no-live-field');
     expect(screen.getByText(/Redirecting you to No Live Field/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', '/projects/no-live-field');
+  });
+
+  it('renders LiveRedirectFallback pointed at the primary links[] entry for a project with no "live" field but links present (rule 2)', () => {
+    renderLivePage('links-fallback');
+    expect(screen.getByText(/Redirecting you to Links Fallback/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', 'https://example.com');
   });
 
   it('renders NotFoundPage for a slug that matches no project at all', () => {

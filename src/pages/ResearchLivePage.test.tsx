@@ -44,6 +44,19 @@ const { FIXTURE_RESEARCH } = vi.hoisted(() => ({
       date: '2024-01-01',
       body: '',
     },
+    {
+      slug: 'links-fallback',
+      title: 'Links Fallback',
+      description: 'd',
+      image: '/x.png',
+      tags: ['Other'],
+      techTags: [],
+      links: [{ label: 'Preprint', href: 'https://arxiv.org/abs/x' }],
+      date: '2024-01-01',
+      body: '',
+      // No `live` field at all - rule 2 falls back to links[0] since
+      // nothing is marked primary.
+    },
   ] satisfies Research[],
 }));
 
@@ -82,10 +95,16 @@ describe('ResearchLivePage dispatch', () => {
     expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', 'https://example.com/study');
   });
 
-  it('renders LiveRedirectFallback pointed at the detail page for a research entry with no "live" field at all', () => {
+  it('renders LiveRedirectFallback pointed at the detail page for a research entry with no "live" field and no links[] (rule 3)', () => {
     renderLivePage('no-live-field');
     expect(screen.getByText(/Redirecting you to No Live Field/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', '/research/no-live-field');
+  });
+
+  it('renders LiveRedirectFallback pointed at links[0] for a research entry with no "live" field but links present (rule 2)', () => {
+    renderLivePage('links-fallback');
+    expect(screen.getByText(/Redirecting you to Links Fallback/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /click here/i })).toHaveAttribute('href', 'https://arxiv.org/abs/x');
   });
 
   it('renders NotFoundPage for a slug that matches no research entry at all', () => {
