@@ -18,7 +18,15 @@ export function DetailHeader({ image, imageAlt = '', title, status, tags, techTa
   return (
     <header className="mt-6">
       <div className="relative overflow-hidden bg-placeholder">
-        <img src={image} alt={imageAlt} className="h-[200px] w-full object-cover sm:h-[260px] lg:h-[320px]" />
+        <img
+          src={image}
+          alt={imageAlt}
+          width={800}
+          height={200}
+          loading="eager"
+          fetchPriority="high"
+          className="h-[200px] w-full object-cover sm:h-[260px] lg:h-[320px]"
+        />
         {status && <StatusBadge status={status} size="md" className="absolute left-3 top-3" />}
       </div>
       <h1 className="mt-6 text-[1.9rem] font-extrabold tracking-tight text-ink sm:text-[2.4rem]">{title}</h1>
