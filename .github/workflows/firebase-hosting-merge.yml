@@ -1,0 +1,67 @@
+name: Deploy to Firebase Hosting on merge
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Check — no forms in hosted /live pages
+        run: npm run check:no-forms
+
+      - name: Check — pre-launch content gate
+        run: npm run check:launch
+
+      - name: Verify VITE_GA_MEASUREMENT_ID is set
+        # Fails LOUDLY here, unlike the PR workflow (§4.3) — see §4.7 for the
+        # full reasoning. This is the one step that exists only in this
+        # workflow, not the preview one.
+        run: |
+          if [ -z "${{ vars.VITE_GA_MEASUREMENT_ID }}" ]; then
+            echo "::error::VITE_GA_MEASUREMENT_ID repository variable is empty or unset."
+            echo "::error::A production build with no measurement ID does NOT fail — loadGa()'s"
+            echo "::error::missing-ID guard (SP05 SS4.3) makes it a silent, working no-op instead."
+            echo "::error::That is exactly the failure mode this check exists to catch loudly,"
+            echo "::error::here, instead of quietly, in GA4, a month from now. Set it with:"
+            echo "::error::  gh variable set VITE_GA_MEASUREMENT_ID --body \"G-9NLS3NG63M\""
+            exit 1
+          fi
+          echo "VITE_GA_MEASUREMENT_ID is set."
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_GA_MEASUREMENT_ID: ${{ vars.VITE_GA_MEASUREMENT_ID }}
+
+      - name: Deploy to live channel
+        # No fork-PR guard needed here — this workflow triggers only on
+        # `push` to `main`, which by definition never runs against a fork's
+        # copy of the repo. See §4.8.
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a  # v0.11.0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
+          projectId: tejitpabari-99
+          channelId: live
