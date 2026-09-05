@@ -32,15 +32,19 @@ export default {
           'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif',
         ],
       },
-      // borderRadius extend block removed (owner: "I like square more than
-      // round" — see PRD/BRIEF for the site-wide switch to 0-radius). The
-      // xl2/card/panel/section tokens it defined (inner media frames,
-      // landing project cards, About/Contact aside panels, detail-page
-      // content sections) had every one of their rounded-xl2/rounded-card/
-      // rounded-panel/rounded-section usages removed from components in the
-      // same pass — deleting the tokens here without doing that would have
-      // silently dropped those utilities with no build error (the same
-      // class of bug documented below for the opacity scale).
+      borderRadius: {
+        // Owner: "the squares don't look good. Can you revert back to
+        // circles. But keep them less rounded." — restores the pre-511af8e
+        // rounded corners site-wide, but at noticeably tighter radii than
+        // the original values (kept in these comments for reference).
+        xl2: '0.5rem',      // inner media frames (was 1rem)
+        card: '0.625rem',   // landing project cards (was 1.05rem)
+        panel: '0.625rem',  // About/Contact aside panels (was 1.15rem)
+        section: '0.75rem', // detail-page content sections (was 1.25rem)
+        pill: '0.375rem',   // buttons/tag pills/nav pill/search box/icon
+                             // buttons — replaces rounded-full so they read
+                             // as softly-rounded rectangles, not lozenges.
+      },
       boxShadow: {
         pill: '0 14px 40px rgba(22,43,38,0.08)',        // nav pill
         panel: '0 16px 34px rgba(22,43,38,0.06)',        // About/Contact aside

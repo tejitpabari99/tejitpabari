@@ -50,10 +50,10 @@ describe('StatusBadge', () => {
     });
   });
 
-  it('renders with square corners (no rounded-* utility of any kind)', () => {
+  it('renders a rounded-pill box, not a rounded-full circle', () => {
     render(<StatusBadge status="Completed" />);
     const badge = screen.getByText('Completed');
-    expect(badge).not.toHaveClass('rounded-md');
+    expect(badge).toHaveClass('rounded-pill');
     expect(badge).not.toHaveClass('rounded-full');
   });
 });

@@ -50,7 +50,7 @@ export function Hero() {
                 jump instantly, bypassing ScrollManager's smooth scroll. */}
             <Link
               to="/#contact"
-              className="inline-flex items-center justify-center border border-teal-secondary px-6 py-2.5 text-sm font-semibold text-teal-secondary transition hover:bg-teal-secondary hover:text-white lg:px-7 lg:py-3 lg:text-[0.92rem]"
+              className="inline-flex items-center justify-center rounded-pill border border-teal-secondary px-6 py-2.5 text-sm font-semibold text-teal-secondary transition hover:bg-teal-secondary hover:text-white lg:px-7 lg:py-3 lg:text-[0.92rem]"
             >
               Contact Me
             </Link>
@@ -69,7 +69,7 @@ export function Hero() {
                   label: 'GitHub',
                 })
               }
-              className="flex h-9 w-9 items-center justify-center border border-teal-secondary/15 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:border-teal-secondary/25 hover:bg-teal-secondary hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:border-teal-secondary/25 hover:bg-teal-secondary hover:text-white"
             >
               <GitHubIcon />
             </a>
@@ -85,7 +85,7 @@ export function Hero() {
                   label: 'LinkedIn',
                 })
               }
-              className="flex h-9 w-9 items-center justify-center border border-teal-secondary/15 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:border-teal-secondary/25 hover:bg-teal-secondary hover:text-white"
+              className="flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:border-teal-secondary/25 hover:bg-teal-secondary hover:text-white"
             >
               <LinkedInIcon />
             </a>

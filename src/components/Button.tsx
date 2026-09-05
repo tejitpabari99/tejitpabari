@@ -17,7 +17,7 @@ type ButtonAsAnchor = CommonProps &
 export type ButtonProps = ButtonAsButton | ButtonAsAnchor;
 
 const BASE =
-  'inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold transition lg:px-7 lg:py-3 lg:text-[0.92rem]';
+  'inline-flex items-center justify-center rounded-pill px-6 py-2.5 text-sm font-semibold transition lg:px-7 lg:py-3 lg:text-[0.92rem]';
 
 const VARIANTS: Record<ButtonVariant, string> = {
   solid: 'bg-teal text-white hover:opacity-90',

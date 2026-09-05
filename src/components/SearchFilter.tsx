@@ -25,7 +25,7 @@ export function SearchFilter({
         onChange={(e) => onQueryChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full border border-teal-secondary/15 bg-cream px-5 py-3.5 text-base text-ink focus:border-teal-secondary/40 focus:outline-none sm:text-lg"
+        className="w-full rounded-pill border border-teal-secondary/15 bg-cream px-5 py-3.5 text-base text-ink focus:border-teal-secondary/40 focus:outline-none sm:text-lg"
       />
       {/* Result count moved off the input's row entirely - it no longer
           competes with the (now full-width) input, and sits beside the

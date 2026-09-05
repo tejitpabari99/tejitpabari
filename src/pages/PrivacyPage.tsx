@@ -59,7 +59,7 @@ function ConsentStatus() {
         <button
           type="button"
           onClick={handleClear}
-          className="border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
+          className="rounded-pill border border-teal-secondary/20 px-4 py-2 text-sm font-semibold text-teal-secondary hover:bg-teal-secondary/8"
         >
           Clear my choice
         </button>

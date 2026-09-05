@@ -34,7 +34,7 @@ export interface LinkButtonsProps {
   size?: LinkButtonSize;
 }
 
-const BASE_CLASSES = 'relative z-10 inline-flex items-center gap-1.5 font-semibold transition';
+const BASE_CLASSES = 'relative z-10 inline-flex items-center gap-1.5 rounded-pill font-semibold transition';
 const SIZE_CLASSES: Record<LinkButtonSize, string> = {
   md: 'px-5 py-2 text-sm', // LinksRow's original size, unchanged
   sm: 'px-3 py-1.5 text-xs',

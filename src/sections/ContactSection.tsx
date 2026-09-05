@@ -63,7 +63,7 @@ export function ContactSection() {
         </div>
 
         <aside className="lg:pt-5">
-          <div className="border border-teal-secondary/12 bg-sage p-4.5 shadow-panel sm:p-5">
+          <div className="rounded-panel border border-teal-secondary/12 bg-sage p-4.5 shadow-panel sm:p-5">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-teal-secondary">
               Connect
             </p>
@@ -85,7 +85,7 @@ export function ContactSection() {
                       label: 'GitHub',
                     })
                   }
-                  className="flex h-9 w-9 items-center justify-center border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
                 >
                   <GitHubIcon />
                 </a>
@@ -101,7 +101,7 @@ export function ContactSection() {
                       label: 'LinkedIn',
                     })
                   }
-                  className="flex h-9 w-9 items-center justify-center border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
+                  className="flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/12 bg-cream text-teal-secondary transition hover:-translate-y-0.5 hover:bg-teal-secondary hover:text-white"
                 >
                   <LinkedInIcon />
                 </a>

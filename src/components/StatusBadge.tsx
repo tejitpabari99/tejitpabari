@@ -49,7 +49,7 @@ interface StatusBadgeProps {
 export function StatusBadge({ status, size = 'md', className = '' }: StatusBadgeProps) {
   return (
     <span
-      className={`font-semibold uppercase tracking-wide ${SIZE_STYLES[size]} ${STATUS_STYLES[status]} ${className}`}
+      className={`rounded-pill font-semibold uppercase tracking-wide ${SIZE_STYLES[size]} ${STATUS_STYLES[status]} ${className}`}
     >
       {status}
     </span>

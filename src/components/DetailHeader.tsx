@@ -17,7 +17,7 @@ interface DetailHeaderProps {
 export function DetailHeader({ image, imageAlt = '', title, status, tags, techTags = [] }: DetailHeaderProps) {
   return (
     <header className="mt-6">
-      <div className="relative overflow-hidden bg-placeholder">
+      <div className="relative overflow-hidden rounded-section bg-placeholder">
         <img
           src={image}
           alt={imageAlt}

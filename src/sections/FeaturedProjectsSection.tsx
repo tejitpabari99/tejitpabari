@@ -62,7 +62,7 @@ export function FeaturedProjectsSection() {
         <div className="mt-8 flex justify-center lg:mt-10">
           <Link
             to="/projects"
-            className="inline-flex items-center gap-1.5 border border-teal-secondary px-6 py-2.5 text-sm font-semibold text-teal-secondary transition hover:bg-teal-secondary hover:text-white lg:px-7 lg:py-3 lg:text-[0.92rem]"
+            className="inline-flex items-center gap-1.5 rounded-pill border border-teal-secondary px-6 py-2.5 text-sm font-semibold text-teal-secondary transition hover:bg-teal-secondary hover:text-white lg:px-7 lg:py-3 lg:text-[0.92rem]"
           >
             See all projects
             <ArrowIcon className="h-4 w-4" />
