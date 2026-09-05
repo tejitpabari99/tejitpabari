@@ -1,25 +1,44 @@
 // scripts/inject-csp-hashes.mjs
 //
-// Postbuild step — see package.json's `build` script (`vite-react-ssg build
-// && node scripts/inject-csp-hashes.mjs`).
+// Postbuild step — see package.json's `postbuild` script
+// (`node scripts/normalize-ssg-build-id.mjs && node scripts/inject-csp-hashes.mjs`,
+// itself run after `vite-react-ssg build` via the `build` script).
 //
 // vite-react-ssg injects two small inline <script> tags into every
 // prerendered page to support client-side hydration:
 //   window.__staticRouterHydrationData = JSON.parse("...")   (content varies per route)
-//   window.__VITE_REACT_SSG_HASH__ = '...'                   (a `Math.random()`
-//     string, regenerated on every single build — see
+//   window.__VITE_REACT_SSG_HASH__ = '...'                   (a cache-busting
+//     id for the client's loader-data fetch — see
 //     node_modules/vite-react-ssg/dist/shared/vite-react-ssg.*.mjs, the
-//     `const hash = Math.random().toString(36).substring(2, 12)` near the
 //     `getLoaderDataFilePath`/`static-loader-data-manifest` logic)
+//
+// vite-react-ssg itself mints that second value with
+// `Math.random().toString(36).substring(2, 12)`, regenerated on every
+// single build regardless of whether the source tree changed at all. Left
+// alone, that means this script's *own* hash of that inline script would
+// differ every build, and so would the firebase.json this script writes —
+// which is exactly the nondeterminism problem that motivated
+// scripts/normalize-ssg-build-id.mjs (run immediately before this script in
+// the `postbuild` chain — see that file's header for the full
+// investigation and fix). By the time THIS script runs, that random value
+// has already been replaced, consistently across every HTML file and every
+// static-loader-data filename, with a deterministic id derived from the
+// build's own content — so from this script's point of view, both inline
+// scripts above are now purely a function of the rendered output, and
+// hashing them here is deterministic. Do not remove that earlier step
+// without re-reading its header: this script has no way to tell a
+// legitimately-changed hash from `Math.random()` noise, so it would go
+// back to silently producing a different firebase.json on every rebuild of
+// an unchanged tree.
 //
 // Neither script is application code, neither is influenced by user input,
 // and neither can be made external (a `src=` file) without forking
 // vite-react-ssg. A strict CSP must never use 'unsafe-inline' for script-src
 // (that reopens the exact XSS hole CSP exists to close), so the only
 // compliant option is to allow-list the exact SHA-256 hash of each inline
-// script's *content*. Because both values above differ on every single
-// build, those hashes can't be hand-written into firebase.json once — they
-// have to be recomputed from the real rendered output on every build.
+// script's *content*. Because the hydration-data script's content varies
+// per route, those hashes can't be hand-written into firebase.json once —
+// they have to be recomputed from the real rendered output on every build.
 //
 // This can't live in vite.config.ts's `liveRedirectsPlugin` (closeBundle):
 // that hook fires once per Rollup bundle (client, then SSR), which is
