@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      No static title or description meta tag here on purpose: this is a
+      prerendered site, and vite-react-ssg's renderHTML always PREPENDS each
+      route's Head-emitted tags (from RouteMeta) right after the opening
+      head tag rather than replacing anything already in this template. A
+      static title tag here would sit as a second, dead title element on
+      every built page (invalid HTML) and would become the one browsers
+      actually use if the Head-emitted tag were ever missing. RouteMeta
+      supplies both on every route, so this file must not declare either.
+    -->
+
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

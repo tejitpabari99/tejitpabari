@@ -1,0 +1,190 @@
+diff --git a/.gitignore b/.gitignore
+index ffb77f4..dc0d51d 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -11,6 +11,15 @@ public/og/
+ public/sitemap.xml
+ public/robots.txt
+ 
++# Same status as the three lines above, one layer up: firebase.json is
++# rewritten on every build by vite.config.ts's liveRedirectsPlugin
++# (closeBundle) and scripts/inject-csp-hashes.mjs (postbuild), sourced from
++# the tracked firebase.template.json. Never commit the generated file — a
++# fresh `npm run build` always reproduces it from the template plus the
++# current content corpus. See .dev/website-revamp-r2/06-voice-sweep-and-ship/
++# PRD.md §4.3.
++firebase.json
++
+ .env
+ .env.*
+ !.env.example
+diff --git a/README.md b/README.md
+index 06304fc..bff8ff1 100644
+--- a/README.md
++++ b/README.md
+@@ -16,7 +16,9 @@ See `.dev/website-revamp/BRIEF.md` for the full design record — palette, route
+ 
+ ## Deploy
+ 
+-`firebase deploy` (requires `firebase login` with access to the `tejitpabari-99` project). See `firebase.json`/`.firebaserc`.
++`firebase deploy` (requires `firebase login` with access to the `tejitpabari-99` project). See `firebase.template.json`/`.firebaserc`.
++
++**`firebase.json` is build-generated and gitignored — `firebase.template.json` is the tracked source.** `npm run build` (via `vite.config.ts`'s `liveRedirectsPlugin` and `scripts/inject-csp-hashes.mjs`) regenerates `firebase.json` fresh on every build, with the current `/live` redirect list and that build's own CSP script hashes. **Always run `npm run build` immediately before `firebase deploy`.** If `firebase.json` doesn't exist (a fresh clone, or after it's been deleted), `firebase deploy` now fails immediately with a missing-configuration error instead of silently deploying whatever stale file happened to be on disk — an intentional behavior change; see `.dev/website-revamp-r2/06-voice-sweep-and-ship/PRD.md` §4.3.
+ 
+ ## Pre-launch checklist
+ 
+diff --git a/firebase.json b/firebase.json
+index a0e4b81..dbf2d17 100644
+--- a/firebase.json
++++ b/firebase.json
+@@ -3,13 +3,25 @@
+     "public": "dist",
+     "cleanUrls": true,
+     "trailingSlash": false,
+-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+-    "rewrites": [{ "source": "**", "destination": "/index.html" }],
++    "ignore": [
++      "firebase.json",
++      "**/.*",
++      "**/node_modules/**"
++    ],
++    "rewrites": [
++      {
++        "source": "**",
++        "destination": "/index.html"
++      }
++    ],
+     "headers": [
+       {
+         "source": "**",
+         "headers": [
+-          { "key": "X-Content-Type-Options", "value": "nosniff" },
++          {
++            "key": "X-Content-Type-Options",
++            "value": "nosniff"
++          },
+           {
+             "key": "Referrer-Policy",
+             "value": "strict-origin-when-cross-origin"
+@@ -20,7 +32,7 @@
+           },
+           {
+             "key": "Content-Security-Policy",
+-            "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
++            "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-+Ozb/ItuZAdaQgJd2RebN2rKWj1XkBuXVaV6/lT4Juo=' 'sha256-+t5Z3fJi7uJxARWEzFEVaSRgtaAn0r97XkxpJNbQiK0=' 'sha256-3T3SNxfkVCsSXLoqWCnMnaafmqifqcz/19S077omPB0=' 'sha256-Ed6Lei7deBSXT1iYYw0V36YZXaA4v7OsRknNjmNl/9c=' 'sha256-FHfozmosNdt5yUG9l8OmVM1S/oTxw2TNWHPejSjEr58=' 'sha256-Gu9zTsfluGJpkymXgR9+InomERohT7wqIZHED60BNEk=' 'sha256-S6wmYHJnHLN8bUgDFzGTw0ZpwUWUXsqLebjcjIjFqEw=' 'sha256-fGiNU6ZDUVs8auPa32WHrwMBEI5iKGxJo40pNCeaA5M=' 'sha256-fYvEbjU51y2/inotph7ZZfWOA0G1WgLVqrC0pLqDfAc=' 'sha256-z0X5LPrfvX6G2I7DI8t+2LiBGSEpYw2Ji3UbggChwc0='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
+           }
+         ]
+       },
+@@ -35,7 +47,44 @@
+       },
+       {
+         "source": "**/index.html",
+-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
++        "headers": [
++          {
++            "key": "Cache-Control",
++            "value": "no-cache"
++          }
++        ]
++      }
++    ],
++    "redirects": [
++      {
++        "source": "/projects/clip-verse/live",
++        "destination": "https://clipverse-five.vercel.app/",
++        "type": 302
++      },
++      {
++        "source": "/projects/creator-onboarding-tool/live",
++        "destination": "https://azure.github.io/azure-maps-creator-onboarding-tool/",
++        "type": 302
++      },
++      {
++        "source": "/projects/crunchy-filler/live",
++        "destination": "https://chromewebstore.google.com/detail/crunchy-filler/djbcknbbfoldifpllefimnnkfaogcnid",
++        "type": 302
++      },
++      {
++        "source": "/projects/juno/live",
++        "destination": "https://app.meetjuno.health/",
++        "type": 302
++      },
++      {
++        "source": "/projects/med-doc-tracker/live",
++        "destination": "https://tejitpabari.short.gy/med-doc-tracker",
++        "type": 302
++      },
++      {
++        "source": "/projects/qgis-plugin-azure-maps-creator/live",
++        "destination": "https://plugins.qgis.org/plugins/AzureMapsCreator/",
++        "type": 302
+       }
+     ]
+   }
+diff --git a/firebase.template.json b/firebase.template.json
+new file mode 100644
+index 0000000..a0e4b81
+--- /dev/null
++++ b/firebase.template.json
+@@ -0,0 +1,42 @@
++{
++  "hosting": {
++    "public": "dist",
++    "cleanUrls": true,
++    "trailingSlash": false,
++    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
++    "rewrites": [{ "source": "**", "destination": "/index.html" }],
++    "headers": [
++      {
++        "source": "**",
++        "headers": [
++          { "key": "X-Content-Type-Options", "value": "nosniff" },
++          {
++            "key": "Referrer-Policy",
++            "value": "strict-origin-when-cross-origin"
++          },
++          {
++            "key": "Strict-Transport-Security",
++            "value": "max-age=31536000; includeSubDomains"
++          },
++          {
++            "key": "Content-Security-Policy",
++            "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
++          }
++        ]
++      },
++      {
++        "source": "**/assets/**",
++        "headers": [
++          {
++            "key": "Cache-Control",
++            "value": "public, max-age=31536000, immutable"
++          }
++        ]
++      },
++      {
++        "source": "**/index.html",
++        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
++      }
++    ]
++  }
++}
+diff --git a/vite.config.ts b/vite.config.ts
+index 67b45e5..ecd6148 100644
+--- a/vite.config.ts
++++ b/vite.config.ts
+@@ -64,8 +64,13 @@ function liveRedirectsPlugin(): Plugin {
+     apply: 'build',
+     closeBundle() {
+       const entries = readLiveUrls(PROJECTS_DIR);
++      // Always sourced fresh from the tracked template, never from a
++      // previous build's own generated output — this makes every build
++      // idempotent regardless of what firebase.json (gitignored, may or may
++      // not already exist on disk) currently contains. See PRD 06 §4.3.
++      const templatePath = path.resolve(__dirname, 'firebase.template.json');
+       const firebaseJsonPath = path.resolve(__dirname, 'firebase.json');
+-      const config = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
++      const config = JSON.parse(readFileSync(templatePath, 'utf-8'));
+       config.hosting.redirects = entries.map(({ slug, liveUrl }) => ({
+         source: `/projects/${slug}/live`,
+         destination: liveUrl,
