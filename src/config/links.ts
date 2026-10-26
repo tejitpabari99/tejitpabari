@@ -19,6 +19,7 @@ export const NAV_LINKS: NavLink[] = [
   { label: 'Work Experience', href: '/#work-experience', sectionId: 'work-experience' },
   { label: 'About', href: '/#about', sectionId: 'about' },
   { label: 'Contact', href: '/#contact', sectionId: 'contact' },
+  { label: 'Blog', href: 'https://substack.com/@tejitpabari' },
 ];
 
 export const FOOTER_LINKS: { label: string; href: string }[] = [

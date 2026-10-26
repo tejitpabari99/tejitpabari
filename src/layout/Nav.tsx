@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { NAV_LINKS, type NavLink } from '@/config/links';
+import { isExternalUrl } from '@/lib/isExternalUrl';
+import { trackEvent } from '@/lib/analytics';
 
 const SCROLL_OFFSET = 140; // px — matches techfolio's own threshold
 
@@ -59,22 +61,37 @@ export function Nav() {
                   // the moment scroll tracking picks a real section, Home
                   // hands off to it. On any other pathname, activeSection is
                   // always null (see the ternary above), so this stays false.
-                  const isActive = item.sectionId
-                    ? activeSection === item.sectionId
-                    : isHome && activeSection === null;
+                  const external = isExternalUrl(item.href);
+                  const isActive = external
+                    ? false
+                    : item.sectionId
+                      ? activeSection === item.sectionId
+                      : isHome && activeSection === null;
+                  const className = `block whitespace-nowrap rounded-pill px-2 py-1.5 text-[0.62rem] font-semibold transition sm:px-4.5 sm:py-2.5 sm:text-[0.83rem] lg:px-5 lg:py-2.5 lg:text-[0.88rem] ${
+                    isActive
+                      ? 'bg-teal text-white shadow-[0_10px_24px_rgba(4,52,57,0.22)]'
+                      : 'text-teal-secondary hover:bg-teal-secondary/8'
+                  }`;
                   return (
                     <li key={item.href}>
-                      <Link
-                        to={item.href}
-                        className={`block whitespace-nowrap rounded-pill px-2 py-1.5 text-[0.62rem] font-semibold transition sm:px-4.5 sm:py-2.5 sm:text-[0.83rem] lg:px-5 lg:py-2.5 lg:text-[0.88rem] ${
-                          isActive
-                        ? 'bg-teal text-white shadow-[0_10px_24px_rgba(4,52,57,0.22)]'
-                        : 'text-teal-secondary hover:bg-teal-secondary/8'
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </li>
+                      {external ? (
+                        <a
+                          href={item.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={className}
+                          onClick={() =>
+                            trackEvent('outbound_click', { url: item.href, context: 'nav', label: item.label })
+                          }
+                        >
+                          {item.label}
+                        </a>
+                      ) : (
+                        <Link to={item.href} className={className}>
+                          {item.label}
+                        </Link>
+                      )}
+                    </li>
               );
             })}
           </ul>
