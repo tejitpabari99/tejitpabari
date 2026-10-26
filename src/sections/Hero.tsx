@@ -17,7 +17,7 @@ export function Hero() {
             `lg` and up it moves back to the right via lg:order-2, paired
             with lg:order-1 on the text block below. */}
         <div className="order-1 flex items-center justify-center lg:order-2">
-          <HeroPortrait />
+          <HeroPortrait src="/tejit-portrait.webp" />
         </div>
 
         <div className="order-2 mx-auto w-full max-w-[440px] text-left lg:order-1 lg:mx-0">
