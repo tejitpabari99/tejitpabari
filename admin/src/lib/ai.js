@@ -1,9 +1,68 @@
-// AI interface (stub). SP03 replaces the bodies; signatures and return shapes are frozen.
+// AI interface backed by Gemini via Firebase AI Logic (Gemini Developer API) + App Check.
 // Plain data in/out: pages never call Firebase AI directly. Callers own slug generation
 // (slugifyTitle), markdown rendering (renderMarkdown) and persistence (ideas.js).
 // All functions are admin-only, async, and throw Error(userFacingMessage) on failure.
+import { app } from './firebase.js';
+import { currentRole } from './auth-core.js';
+import { buildParsePrompt, buildEnhancePrompt, buildRankPrompt } from './ai-prompts.js';
+import {
+	MalformedOutputError,
+	buildSchema,
+	parseSchemaDescriptor,
+	rankSchemaDescriptor,
+	validateParse,
+	validateEnhance,
+	validateRank
+} from './ai-shape.js';
+import { toUserMessage } from './ai-errors.js';
 
-const NOT_CONFIGURED = 'AI is not configured yet';
+// Single place to change the model (retirement is mapped to a "not set up" message).
+export const GEMINI_MODEL = 'gemini-3.8-flash';
+
+let aiPromise;
+// Lazy: firebase/ai stays out of the initial bundle. Memoized; a failed import is not cached.
+function loadAI() {
+	if (!aiPromise) {
+		aiPromise = import('firebase/ai')
+			.then((sdk) => ({
+				sdk,
+				ai: sdk.getAI(app, { backend: new sdk.GoogleAIBackend(), useLimitedUseAppCheckTokens: true })
+			}))
+			.catch((err) => {
+				aiPromise = undefined;
+				throw err;
+			});
+	}
+	return aiPromise;
+}
+
+function requireAdmin() {
+	if (currentRole() !== 'admin') throw new Error('Admin only');
+}
+
+// Runs one generation + validation, retrying once on malformed output only.
+async function run({ prompt, schemaDescriptor, validate }) {
+	try {
+		const { sdk, ai } = await loadAI();
+		const generationConfig = schemaDescriptor
+			? { responseMimeType: 'application/json', responseSchema: buildSchema(sdk.Schema, schemaDescriptor) }
+			: undefined;
+		const model = sdk.getGenerativeModel(ai, { model: GEMINI_MODEL, ...(generationConfig && { generationConfig }) });
+		let lastErr;
+		for (let attempt = 0; attempt < 2; attempt++) {
+			try {
+				const result = await model.generateContent(prompt);
+				return validate(result.response.text());
+			} catch (err) {
+				if (!(err instanceof MalformedOutputError)) throw err;
+				lastErr = err;
+			}
+		}
+		throw lastErr;
+	} catch (err) {
+		throw new Error(toUserMessage(err));
+	}
+}
 
 /**
  * Turn raw notes into a structured idea.
@@ -12,7 +71,12 @@ const NOT_CONFIGURED = 'AI is not configured yet';
  *   title: 5 words max; content: polished markdown; tags: 1-3 from the allowed list; brief: 1-2 sentences.
  */
 export async function parseIdea(rawText) {
-	throw new Error(NOT_CONFIGURED);
+	requireAdmin();
+	return run({
+		prompt: buildParsePrompt(rawText),
+		schemaDescriptor: parseSchemaDescriptor(),
+		validate: validateParse
+	});
 }
 
 /**
@@ -22,7 +86,8 @@ export async function parseIdea(rawText) {
  * @returns {Promise<{content: string}>}  merged markdown only (no code fences)
  */
 export async function enhanceIdea(existing, notes) {
-	throw new Error(NOT_CONFIGURED);
+	requireAdmin();
+	return run({ prompt: buildEnhancePrompt(existing, notes), validate: validateEnhance });
 }
 
 /**
@@ -33,5 +98,10 @@ export async function enhanceIdea(existing, notes) {
  *   scores: integer 1-5 per rankable criterion id (raw, not inverted); analysis: 2-3 sentences.
  */
 export async function rankIdea(idea, criteria) {
-	throw new Error(NOT_CONFIGURED);
+	requireAdmin();
+	return run({
+		prompt: buildRankPrompt(idea, criteria),
+		schemaDescriptor: rankSchemaDescriptor(criteria),
+		validate: (raw) => validateRank(raw, criteria)
+	});
 }
