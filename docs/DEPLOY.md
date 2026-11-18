@@ -77,3 +77,8 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 - `services:batchEnable` of all eight: operation done, no error. After: all eight ENABLED.
 - Firestore: before `firebase firestore:databases:list` = "No databases found". `firebase firestore:databases:create "(default)" --location nam5` -> after: `(default)`, FIRESTORE_NATIVE, locationId `nam5`.
 - Rules check: new DB is created with CLOSED rules (CLI says so; `firebaserules releases` list empty; anonymous REST read of `links` -> 403). Not open test-mode, so no emergency rules deploy; real rules go live in A9 (Task 9).
+
+## A4 Auth (2026-11-18)
+- Before: `GET admin/v2/.../config` -> 404 CONFIGURATION_NOT_FOUND (auth never initialized). `POST v2/projects/tejitpabari-99/identityPlatform:initializeAuth {}` -> `{}`; config now exists.
+- authorizedDomains before: `tejitpabari-99.firebaseapp.com`, `tejitpabari-99.web.app`. After (add-only PATCH, updateMask=authorizedDomains): those two + `admin.tejitpabari.com`, `tejitpabari-admin.web.app`, `tejitpabari-admin.firebaseapp.com`, `localhost`.
+- Google IdP: NOT enabled. `POST defaultSupportedIdpConfigs?idpId=google.com {"enabled":true}` -> 400 "client_id cannot be empty"; no API mints the web OAuth client. **OWNER STEP (pending):** Firebase console > Authentication > Sign-in method > Google > Enable (set support email) - https://console.firebase.google.com/project/tejitpabari-99/authentication/providers . The console auto-creates the OAuth client. Then verify: `GET .../defaultSupportedIdpConfigs/google.com` -> `enabled: true`.
