@@ -11,15 +11,19 @@ export interface NavLink {
    * of deriving an id from href's string shape, which broke the moment a
    * non-hash entry (Home) needed to sit in this same array. */
   sectionId?: string;
+  /** External link to one of the owner's own subdomains: opens in the same
+   * tab (no target=_blank) and is never marked active. */
+  sameTab?: boolean;
 }
 
 export const NAV_LINKS: NavLink[] = [
   { label: 'Home', href: '/' },
   { label: 'Projects', href: '/#projects', sectionId: 'projects' },
   { label: 'Work Experience', href: '/#work-experience', sectionId: 'work-experience' },
-  { label: 'About', href: '/#about', sectionId: 'about' },
-  { label: 'Contact', href: '/#contact', sectionId: 'contact' },
+  { label: 'Health Tech', href: 'https://healthtech.tejitpabari.com', sameTab: true },
+  { label: 'Non Profit', href: 'https://nonprofit.tejitpabari.com', sameTab: true },
   { label: 'Blog', href: 'https://substack.com/@tejitpabari' },
+  { label: 'About', href: '/#about', sectionId: 'about' },
 ];
 
 export const FOOTER_LINKS: { label: string; href: string }[] = [
