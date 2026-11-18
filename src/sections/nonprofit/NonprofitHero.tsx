@@ -22,7 +22,7 @@ export function NonprofitHero() {
               href={BOOKING_URL}
               target="_blank"
               rel="noreferrer"
-              className="w-full sm:w-auto"
+              className="w-full min-h-[44px] sm:w-auto"
               onClick={() => trackEvent('book_consultation_click', { source: 'hero' })}
             >
               {BOOK_LABEL}

@@ -24,6 +24,7 @@ describe('NonprofitHero', () => {
     expect(link).toHaveAttribute('href', BOOKING_URL);
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('rel')).toContain('noreferrer');
+    expect(link.className).toContain('min-h-[44px]');
   });
 
   it('fires book_consultation_click with source hero', () => {
@@ -107,6 +108,7 @@ describe('ServicesAccordion', () => {
     expect(link).toHaveAttribute('href', BOOKING_URL);
     expect(link).toHaveAttribute('target', '_blank');
     expect(link.getAttribute('rel')).toContain('noreferrer');
+    expect(link.className).toContain('min-h-[44px]');
     fireEvent.click(link);
     expect(trackEvent).toHaveBeenCalledWith('book_consultation_click', { source: 'services' });
     expect(within(link.closest('section')!).getAllByRole('button')).toHaveLength(4);
