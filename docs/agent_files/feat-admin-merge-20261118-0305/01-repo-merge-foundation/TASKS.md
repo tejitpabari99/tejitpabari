@@ -8,13 +8,13 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Main-build baseline + firebase.json writer fix | none | todo |
-| 2 | Merged package.json, root firebase.json/.firebaserc, ignores | 1 | todo |
-| 3 | Move static sites to hosting/ + hosting config test | 2 | todo |
-| 4 | Port rules, indexes, schema doc, data-layer modules + tests | 2 | todo |
-| 5 | Port migration script, content, tests | 4 | todo |
-| 6 | Port go. page + tests | 3, 4 | todo |
-| 7 | Foundation verification pass | 1-6 | todo |
+| 1 | Main-build baseline + firebase.json writer fix | none | done |
+| 2 | Merged package.json, root firebase.json/.firebaserc, ignores | 1 | done |
+| 3 | Move static sites to hosting/ + hosting config test | 2 | done |
+| 4 | Port rules, indexes, schema doc, data-layer modules + tests | 2 | done |
+| 5 | Port migration script, content, tests | 4 | done |
+| 6 | Port go. page + tests | 3, 4 | done |
+| 7 | Foundation verification pass | 1-6 | done |
 
 ## Task 1 — Main-build baseline + firebase.json writer fix
 What it is: protect the main site before anything else changes (PRD Decision 5).
