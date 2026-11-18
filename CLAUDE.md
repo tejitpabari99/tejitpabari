@@ -1,6 +1,6 @@
 # tejitpabari
 
-Two builds in one repo: the public site (`vite-react-ssg`, output `dist/`) and the admin SPA (`admin/`, output `dist-admin/`). Static subdomains live in `hosting/`. Firebase project `tejitpabari-99`.
+The public site is built per site with `SITE=main|healthtech|nonprofit` (`vite-react-ssg`) into `dist/`, `dist-healthtech/`, `dist-nonprofit/`; the admin SPA (`admin/`) builds to `dist-admin/`; only `hosting/go` is a plain static site. Firebase project `tejitpabari-99`.
 
 ## Site build
 
@@ -50,7 +50,7 @@ refresh token). Merge to main = CI deploys everything (all hosting targets + Fir
 ### CI deploy workflows (SP04)
 
 Workflows (`.github/workflows/`):
-- `ci.yml` (CI): push to main, PRs, reusable. Jobs `unit` (typecheck, lint, tests, build:all, check:admin-build) and `emulator`.
+- `ci.yml` (CI): push to main, PRs, reusable. Jobs `unit` (typecheck, lint, tests, explicit `scripts/*.test.ts` run with CHECK_LAUNCH=1, build:all, check:no-em-dash, check:admin-build) and `emulator`.
 - `firebase-hosting-merge.yml`: push to main. Runs CI, builds all targets, verifies the admin build, then `firebase deploy --only hosting,firestore`. **Merge = deploy all hosting targets + Firestore rules/indexes.**
 - `firebase-hosting-pull-request.yml`: PR preview channels (same-repo PRs only; forks have no secret).
 
