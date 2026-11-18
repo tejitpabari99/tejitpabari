@@ -1,10 +1,10 @@
 // src/config/site.ts
-export const SITE_URL = 'https://tejitpabari.com';
-export const SITE_NAME = 'Tejit Pabari';
+import { SITE_CONFIG } from './site-target';
 
-export const DEFAULT_DESCRIPTION =
-  'Health-tech builder and software engineer. Building Juno, an AI companion ' +
-  'for medical appointments, while working full-time on Microsoft Fabric Maps.';
+export const SITE_URL = SITE_CONFIG.url;
+export const SITE_NAME = SITE_CONFIG.name;
+
+export const DEFAULT_DESCRIPTION = SITE_CONFIG.description;
 
 export const DEFAULT_OG_IMAGE = '/og/default.png';
 
