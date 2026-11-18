@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('@/lib/analytics', () => ({ trackEvent: vi.fn() }));
 
-const hookState = vi.hoisted(() => ({ value: { state: 'loading', items: [], groups: { active: [], done: [] } } as any }));
+const hookState = vi.hoisted(() => ({ value: { state: 'loading', items: [], groups: { active: [], done: [] } } as Record<string, unknown> }));
 vi.mock('@/lib/schedule/useSchedule', () => ({ useSchedule: () => hookState.value }));
 
 async function load() {
