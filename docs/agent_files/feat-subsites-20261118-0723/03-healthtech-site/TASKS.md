@@ -8,11 +8,11 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/subsites/docs/agent_
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Extract shared ProjectListSection | none | todo |
-| 2 | Site-aware ProjectDetailPage lookup | 01:T2, 02:T2 | todo |
-| 3 | HealthtechHero with Onolys CTA | none | todo |
-| 4 | HealthtechHomePage: hero plus list plus SEO | 1, 3, 01:T3, 02:T2, 02:T4 | todo |
-| 5 | Healthtech verification and launch checks | 2, 4, 01:T5 | todo |
+| 1 | Extract shared ProjectListSection | none | done |
+| 2 | Site-aware ProjectDetailPage lookup | 01:T2, 02:T2 | done |
+| 3 | HealthtechHero with Onolys CTA | none | done |
+| 4 | HealthtechHomePage: hero plus list plus SEO | 1, 3, 01:T3, 02:T2, 02:T4 | done |
+| 5 | Healthtech verification and launch checks | 2, 4, 01:T5 | done |
 
 ## Task 1: Extract shared ProjectListSection
 What it is / what it means: Main `/projects` already has the search, tag filter, card list and empty state inline. Healthtech and nonprofit (04, twice) need the same block, so it becomes one shared component (Decision 5, resolved: SP03 extracts, SP04 reuses).
