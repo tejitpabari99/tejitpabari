@@ -40,6 +40,7 @@ The owner wants focused sites for two audiences. Health tech: show the journey a
 | Both subdomains indexable: remove noindex, add sitemap/robots (owner) | Keep noindex | |
 | Same GA + consent banner as main (orchestrator) | No analytics | Policies then apply as written |
 | Branch stacks on feat/admin-merge (orchestrator) | Off origin/main | Hosting targets exist only there |
+| Privacy page left unchanged despite Schedule's Google Sheets fetch (owner) | Add a Google Sheets line | Owner call |
 
 ## Design
 ### Build
@@ -81,6 +82,24 @@ Both share the footer.
 | Install Automation | same | from git | main, nonprofit |
 | Auto Emailer | https://tejitpabari99.github.io/sparehand-auto/ | from git log of its folder | main, nonprofit |
 Descriptions/tags: from the research drafts (Onolys: AI quality control for clinician-rated assessments, early stage; Juno app: upload a clinical note, get a plain summary and next steps; Juno website: showcase of Juno projects; plugin: prep, simplify, health-literacy skills inside ChatGPT, no stored data; Bill Checker: finds upcoding, unbundling, markups, writes dispute letter, free, nothing stored). Images: reuse existing pattern (Unsplash or repo assets).
+
+## Builder check resolutions (orchestrator calls unless marked)
+- SITE switch: env var `SITE` read in vite.config.ts and via import.meta.env; per-site outDir dist-<site>/; new scripts build:healthtech, build:nonprofit; build:all builds main, healthtech, nonprofit, admin. Prebuild (OG cards, sitemap) and postbuild (build-id normalize, CSP hash injection) are parameterized per site; CSP hashes and live-redirects write only the matching firebase.json target; live-redirects runs only for SITE=main.
+- Subsite CSP: copy main's (GA, fonts, images.unsplash.com) plus connect-src docs.google.com and *.googleusercontent.com (CSV redirect host).
+- `sites:` frontmatter: optional array of main|healthtech|nonprofit, default [main]; added to ALLOWED_KEYS. clip-verse, columbia-virtual-campus, crunchy-filler stay main-only.
+- Tags: add 'Nonprofit' to ProjectTag. Health cards use 'Health Tech'. Per-card techTags from the research drafts; builder picks sensible ones where absent.
+- Status per new card from repo state: Onolys Building, Juno app Building, Juno website Completed, Juno ChatGPT plugin Building, Hospital Bill Checker Completed, Sparehand cards Building.
+- Links: one primary link per card (the URLs in the card table); plugin card primary = GitHub repo. No `live` entries for new cards.
+- Juno split: juno.md becomes juno-app (body and stats kept as-is); new juno-website and juno-chatgpt-plugin files. Old /projects/juno and /projects/juno/live redirect to the juno-app equivalents. FEATURED_PROJECT_SLUGS swaps 'juno' for 'juno-app'; no other featured changes. site.ts DEFAULT_DESCRIPTION untouched.
+- Images: Unsplash, same pattern as existing cards; body markdown is a short paragraph per card from its description.
+- Sparehand card dates: first commit touching the skill doc (sparehand-plugin) or the automation folder (sparehand-auto), via gh API. Until the sparehand-plugin Pages PR lands, plugin cards link to the GitHub markdown of the skill; switch to Pages URL after.
+- Nonprofit Home shows the latest 6 projects plus an "All projects" link; Projects page = full list with search and tags, newest first. Healthtech Home = full list with search and tags.
+- Nav: per-site NAV_LINKS; "Website" button top right, same tab, visible on mobile.
+- Subsite footer: Privacy and Terms absolute to tejitpabari.com, GitHub, LinkedIn, obfuscated email via existing contact.ts/useContactMailto; drop Research and Résumé; keep the techfolio credit line.
+- Subsite routes: home, project detail (no /live), nonprofit /projects and /schedule, NotFound. No research, work-experience, privacy, terms routes.
+- Schedule: CSV URL is one config constant (placeholder until owner publishes; page shows the unavailable state if empty). Expected headers: Name, Project, Public Blurb, Date Added, Status; parser matches headers by name and ignores unknown columns. Dates parsed as YYYY-MM-DD, shown as "Mon YYYY"; ties sorted by project name; unknown statuses map to To do. Tests use a fixture CSV.
+- SEO: per-site title, description, default OG image, sitemap and robots.txt; Schedule in sitemap.
+- Gates: routes smoke, check:no-em-dash, check:no-forms, check:launch extended to cover the new builds. hosting/healthtech and hosting/nonprofit removed; deploy:static reduced to go only.
 
 ## Goals, non-goals, anti-goals
 - Goals: both subdomains live with the shared look; search and tags work; Schedule reflects sheet edits within minutes; main site unchanged except the requested project additions/Juno split.
