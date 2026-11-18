@@ -125,3 +125,6 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 - AI Studio "no project" listing: AI Studio lists only projects imported into it. Owner: https://aistudio.google.com/projects -> Import project -> pick tejitpabari-99 (docs give no detailed steps; exact UI label unverified). Spend cap (experimental): https://aistudio.google.com/spend. Budget alert: GCP console > Billing > Budgets & alerts (https://console.cloud.google.com/billing/016F25-85CB54-995B5B/budgets).
 - Smoke re-run (same A10 path, gemini-3.8-flash, valid App Check token): still **429 RESOURCE_EXHAUSTED, "Your prepayment credits are depleted..."**. Unchanged. validateRank not exercised.
 - Sources: https://aistudio.google.com/docs/billing ; https://firebase.google.com/docs/ai-logic/faq-and-troubleshooting ; https://discuss.ai.google.dev/t/prepayment-credits-depleted-error-persists-on-brand-new-project-with-no-billing-account-linked/179109
+
+## A10 positive re-run (2026-11-18, Task 9 verified)
+- 2026-11-18 positive re-run: owner imported tejitpabari-99 into AI Studio, added prepay credits + spend cap. gemini-3.8-flash exists (generateContent 200). Rank prompt 200, valid JSON scores. Negative (no App Check header) still 401.

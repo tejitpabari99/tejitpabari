@@ -16,7 +16,7 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 | 6 | Browser API key referrers (add-only) | 5 | done |
 | 7 | reCAPTCHA key, App Check, AI Logic, debug token, repo var | 5, SP03 | done (owner: AI Logic Get started + quota) |
 | 8 | CI service-account IAM roles | 3 | done |
-| 9 | Rules + indexes deploy, Gemini smoke | 3, 4 (or emulator-auth path), 7, SP01 | blocked (owner: Gemini billing/prepay; positive rank pending) |
+| 9 | Rules + indexes deploy, Gemini smoke | 3, 4 (or emulator-auth path), 7, SP01 | done |
 | 10 | Data export sync + migration run | 9 | todo |
 | 11 | Post-merge smoke on *.web.app | 10, SP04, PR merged | todo |
 | 12 | Custom domains admin./go. + Cloudflare DNS | 11 | todo |
