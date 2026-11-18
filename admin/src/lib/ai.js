@@ -1,4 +1,4 @@
-// AI interface (stub). SP05 replaces the bodies; signatures and return shapes are frozen.
+// AI interface (stub). SP03 replaces the bodies; signatures and return shapes are frozen.
 // Plain data in/out: pages never call Firebase AI directly. Callers own slug generation
 // (slugifyTitle), markdown rendering (renderMarkdown) and persistence (ideas.js).
 // All functions are admin-only, async, and throw Error(userFacingMessage) on failure.

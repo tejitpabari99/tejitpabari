@@ -19,6 +19,10 @@ public/robots.txt
 # GCP service-account keys — never committed, see SP08 PRD §4.5
 *-github-actions-key.json
 *.serviceaccount.json
+service-account*.json
+*-firebase-adminsdk-*.json
+.secrets/
+*-debug.log
 
 .firebase/
 .firebaserc.local

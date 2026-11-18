@@ -11,7 +11,7 @@ export function connectEmulators(authInst, dbInst, enabled, fns = { connectAuthE
 	return true;
 }
 
-// Browser-only: SvelteKit prerender/SSR must not execute init.
+// Browser-only: server-side/prerender contexts must not execute init.
 // Idempotent: reuses an existing app on repeat import.
 let app, auth, db;
 
