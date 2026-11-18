@@ -8,8 +8,8 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Prompt builders ported verbatim | SP01 | todo |
-| 2 | Schemas, validators, error mapping + node tests | SP01 | todo |
+| 1 | Prompt builders ported verbatim | SP01 | in-progress |
+| 2 | Schemas, validators, error mapping + node tests | SP01 | in-progress |
 | 3 | App Check init at firebase.js marker | SP02 T2 | todo |
 | 4 | Implement ai.js with Gemini | SP02 T3; 1, 2, 3 | todo |
 | 5 | ai.js vitest + cleanliness checks + CLAUDE.md AI section | T4 | todo |
