@@ -10,7 +10,7 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 |---|---|---|---|
 | 1 | check-admin-build script + test | SP02 T2 | done |
 | 2 | ci.yml: Node 22, unit + emulator jobs, workflow_call | SP01, SP02 T1, 1 | done |
-| 3 | Merge workflow: CI gate + CLI deploy of all targets + firestore | 2, SP03 T3 | todo |
+| 3 | Merge workflow: CI gate + CLI deploy of all targets + firestore | 2, SP03 T3 | in-progress |
 | 4 | PR workflow: build all + main/admin previews | 2 | done |
 | 5 | Repo variable + CLAUDE.md CI/CD section | 3, 4 | todo |
 
