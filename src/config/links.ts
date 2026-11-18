@@ -1,4 +1,8 @@
 // src/config/links.ts
+import type { SiteId } from '@/data';
+import sites from './sites.json';
+import { GITHUB_URL, LINKEDIN_URL } from './contact';
+
 export const RESUME_URL =
   'https://drive.google.com/file/d/1pTIyviXM0fCCkXeX6LveYXvr7QD2TD0j/view?usp=sharing';
 
@@ -32,3 +36,34 @@ export const FOOTER_LINKS: { label: string; href: string }[] = [
   { label: 'Terms', href: '/terms' },
   { label: 'Résumé', href: RESUME_URL },
 ];
+
+/** Where the subsites' top-right "Website" button points (same tab). */
+export const MAIN_SITE_URL: string = sites.main.url;
+
+export const NAV_LINKS_BY_SITE: Record<SiteId, NavLink[]> = {
+  main: NAV_LINKS,
+  healthtech: [
+    { label: 'Home', href: '/' },
+    { label: 'Projects', href: '/#projects', sectionId: 'projects' },
+  ],
+  nonprofit: [
+    { label: 'Home', href: '/' },
+    { label: 'Projects', href: '/projects' },
+    { label: 'Schedule', href: '/schedule' },
+  ],
+};
+
+// Subsites link legal pages absolutely to main (they have no /privacy or
+// /terms of their own). The obfuscated email entry is rendered by Footer.
+const SUBSITE_FOOTER_LINKS: { label: string; href: string }[] = [
+  { label: 'Privacy', href: `${MAIN_SITE_URL}/privacy` },
+  { label: 'Terms', href: `${MAIN_SITE_URL}/terms` },
+  { label: 'GitHub', href: GITHUB_URL },
+  { label: 'LinkedIn', href: LINKEDIN_URL },
+];
+
+export const FOOTER_LINKS_BY_SITE: Record<SiteId, { label: string; href: string }[]> = {
+  main: FOOTER_LINKS,
+  healthtech: SUBSITE_FOOTER_LINKS,
+  nonprofit: SUBSITE_FOOTER_LINKS,
+};
