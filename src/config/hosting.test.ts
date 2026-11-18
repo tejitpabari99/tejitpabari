@@ -35,18 +35,52 @@ describe('root hosting config', () => {
     );
   });
 
-  it.each(['nonprofit', 'healthtech'])('configures %s hosting', (name) => {
-    const entry = fb.hosting.find((h) => h.target === name);
-    expect(entry).toBeTruthy();
-    expect(entry!.public).toBe(`hosting/${name}`);
-    expect(entry!.cleanUrls).toBe(true);
-    expect(entry!.rewrites).toContainEqual({ source: '**', destination: '/index.html' });
-    const headers = Object.fromEntries(entry!.headers[0].headers.map((h) => [h.key, h.value]));
-    expect(headers['X-Content-Type-Options']).toBe('nosniff');
-    expect(headers['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
-    expect(headers['Strict-Transport-Security']).toContain('includeSubDomains');
-    expect(headers['Content-Security-Policy']).toContain("default-src 'self'");
-    expect(existsSync(path.join(root, entry!.public, 'index.html'))).toBe(true);
-    expect(existsSync(path.join(root, entry!.public, 'style.css'))).toBe(true);
+  describe.each(['nonprofit', 'healthtech'])('%s hosting', (name) => {
+    const entry = () => fb.hosting.find((h) => h.target === name)!;
+    const rule = (source: string) => entry().headers.find((r) => r.source === source);
+    const global = () => Object.fromEntries(rule('**')!.headers.map((h) => [h.key, h.value]));
+    const directive = (csp: string, d: string) => csp.split(';').map((x) => x.trim()).find((x) => x.startsWith(d + ' '));
+
+    it('serves the built dist-<site> dir with cleanUrls and no SPA rewrite', () => {
+      expect(entry()).toBeTruthy();
+      expect(entry().public).toBe(`dist-${name}`);
+      expect(entry().cleanUrls).toBe(true);
+      expect(entry().rewrites).toBeUndefined();
+      expect(JSON.stringify(entry())).not.toContain('"destination"');
+    });
+
+    it('has main-equivalent security and cache headers', () => {
+      const g = global();
+      expect(g['X-Content-Type-Options']).toBe('nosniff');
+      expect(g['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
+      expect(g['Strict-Transport-Security']).toBe('max-age=31536000; includeSubDomains');
+      expect(rule('**/assets/**')!.headers).toContainEqual({ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' });
+      expect(rule('**/index.html')!.headers).toContainEqual({ key: 'Cache-Control', value: 'no-cache' });
+    });
+
+    it('has main\'s CSP (GTM-seeded script-src, hashes injected by the build)', () => {
+      const csp = global()['Content-Security-Policy'];
+      const mainCsp = Object.fromEntries(
+        fb.hosting.find((h) => h.target === 'main')!.headers[0].headers.map((h) => [h.key, h.value]),
+      )['Content-Security-Policy'];
+      expect(directive(csp, 'script-src')).toMatch(/^script-src 'self' https:\/\/www\.googletagmanager\.com/);
+      for (const d of ['default-src', 'style-src', 'font-src', 'img-src', 'frame-ancestors', 'base-uri', 'object-src', 'form-action']) {
+        expect(directive(csp, d)).toBe(directive(mainCsp, d));
+      }
+      const mainConnect = directive(mainCsp, 'connect-src')!;
+      expect(directive(csp, 'connect-src')).toBe(
+        name === 'nonprofit' ? `${mainConnect} https://docs.google.com https://*.googleusercontent.com` : mainConnect,
+      );
+    });
+
+    it('has no noindex / X-Robots-Tag', () => {
+      const text = JSON.stringify(entry());
+      expect(text).not.toMatch(/noindex/i);
+      expect(text).not.toMatch(/X-Robots-Tag/i);
+    });
+
+    it('no longer has a committed hosting/<name> static dir', () => {
+      expect(existsSync(path.join(root, 'hosting', name))).toBe(false);
+    });
   });
 });

@@ -42,7 +42,7 @@
     "test:node": "node --test tests/unit/*.test.js",
     "test:emulator": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test --test-concurrency=1 tests/rules/*.test.js tests/migrate/*.test.js tests/data/*.test.js tests/go/*.test.js\"",
     "migrate": "node scripts/migrate-to-firestore.js",
-    "deploy:static": "firebase deploy --only hosting:go,hosting:nonprofit,hosting:healthtech --project tejitpabari-99"
+    "deploy:static": "firebase deploy --only hosting:go --project tejitpabari-99"
   },
   "dependencies": {
     "buffer": "^6.0.3",
