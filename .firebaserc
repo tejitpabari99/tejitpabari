@@ -1,5 +1,26 @@
 {
   "projects": {
     "default": "tejitpabari-99"
+  },
+  "targets": {
+    "tejitpabari-99": {
+      "hosting": {
+        "main": [
+          "tejitpabari-99"
+        ],
+        "admin": [
+          "tejitpabari-admin"
+        ],
+        "go": [
+          "tejitpabari-go"
+        ],
+        "nonprofit": [
+          "tejitpabari-nonprofit"
+        ],
+        "healthtech": [
+          "tejitpabari-healthtech"
+        ]
+      }
+    }
   }
 }

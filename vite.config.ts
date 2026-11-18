@@ -122,12 +122,10 @@ export function readLiveRedirects(dir: string, routePrefix: 'projects' | 'resear
 }
 
 // firebase.json's `hosting` is an array of per-site entries; only the main
-// site's entry (`target: "main"`) gets the live redirects. Until the root
-// firebase.json is converted to an array, the legacy single-object form is
-// treated as the main entry.
+// site's entry (`target: "main"`) gets the live redirects.
 export function applyLiveRedirects(config: { hosting?: unknown }, entries: LiveRedirectEntry[]): void {
-  const hosting = config.hosting as Record<string, unknown> | Record<string, unknown>[] | undefined;
-  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : hosting;
+  const hosting = config.hosting as Record<string, unknown>[] | undefined;
+  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : undefined;
   if (!main) {
     throw new Error('live-redirects: firebase.json has no hosting entry with target "main" to write redirects into.');
   }
@@ -203,6 +201,6 @@ export default defineConfig({
     // `check:launch` sets `CHECK_LAUNCH=1` to lift the exclusion for that
     // one invocation only, letting its own explicit file argument narrow
     // discovery back down to exactly that one file.
-    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...configDefaults.exclude, 'scripts/**'],
+    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude, 'tests/**', 'admin/**', 'hosting/**', 'migration/**'] : [...configDefaults.exclude, 'scripts/**', 'tests/**', 'admin/**', 'hosting/**', 'migration/**'],
   },
 });

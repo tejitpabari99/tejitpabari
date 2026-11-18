@@ -138,11 +138,10 @@ function collectInlineScriptHashes(htmlFiles) {
 
 // firebase.json's `hosting` is an array of per-site entries; the CSP hashes
 // belong to the main site's entry (`target: "main"`) only. Never touch the
-// others. Until the root firebase.json is converted to an array, the legacy
-// single-object form is treated as the main entry.
+// others.
 export function findMainHosting(config) {
   const hosting = config?.hosting;
-  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : hosting;
+  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : undefined;
   if (!main) {
     throw new Error('inject-csp-hashes: firebase.json has no hosting entry with target "main" to inject CSP hashes into.');
   }

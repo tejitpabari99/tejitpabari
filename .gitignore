@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-admin/
 dist-ssr/
 
 # Build-time generated output (SP06 `prebuild`: scripts/generate-og-cards.mjs,

@@ -24,10 +24,20 @@
     "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts && npm run check:no-forms && npm run check:no-em-dash",
     "check:no-forms": "bash scripts/check-no-forms.sh",
     "check:no-em-dash": "node scripts/check-no-em-dash.mjs",
-    "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\""
+    "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\"",
+    "emulators": "firebase emulators:start --only auth,firestore,hosting --project tejitpabari-99",
+    "test:rules": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test tests/rules/*.test.js\"",
+    "test:migrate": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test tests/migrate/*.test.js\"",
+    "test:data": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test --test-concurrency=1 tests/data/*.test.js\"",
+    "test:go": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test tests/go/*.test.js\"",
+    "test:node": "node --test tests/unit/*.test.js",
+    "test:emulator": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test --test-concurrency=1 tests/rules/*.test.js tests/migrate/*.test.js tests/data/*.test.js tests/go/*.test.js\"",
+    "migrate": "node scripts/migrate-to-firestore.js",
+    "deploy:static": "firebase deploy --only hosting:go,hosting:nonprofit,hosting:healthtech --project tejitpabari-99"
   },
   "dependencies": {
     "buffer": "^6.0.3",
+    "firebase": "^12.19.0",
     "fuse.js": "^7.5.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^1.39.0",
@@ -40,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/typography": "^0.5.20",
     "@testing-library/jest-dom": "^6.9.1",
@@ -52,6 +63,8 @@
     "eslint": "^10.9.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.4",
+    "firebase-admin": "^13.10.0",
+    "firebase-tools": "^15.36.0",
     "globals": "^17.11.0",
     "jsdom": "^29.1.1",
     "postcss": "^8.5.26",

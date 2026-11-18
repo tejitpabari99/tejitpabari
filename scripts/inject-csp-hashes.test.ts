@@ -46,6 +46,12 @@ describe('findMainHosting', () => {
   });
 });
 
+describe('findMainHosting legacy form', () => {
+  it('rejects a single-object hosting (no target), since firebase.json is now an array', () => {
+    expect(() => findMainHosting({ hosting: { public: 'dist' } })).toThrow(/target "main"/);
+  });
+});
+
 describe('injectCspHashes', () => {
   it('rewrites only the main entry; the other four deep-equal their before state', () => {
     const config = fixture();

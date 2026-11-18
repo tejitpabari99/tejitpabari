@@ -256,4 +256,8 @@ describe('applyLiveRedirects (writes the main hosting entry only)', () => {
     expect(() => applyLiveRedirects(config, redirects)).toThrow(/live-redirects: firebase\.json has no hosting entry with target "main"/);
     expect(config).toEqual(before);
   });
+
+  it('throws for the legacy single-object hosting form (firebase.json is now an array)', () => {
+    expect(() => applyLiveRedirects({ hosting: { public: 'dist' } }, redirects)).toThrow(/target "main"/);
+  });
 });
