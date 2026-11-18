@@ -12,7 +12,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { projects } from './projects';
+import { projects, parseProject, SITE_IDS } from './projects';
 
 describe('migrated project links', () => {
   it('keeps the Juno Website link on HTTPS, marked primary with a globe icon', () => {
@@ -116,4 +116,26 @@ describe('duplicate slug guard', () => {
     },
     30_000, // generous: a full nested `vitest run` process, not a plain assertion
   );
+});
+
+describe('sites frontmatter', () => {
+  const PATH = '/src/content/projects/x.md';
+  const doc = (sitesLine: string) =>
+    `---\nslug: x\ntitle: X\ndescription: d\nimage: /x.png\ntags: [Others]\nlinks: []\ndate: "2024-01-01"\n${sitesLine}---\nbody\n`;
+
+  it('exports SITE_IDS', () => {
+    expect(SITE_IDS).toEqual(['main', 'healthtech', 'nonprofit']);
+  });
+  it('accepts sites: [healthtech]', () => {
+    expect(parseProject(PATH, doc('sites: [healthtech]\n')).sites).toEqual(['healthtech']);
+  });
+  it('defaults to ["main"] when omitted', () => {
+    expect(parseProject(PATH, doc('')).sites).toEqual(['main']);
+  });
+  it('accepts the Nonprofit tag', () => {
+    expect(parseProject(PATH, doc('').replace('[Others]', '[Nonprofit]')).tags).toEqual(['Nonprofit']);
+  });
+  it.each([['[foo]'], ['[]'], ['[main, main]'], ['main']])('throws with file path for sites: %s', (v) => {
+    expect(() => parseProject(PATH, doc(`sites: ${v}\n`))).toThrow(PATH);
+  });
 });

@@ -29,6 +29,7 @@ const { FIXTURE_PROJECTS } = vi.hoisted(() => ({
       links: [],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
       live: { type: 'self', page: 'sample-project', label: 'Live', icon: 'globe' },
     },
     {
@@ -41,6 +42,7 @@ const { FIXTURE_PROJECTS } = vi.hoisted(() => ({
       links: [],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
       live: { type: 'external', href: 'https://app.meetjuno.health', label: 'Live', icon: 'globe' },
     },
     {
@@ -53,6 +55,7 @@ const { FIXTURE_PROJECTS } = vi.hoisted(() => ({
       links: [],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
     },
     {
       slug: 'links-fallback',
@@ -67,6 +70,7 @@ const { FIXTURE_PROJECTS } = vi.hoisted(() => ({
       ],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
       // No `live` field at all - rule 2 should pick the primary link.
     },
   ] satisfies Project[],
