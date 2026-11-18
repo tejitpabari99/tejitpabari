@@ -23,6 +23,16 @@ describe('migrated project links', () => {
   });
 });
 
+describe('sparehand card links', () => {
+  const PAGES = 'https://tejitpabari99.github.io/sparehand-plugin/skills/';
+  it.each(['partner-event-finder', 'install-automation'])('%s primary link points at its Pages skill page', (slug) => {
+    const card = projects.find((project) => project.slug === slug);
+    const primary = card?.links.filter((link) => link.primary);
+    expect(primary).toHaveLength(1);
+    expect(primary?.[0].href).toBe(`${PAGES}${slug}.html`);
+  });
+});
+
 // Coverage-audit gap F: projects.ts's module-scope duplicate-slug guard
 // (lines ~73-79) was never exercised. It can't be reached through two
 // genuinely well-formed real files, by construction — assertSlugMatchesFilename
