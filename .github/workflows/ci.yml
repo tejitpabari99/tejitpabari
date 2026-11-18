@@ -32,6 +32,7 @@ jobs:
           scripts/normalize-ssg-build-id.test.ts
           scripts/inject-csp-hashes.test.ts
       - run: npm run build:all
+      - run: npm run check:no-em-dash
       - run: npm run check:admin-build
   emulator:
     runs-on: ubuntu-latest

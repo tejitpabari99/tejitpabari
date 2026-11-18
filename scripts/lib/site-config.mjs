@@ -5,9 +5,8 @@
 // with readFileSync (scripts run as plain Node, no '@/' alias or JSON
 // module support needed) and resolves the current site from process.env.SITE
 // (unset or empty -> main). Mirrors vite.config.ts's resolveSite.
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import matter from 'gray-matter';
 
 export const ROOT = path.resolve(import.meta.dirname, '..', '..');
 
@@ -34,12 +33,4 @@ export function currentSite(env = process.env, root = ROOT) {
 /** Frontmatter `sites:` of a content file; missing = ['main']. */
 export function sitesOf(data) {
   return Array.isArray(data.sites) && data.sites.length > 0 ? data.sites : ['main'];
-}
-
-/** Parsed frontmatter of every .md in `dir` that belongs to `site`. */
-export function readSiteEntries(dir, site) {
-  return readdirSync(dir)
-    .filter((f) => f.endsWith('.md'))
-    .map((f) => ({ file: f, data: matter(readFileSync(path.join(dir, f), 'utf-8')).data }))
-    .filter(({ data }) => sitesOf(data).includes(site));
 }

@@ -41,3 +41,15 @@ describe('ci workflow', () => {
     expect(ci).toContain('CHECK_LAUNCH=1');
   });
 });
+
+describe('built-output em-dash scan', () => {
+  it.each(['firebase-hosting-merge.yml', 'firebase-hosting-pull-request.yml', 'ci.yml'])(
+    '%s runs check:no-em-dash after build:all',
+    (f) => {
+      const w = wf(f);
+      const build = w.indexOf('npm run build:all');
+      expect(build).toBeGreaterThan(-1);
+      expect(w.indexOf('npm run check:no-em-dash', build)).toBeGreaterThan(build);
+    },
+  );
+});
