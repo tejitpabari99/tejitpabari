@@ -75,6 +75,7 @@ Target -> site -> domain (project `tejitpabari-99`):
 App Check:
 - Enforced ONLY on `firebaseml.googleapis.com` (AI Logic). App Check rejects `firebasevertexai.googleapis.com` ("Service not supported").
 - Firestore must stay UNenforced: go. reads links via unauthenticated REST with no App Check token.
+- Browser API key is referrer-restricted to our admin/go/99 domains + localhost (see DEPLOY.md A6). A new origin using the key (new domain, preview channel) must be added to the key's allowedReferrers.
 - reCAPTCHA Enterprise key domains: `admin.tejitpabari.com` + `tejitpabari-admin.web.app` only. Only localhost (`dev:admin`) uses the debug token from `~/.secrets/appcheck-debug-token` via `VITE_APPCHECK_DEBUG_TOKEN` (dev builds only). Preview channels are prod builds, guest-only: sign-in and AI aren't available there.
 
 Runbook: `docs/DEPLOY.md`.
