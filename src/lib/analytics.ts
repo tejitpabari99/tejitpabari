@@ -139,7 +139,11 @@ export type AnalyticsEventName =
   // a stable, owner-controlled indirection to one (see
   // LiveRedirectFallback, which fires its own outbound_click/live_redirect
   // event once the actual external destination is known).
-  | 'live_link_click';
+  | 'live_link_click'
+  // SP04 nonprofit site
+  | 'book_consultation_click' // {source: 'hero'|'services'}
+  | 'service_toggle' // {service: slug, expanded: true}
+  | 'schedule_load'; // {state: 'ok'|'error'|'empty', row_count}
 
 export function trackEvent(
   name: AnalyticsEventName,
