@@ -41,6 +41,8 @@ The owner wants focused sites for two audiences. Health tech: show the journey a
 | Same GA + consent banner as main (orchestrator) | No analytics | Policies then apply as written |
 | Branch stacks on feat/admin-merge (orchestrator) | Off origin/main | Hosting targets exist only there |
 | Privacy page left unchanged despite Schedule's Google Sheets fetch (owner) | Add a Google Sheets line | Owner call |
+| No redirect for removed /projects/juno (owner) | Redirect to juno-app | Owner |
+| Subsite Home shows all projects, newest first (owner) | Latest 6 + All projects link | Owner |
 
 ## Design
 ### Build
@@ -90,14 +92,14 @@ Descriptions/tags: from the research drafts (Onolys: AI quality control for clin
 - Tags: add 'Nonprofit' to ProjectTag. Health cards use 'Health Tech'. Per-card techTags from the research drafts; builder picks sensible ones where absent.
 - Status per new card from repo state: Onolys Building, Juno app Building, Juno website Completed, Juno ChatGPT plugin Building, Hospital Bill Checker Completed, Sparehand cards Building.
 - Links: one primary link per card (the URLs in the card table); plugin card primary = GitHub repo. No `live` entries for new cards.
-- Juno split: juno.md becomes juno-app (body and stats kept as-is); new juno-website and juno-chatgpt-plugin files. Old /projects/juno and /projects/juno/live redirect to the juno-app equivalents. FEATURED_PROJECT_SLUGS swaps 'juno' for 'juno-app'; no other featured changes. site.ts DEFAULT_DESCRIPTION untouched.
+- Juno split: juno.md becomes juno-app (body and stats kept as-is); new juno-website and juno-chatgpt-plugin files. Old /projects/juno and /projects/juno/live are removed with no redirect (owner); remove the firebase.json /projects/juno/live redirect entry. FEATURED_PROJECT_SLUGS swaps 'juno' for 'juno-app' (owner: yes for now); no other featured changes. site.ts DEFAULT_DESCRIPTION untouched.
 - Images: Unsplash, same pattern as existing cards; body markdown is a short paragraph per card from its description.
 - Sparehand card dates: first commit touching the skill doc (sparehand-plugin) or the automation folder (sparehand-auto), via gh API. Until the sparehand-plugin Pages PR lands, plugin cards link to the GitHub markdown of the skill; switch to Pages URL after.
-- Nonprofit Home shows the latest 6 projects plus an "All projects" link; Projects page = full list with search and tags, newest first. Healthtech Home = full list with search and tags.
+- Nonprofit Home and healthtech Home both show the full site-filtered project list with search and tags, same display as the healthtech page (owner). All project lists on both subsites sort by date (created), newest first. Nonprofit Projects tab stays in nav with the same full list.
 - Nav: per-site NAV_LINKS; "Website" button top right, same tab, visible on mobile.
 - Subsite footer: Privacy and Terms absolute to tejitpabari.com, GitHub, LinkedIn, obfuscated email via existing contact.ts/useContactMailto; drop Research and Résumé; keep the techfolio credit line.
 - Subsite routes: home, project detail (no /live), nonprofit /projects and /schedule, NotFound. No research, work-experience, privacy, terms routes.
-- Schedule: CSV URL is one config constant (placeholder until owner publishes; page shows the unavailable state if empty). Expected headers: Name, Project, Public Blurb, Date Added, Status; parser matches headers by name and ignores unknown columns. Dates parsed as YYYY-MM-DD, shown as "Mon YYYY"; ties sorted by project name; unknown statuses map to To do. Tests use a fixture CSV.
+- Schedule: CSV URL constant = https://docs.google.com/spreadsheets/d/e/2PACX-1vRdHGSY4cKp-FFggDBhAkUqhNSSRRdn-MyBJFg170EUUssuupWVItLHs7JxbdvMN5QMWatrxwmeQNJN/pub?gid=779051931&single=true&output=csv (verified 2026-11-18: 307 redirect to doc-*-sheets.googleusercontent.com, access-control-allow-origin *, headers Name,Project,Public Blurb,Date Added,Status; blurbs currently empty). Expected headers: Name, Project, Public Blurb, Date Added, Status; parser matches headers by name and ignores unknown columns. Dates parsed as YYYY-MM-DD, shown as "Mon YYYY"; ties sorted by project name; unknown statuses map to To do. Tests use a fixture CSV.
 - SEO: per-site title, description, default OG image, sitemap and robots.txt; Schedule in sitemap.
 - Gates: routes smoke, check:no-em-dash, check:no-forms, check:launch extended to cover the new builds. hosting/healthtech and hosting/nonprofit removed; deploy:static reduced to go only.
 
@@ -107,7 +109,7 @@ Descriptions/tags: from the research drafts (Onolys: AI quality control for clin
 - Anti-goals: any private sheet column (contacts, notes, folders, next action) reaching the web; main site regressions; em dashes in copy; customer or validation claims for Onolys.
 
 ## Open risks
-- CSV fetch blocked by CSP or redirect host: verify in preview; fallback = scheduled sync job writing JSON at build.
+- CSV fetch: verified reachable with CORS; CSP connect-src must include docs.google.com and https://*.googleusercontent.com; fallback = scheduled sync job.
 - Published CSV is public by URL: only the Public tab is published; test asserts parser ignores unknown columns.
 - app.meetjuno.health mapping to simplify-med not confirmed: confirm link resolves before publish.
 - Org names public without consent: owner accepted "for now"; Public Name column is the later fix.
