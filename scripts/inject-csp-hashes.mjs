@@ -51,6 +51,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, copyFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const DIST_DIR = path.join(ROOT, 'dist');
@@ -135,6 +136,49 @@ function collectInlineScriptHashes(htmlFiles) {
   return { hashSources: [...hashes].sort(), perFile }; // stable ordering -> stable diffs across builds when content repeats
 }
 
+// firebase.json's `hosting` is an array of per-site entries; the CSP hashes
+// belong to the main site's entry (`target: "main"`) only. Never touch the
+// others. Until the root firebase.json is converted to an array, the legacy
+// single-object form is treated as the main entry.
+export function findMainHosting(config) {
+  const hosting = config?.hosting;
+  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : hosting;
+  if (!main) {
+    throw new Error('inject-csp-hashes: firebase.json has no hosting entry with target "main" to inject CSP hashes into.');
+  }
+  return main;
+}
+
+// Mutates `config` in place: replaces the inline-script hashes in the main
+// entry's `**` Content-Security-Policy script-src with `hashSources`.
+export function injectCspHashes(config, hashSources) {
+  const headerRule = findMainHosting(config).headers?.find((rule) => rule.source === '**');
+  if (!headerRule) {
+    throw new Error("inject-csp-hashes: firebase.json has no hosting.headers rule with source '**' to inject CSP hashes into.");
+  }
+  const cspHeader = headerRule.headers.find((h) => h.key === 'Content-Security-Policy');
+  if (!cspHeader) {
+    throw new Error("inject-csp-hashes: the '**' headers rule has no Content-Security-Policy entry to update.");
+  }
+
+  const directives = cspHeader.value.split(';').map((d) => d.trim()).filter(Boolean);
+  const scriptSrcIndex = directives.findIndex((d) => d === 'script-src' || d.startsWith('script-src '));
+  if (scriptSrcIndex === -1) {
+    throw new Error("inject-csp-hashes: Content-Security-Policy has no script-src directive to inject hashes into.");
+  }
+
+  // Base sources are whatever is committed in firebase.json minus any
+  // hashes left over from a previous build (so re-running this script is
+  // idempotent instead of accumulating stale hashes forever).
+  const baseSources = directives[scriptSrcIndex]
+    .split(/\s+/)
+    .slice(1) // drop the "script-src" token itself
+    .filter((s) => !s.startsWith("'sha256-"));
+
+  directives[scriptSrcIndex] = ['script-src', ...baseSources, ...hashSources].join(' ');
+  cspHeader.value = directives.join('; ');
+}
+
 // Safety net: re-reads firebase.json fresh from disk (not the in-memory
 // `config` object this script just wrote) and confirms every inline
 // <script> found in dist/**/*.html actually has its hash present in the
@@ -146,7 +190,7 @@ function collectInlineScriptHashes(htmlFiles) {
 // offending file, rather than warning.
 function verifyHashesLanded(perFile) {
   const config = JSON.parse(readFileSync(FIREBASE_JSON_PATH, 'utf-8'));
-  const headerRule = config.hosting?.headers?.find((rule) => rule.source === '**');
+  const headerRule = findMainHosting(config).headers?.find((rule) => rule.source === '**');
   const cspHeader = headerRule?.headers?.find((h) => h.key === 'Content-Security-Policy');
   if (!cspHeader) {
     throw new Error('inject-csp-hashes: verification failed - could not re-read a Content-Security-Policy header from firebase.json after writing it.');
@@ -192,31 +236,7 @@ function main() {
   }
 
   const config = JSON.parse(readFileSync(FIREBASE_JSON_PATH, 'utf-8'));
-  const headerRule = config.hosting?.headers?.find((rule) => rule.source === '**');
-  if (!headerRule) {
-    throw new Error("inject-csp-hashes: firebase.json has no hosting.headers rule with source '**' to inject CSP hashes into.");
-  }
-  const cspHeader = headerRule.headers.find((h) => h.key === 'Content-Security-Policy');
-  if (!cspHeader) {
-    throw new Error("inject-csp-hashes: the '**' headers rule has no Content-Security-Policy entry to update.");
-  }
-
-  const directives = cspHeader.value.split(';').map((d) => d.trim()).filter(Boolean);
-  const scriptSrcIndex = directives.findIndex((d) => d === 'script-src' || d.startsWith('script-src '));
-  if (scriptSrcIndex === -1) {
-    throw new Error("inject-csp-hashes: Content-Security-Policy has no script-src directive to inject hashes into.");
-  }
-
-  // Base sources are whatever is committed in firebase.json minus any
-  // hashes left over from a previous build (so re-running this script is
-  // idempotent instead of accumulating stale hashes forever).
-  const baseSources = directives[scriptSrcIndex]
-    .split(/\s+/)
-    .slice(1) // drop the "script-src" token itself
-    .filter((s) => !s.startsWith("'sha256-"));
-
-  directives[scriptSrcIndex] = ['script-src', ...baseSources, ...hashSources].join(' ');
-  cspHeader.value = directives.join('; ');
+  injectCspHashes(config, hashSources);
 
   writeFileSync(FIREBASE_JSON_PATH, JSON.stringify(config, null, 2) + '\n');
   console.log(
@@ -229,4 +249,7 @@ function main() {
   );
 }
 
-main();
+// Only run when executed directly (`node scripts/inject-csp-hashes.mjs`), not when imported by the test.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}
