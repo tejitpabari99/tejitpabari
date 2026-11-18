@@ -14,6 +14,6 @@ links:
     icon: github
     primary: true
 date: "2026-09-22"
-sites: [healthtech]
+sites: [main, healthtech]
 ---
 A ChatGPT plugin built around Juno's approach to medical appointments. It helps patients get ready for a visit and turn the conversation into clear next steps, right inside ChatGPT.
