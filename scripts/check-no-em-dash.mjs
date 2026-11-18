@@ -89,6 +89,19 @@ export function scanSiteConfigSource(file, source) {
   return found;
 }
 
+/** Every string value in src/config/sites.json (the source of main's
+ *  description, names, routes). Returns [{ keyPath, text }]. */
+export function scanSitesJson(source) {
+  const found = [];
+  (function walk(v, keyPath) {
+    if (typeof v === 'string') {
+      if (findMatches(v).length > 0) found.push({ keyPath, text: v });
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${keyPath}[${i}]`));
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, keyPath ? `${keyPath}.${k}` : k);
+  })(JSON.parse(source), '');
+  return found;
+}
+
 function walkDir(dir, exts, fn) {
   for (const entry of readdirSync(dir)) {
     const full = path.join(dir, entry);
@@ -134,6 +147,14 @@ function main() {
   const siteFile = path.join(ROOT, 'src/config/site.ts');
   for (const { line, text } of scanSiteConfigSource(siteFile, readFileSync(siteFile, 'utf-8'))) {
     report(siteFile, line, text);
+  }
+
+  // 2b. src/config/sites.json: all string values (site.ts derives its description from here,
+  // and the dist-* scan does not cover main's dist/). The site.ts step above is kept as a
+  // guard in case DEFAULT_DESCRIPTION is ever inlined as a literal again.
+  const sitesFile = path.join(ROOT, 'src/config/sites.json');
+  for (const { keyPath, text } of scanSitesJson(readFileSync(sitesFile, 'utf-8'))) {
+    failures.push({ file: `${sitesFile} ${keyPath}`, line: '-', snippet: text, kinds: findMatches(text) });
   }
 
   // 3. src/content/**/*.md — whole file, line by line

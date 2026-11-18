@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { findMatches, scanTsxSource, scanSiteConfigSource, scanBuiltOutput } from './check-no-em-dash.mjs';
+import { findMatches, scanTsxSource, scanSiteConfigSource, scanBuiltOutput, scanSitesJson } from './check-no-em-dash.mjs';
 
 describe('findMatches', () => {
   it('returns all three pattern names for a string containing all three forms', () => {
@@ -128,5 +128,18 @@ describe('scanBuiltOutput (dist-<site>)', () => {
 
   it('is a no-op when no dist-* exists', () => {
     expect(scanBuiltOutput(root({}))).toEqual([]);
+  });
+});
+
+describe('scanSitesJson', () => {
+  it('flags an em dash in any string value, reporting the key path', () => {
+    const json = JSON.stringify({ main: { description: 'a \u2014 b', staticRoutes: ['/', 'x &mdash; y'] }, other: { name: 'clean' } });
+    const found = scanSitesJson(json);
+    expect(found.map((f) => f.keyPath)).toEqual(['main.description', 'main.staticRoutes[1]']);
+  });
+
+  it('passes a clean sites.json', () => {
+    const json = JSON.stringify({ main: { description: 'clean \u2013 en dash ok', staticRoutes: ['/'] } });
+    expect(scanSitesJson(json)).toEqual([]);
   });
 });
