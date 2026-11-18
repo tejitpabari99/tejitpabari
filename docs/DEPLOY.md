@@ -3,13 +3,6 @@
 Source plan: `docs/agent_files/feat-admin-merge-20261118-0305/05-infra-and-cutover/PRD.md`.
 Secrets only under `~/.secrets/` (chmod 600), never in repo/logs. Rollback = DNS-only change.
 
-## CLAUDE.md Deploy section (to merge)
-
-> ## Deploy
-> Runbook: `docs/DEPLOY.md` (phases A-G, owner fallbacks, recorded cloud state). Agents call Google REST APIs with
-> `Authorization: Bearer $(node scripts/infra/token.mjs)` (token minted from the firebase-tools login; never print the
-> refresh token). Merge to main = CI deploys hosting + rules. Never deploy hosting by hand.
-
 ## Agent API access
 
 ```bash
