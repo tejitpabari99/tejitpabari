@@ -11,11 +11,11 @@ Branch `feat/subsites`, stacked on `feat/admin-merge`. Decisions: see [brainstor
 
 | # | Name | Scope | Depends | Phase | Status |
 |---|---|---|---|---|---|
-| 01 | [multi-site-build](01-multi-site-build/PRD.md) | `SITE=main\|healthtech\|nonprofit` switch: routes, nav, footer, SEO files, CSP, outDirs, CI build + deploy | none | 1 | tasks ready (10 tasks) |
-| 02 | [project-content](02-project-content/PRD.md) | `sites:` frontmatter, `projectsForSite(site)`, split Juno into 3 cards, 5 new cards | none | 1 | tasks ready (5 tasks) |
-| 03 | [healthtech-site](03-healthtech-site/PRD.md) | Healthtech Home (hero + Onolys CTA + filterable project list), detail pages; extracts `ProjectListSection` | 01, 02 | 2 | tasks ready (5 tasks) |
-| 04 | [nonprofit-site](04-nonprofit-site/PRD.md) | Nonprofit Home (accordion services), Projects, live Schedule page from Google Sheet CSV | 01, 02, 03 | 2 | tasks ready (8 tasks) |
-| 05 | [sparehand-pages](05-sparehand-pages/PRD.md) | GitHub Pages for sparehand-plugin (repo PR), then swap 2 card hrefs | A: none; B: 02 | 1 (A), after 02 (B) | tasks ready (6 tasks) |
+| 01 | [multi-site-build](01-multi-site-build/PRD.md) | `SITE=main\|healthtech\|nonprofit` switch: routes, nav, footer, SEO files, CSP, outDirs, CI build + deploy | none | 1 | done (coded, reviewed) |
+| 02 | [project-content](02-project-content/PRD.md) | `sites:` frontmatter, `projectsForSite(site)`, split Juno into 3 cards, 5 new cards | none | 1 | done (coded, reviewed) |
+| 03 | [healthtech-site](03-healthtech-site/PRD.md) | Healthtech Home (hero + Onolys CTA + filterable project list), detail pages; extracts `ProjectListSection` | 01, 02 | 2 | done (coded, reviewed) |
+| 04 | [nonprofit-site](04-nonprofit-site/PRD.md) | Nonprofit Home (accordion services), Projects, live Schedule page from Google Sheet CSV | 01, 02, 03 | 2 | done (coded, reviewed) |
+| 05 | [sparehand-pages](05-sparehand-pages/PRD.md) | GitHub Pages for sparehand-plugin (repo PR), then swap 2 card hrefs | A: none; B: 02 | 1 (A), after 02 (B) | done (coded, reviewed) |
 
 ## Dependency graph
 
