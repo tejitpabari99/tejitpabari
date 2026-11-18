@@ -26,6 +26,7 @@
     "test": "vitest run",
     "test:admin": "vitest run -c vite.admin.config.ts",
     "check:launch": "CHECK_LAUNCH=1 vitest run scripts/check-launch-content.test.ts && npm run check:no-forms && npm run check:no-em-dash",
+    "check:admin-build": "node scripts/check-admin-build.mjs",
     "check:no-forms": "bash scripts/check-no-forms.sh",
     "check:no-em-dash": "node scripts/check-no-em-dash.mjs",
     "format": "prettier --write \"**/*.{ts,tsx,json,md,css}\"",
