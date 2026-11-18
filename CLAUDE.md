@@ -49,7 +49,16 @@ refresh token). Merge to main = CI deploys everything (all hosting targets + Fir
 
 ### CI deploy workflows (SP04)
 
-_Placeholder: filled in by SP04 (workflow names, triggers, required secrets/vars)._
+Workflows (`.github/workflows/`):
+- `ci.yml` (CI): push to main, PRs, reusable. Jobs `unit` (typecheck, lint, tests, build:all, check:admin-build) and `emulator`.
+- `firebase-hosting-merge.yml`: push to main. Runs CI, builds all targets, verifies the admin build, then `firebase deploy --only hosting,firestore`. **Merge = deploy all hosting targets + Firestore rules/indexes.**
+- `firebase-hosting-pull-request.yml`: PR preview channels (same-repo PRs only; forks have no secret).
+
+Required repo config (`gh variable list` / `gh secret list`):
+- Variables: `VITE_GA_MEASUREMENT_ID`, `VITE_RECAPTCHA_SITE_KEY` (the merge workflow fails loudly if either is empty).
+- Secret: `FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99` (SA JSON, written to a temp file and removed after deploy).
+
+Deploy service account `github-actions-deploy@tejitpabari-99.iam.gserviceaccount.com` roles: `roles/firebase.viewer`, `roles/firebasehosting.admin`, `roles/firebaserules.admin`, `roles/datastore.indexAdmin`, `roles/serviceusage.serviceUsageConsumer`. APIs `firestore` and `firebaserules` must stay enabled (the SA cannot enable them).
 
 ### Hosting targets and cutover (SP05)
 
