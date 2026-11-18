@@ -8,11 +8,11 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/subsites/docs/agent_
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | `sites` schema, `SiteId`, new tag | none | todo |
-| 2 | `projectsForSite` seam | 1 | todo |
-| 3 | Juno split and slug reference sweep | 1 | todo |
-| 4 | New cards and site tagging of existing cards | 1, 3 | todo |
-| 5 | Seam membership tests and launch checks | 2, 3, 4 | todo |
+| 1 | `sites` schema, `SiteId`, new tag | none | done |
+| 2 | `projectsForSite` seam | 1 | done |
+| 3 | Juno split and slug reference sweep | 1 | done |
+| 4 | New cards and site tagging of existing cards | 1, 3 | done |
+| 5 | Seam membership tests and launch checks | 2, 3, 4 | done |
 
 ## Task 1: `sites` schema, `SiteId`, new tag
 What it is / what it means: Cards get an optional `sites` list saying which site(s) show them. `SITE_IDS` and `SiteId` are defined here so SP01 imports them (Decision 4). `Project.sites` is always filled, so consumers never default it (Decision 1).
