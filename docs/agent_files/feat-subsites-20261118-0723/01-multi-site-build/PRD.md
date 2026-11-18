@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 summary: One SITE switch builds main, healthtech and nonprofit from the same code into dist/, dist-healthtech/, dist-nonprofit/, each with its own routes, nav, footer, SEO files and CSP, built and deployed by CI. Main output stays unchanged.
 date: 2026-11-18
 ---
@@ -61,10 +61,10 @@ The two subdomains serve static coming-soon pages from `hosting/` with noindex [
 - After first deploy, owner confirms the three sites in Search Console if wanted.
 
 ## Risks / Open Questions
-- [OPEN] Main CSP hash set may change if SSR inline scripts differ after the routes refactor; verify against baseline in task 1 (expected unchanged).
-- [OPEN] vite-react-ssg temp output (`ssgOut`) placement with a custom `outDir`: read from `build.outDir` in its source [verified: `vite-react-ssg ... outDir = config.build.outDir`], but confirm `.vite/manifest.json` lands in `dist-<site>/` for `normalize-ssg-build-id`.
-- [OPEN] Preview channels: nonprofit previews fetch the sheet from a `*.web.app` origin; CSP allows it, CORS is `*`; confirm in preview.
-- [OPEN] Whether `check-no-forms.sh` / em-dash scan read built output or only `src`; extend if needed.
+- [RESOLVED: builder verifies during implementation - expected unchanged] Main CSP hash set may change if SSR inline scripts differ after the routes refactor; verify against baseline in task 1 (expected unchanged).
+- [RESOLVED: builder verifies during implementation - reads `build.outDir`; verify manifest location] vite-react-ssg temp output (`ssgOut`) placement with a custom `outDir`: read from `build.outDir` in its source [verified: `vite-react-ssg ... outDir = config.build.outDir`], but confirm `.vite/manifest.json` lands in `dist-<site>/` for `normalize-ssg-build-id`.
+- [RESOLVED: builder verifies during implementation - works as designed; confirm in preview] Preview channels: nonprofit previews fetch the sheet from a `*.web.app` origin; CSP allows it, CORS is `*`; confirm in preview.
+- [RESOLVED: builder verifies during implementation - extend `check:launch` to scan `dist-*`] Whether `check-no-forms.sh` / em-dash scan read built output or only `src`; extend if needed.
 - [RESOLVED: serial builds] Parallel `build:all` would race on `firebase.json`.
 - [RESOLVED: grep] Only `package.json:41`, `firebase.json:209,243`, README, CLAUDE.md, DEPLOY.md and `hosting.test.ts` reference the deleted dirs.
 - [DEFERRED] Cross-domain GA linking; per-site GA properties.

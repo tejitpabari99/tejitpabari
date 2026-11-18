@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 summary: Nonprofit Home (hero, booking button, consultation statement, 4 accordion services, full project list), Projects page, and a live Schedule page that fetches the published Google Sheet CSV in the browser, parses it with an in-repo RFC4180 parser, and renders pastel status cards.
 date: 2026-11-18
 ---
@@ -84,11 +84,11 @@ Pages compose these inside `PageContainer`/`RouteMeta`. Booking button uses exis
 - Confirm `go.tejitpabari.com/meet-ngo` resolves.
 
 ## Risks / Open Questions
-- [OPEN] Hero eyebrow "Nonprofit AI Consulting" and H1 "Tejit Pabari" are my call; owner to confirm.
-- [OPEN] Which of SP03 or SP04 lands `ProjectListSection` (default: SP03; SP04 blocks on it).
-- [OPEN] Shared `AnalyticsEventName` union edited by SP03 and SP04; merge order resolves trivially.
-- [OPEN] Sheet CSV is edge-cached (about 5 min); acceptable per brief, no cache-busting param added (it would defeat Google's cache and may break the published URL).
-- [OPEN] Org names are public "for now" (owner accepted); Public Name column is the later fix.
+- [RESOLVED: owner accepted - H1 "Tejit Pabari", eyebrow "Nonprofit AI Consulting", Book opens a new tab] Hero wording.
+- [RESOLVED: orchestrator - SP03 extracts, SP04 reuses] Which of SP03 or SP04 lands `ProjectListSection` (default: SP03; SP04 blocks on it).
+- [RESOLVED: builder verifies during implementation - merge order 03 then 04 resolves trivially] Shared `AnalyticsEventName` union edited by SP03 and SP04.
+- [RESOLVED: owner accepted - no cache-bust] Sheet CSV is edge-cached (about 5 min); acceptable per brief, no cache-busting param added (it would defeat Google's cache and may break the published URL).
+- [RESOLVED: owner accepted - show org names] Org names are public "for now" (owner accepted); Public Name column is the later fix.
 - [RESOLVED: verified] CSV is reachable, redirects to googleusercontent with `access-control-allow-origin: *`, headers as expected.
 - [RESOLVED: brief] No Done-item pruning; Done rows stay forever, oldest first.
 - [DEFERRED] Fallback scheduled sync job if browser fetch fails in production.

@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 summary: Healthtech Home = owner-approved hero (with Onolys CTA) plus the full health project list with search and tag filter, reusing ProjectsPage building blocks; detail pages reuse ProjectDetailPage with no /live.
 date: 2026-11-18
 ---
@@ -33,7 +33,7 @@ Healthtech has a placeholder Home after SP01. The owner wants a focused page: wh
 |---|---|
 | `SearchFilter`, `ProjectListCard`, `EmptyState`, `useCollectionFilter`, `PageContainer`, `RouteMeta`, `Button`, `ContentBody`, `DetailHeader`, `LinksRow` | Reused unchanged |
 | `HealthtechHero` | New, small, local to healthtech; not a parametrized `Hero` (main's has resume, portrait, scroll-to-contact) |
-| List block | Extract nothing for now: Home inlines the same ~25 JSX lines as `ProjectsPage`. [OPEN] extract a shared `ProjectListSection({ items })` if SP04 also needs it (it does: nonprofit Home and Projects). Recommendation: SP03 lands first and extracts it; SP04 reuses; `ProjectsPage` switches to it too, no behavior change |
+| List block | Extract nothing for now: Home inlines the same ~25 JSX lines as `ProjectsPage`. [RESOLVED: orchestrator decided SP03 extracts, SP04 reuses] extract a shared `ProjectListSection({ items })` if SP04 also needs it (it does: nonprofit Home and Projects). Recommendation: SP03 lands first and extracts it; SP04 reuses; `ProjectsPage` switches to it too, no behavior change |
 | `ProjectDetailPage` | Edit: `projects.find` becomes `projectsForSite(SITE).find` (main returns all 13, so main behavior is identical) |
 
 **Sorting.** `projectsForSite` (SP02) returns newest first, so the hook receives pre-sorted items; `useCollectionFilter` needs no sort option. Its tag filter and unqueried results preserve input order, and Fuse only reorders when a query is typed (relevance, as on main). A test pins this.
@@ -61,10 +61,10 @@ Healthtech has a placeholder Home after SP01. The owner wants a focused page: wh
 - Confirm `https://onolys.com` resolves before publish.
 
 ## Risks / Open Questions
-- [OPEN] CTA label "Visit Onolys" and heading wording are my call; owner to confirm.
-- [OPEN] Portrait on subsite hero (omitted by default).
-- [OPEN] Shared `ProjectListSection` extraction ownership between SP03 and SP04 (default: SP03 extracts).
-- [OPEN] Onolys card must say early stage with no customer claims; owned by SP02 copy, verify when reviewing here.
+- [RESOLVED: owner accepted - heading "Tejit Pabari", eyebrow "Health Tech Builder", CTA "Visit Onolys" to onolys.com] CTA label and heading wording.
+- [RESOLVED: owner accepted - no portrait] Portrait on subsite hero.
+- [RESOLVED: orchestrator - SP03 extracts, SP04 reuses] `ProjectListSection` extraction ownership.
+- [RESOLVED: builder verifies during implementation - early-stage wording, no customer claims; check in review] Onolys card must say early stage with no customer claims; owned by SP02 copy, verify when reviewing here.
 - [RESOLVED: grep] No `/live` button appears on cards because `links[]` is non-empty for all 7 health cards.
 - [RESOLVED: brief] Home shows all projects, no "Latest 6"; no `/projects` list route on healthtech.
 - [DEFERRED] Per-site GA properties; healthtech-specific featured/pinned Onolys card.

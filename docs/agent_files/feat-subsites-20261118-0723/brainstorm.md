@@ -42,6 +42,7 @@ The owner wants focused sites for two audiences. Health tech: show the journey a
 | Branch stacks on feat/admin-merge (orchestrator) | Off origin/main | Hosting targets exist only there |
 | Privacy page left unchanged despite Schedule's Google Sheets fetch (owner) | Add a Google Sheets line | Owner call |
 | No redirect for removed /projects/juno (owner) | Redirect to juno-app | Owner |
+| thepass plugin card, Developer Tools, main only (owner) | | Owner |
 | Subsite Home shows all projects, newest first (owner) | Latest 6 + All projects link | Owner |
 
 ## Design
@@ -75,7 +76,7 @@ Both share the footer.
 | Title | Link | Date | Sites |
 |---|---|---|---|
 | Onolys | https://onolys.com | 2026-09-01 | main, healthtech |
-| Juno app | https://app.meetjuno.health (repo simplify-med) | 2026-09-07 | main, healthtech |
+| Juno app | https://app.meetjuno.health (repo simplify-med) | 2025-06-01 (owner override) | main, healthtech |
 | Juno website | https://meetjuno.health (repo juno-landing-page) | 2026-08-30 | main, healthtech |
 | Juno ChatGPT plugin | https://github.com/tejitpabari99/simplify-med-plugin | 2026-09-22 | main, healthtech |
 | Hospital Bill Checker | https://github.com/tejitpabari99/hospital-bill-checker | 2026-03-30 | main, healthtech |
@@ -83,6 +84,7 @@ Both share the footer.
 | Partner Event Finder | sparehand-plugin Pages skill URL (path set when Pages is enabled) | from git | main, nonprofit |
 | Install Automation | same | from git | main, nonprofit |
 | Auto Emailer | https://tejitpabari99.github.io/sparehand-auto/ | from git log of its folder | main, nonprofit |
+| thepass | https://github.com/tejitpabari99/thepass | 2026-11-06 | main (tag Developer Tools) |
 Descriptions/tags: from the research drafts (Onolys: AI quality control for clinician-rated assessments, early stage; Juno app: upload a clinical note, get a plain summary and next steps; Juno website: showcase of Juno projects; plugin: prep, simplify, health-literacy skills inside ChatGPT, no stored data; Bill Checker: finds upcoding, unbundling, markups, writes dispute letter, free, nothing stored). Images: reuse existing pattern (Unsplash or repo assets).
 
 ## Builder check resolutions (orchestrator calls unless marked)

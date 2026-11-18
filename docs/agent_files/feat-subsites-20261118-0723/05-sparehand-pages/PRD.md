@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 summary: Serve sparehand-plugin docs as a GitHub Pages site (source main /docs, same default Jekyll look as sparehand-auto) with stable skill URLs, drop the PDF, then swap the two site cards to the Pages URLs.
 date: 2026-11-18
 ---
@@ -20,7 +20,7 @@ Skill docs are only readable as raw GitHub markdown, and the nonprofit guide is 
 - Reference setup [verified: `gh api repos/tejitpabari99/sparehand-auto/pages`]: `build_type: legacy`, source `main` `/`, `https_enforced: true`, no `_config.yml`, no Pages workflow (its only workflow `ci.yml` is Apps Script CI). Default theme, README as index, `.md` links rewritten to `.html` (live check: INSTALLATION_GUIDE link resolves, 200).
 - Pages source for plugin: branch `main`, folder `/docs`. Index = `docs/README.md` (Jekyll readme-index). Skill list at `/skills/`, pages at `/skills/start.html`, `/skills/partner-event-finder.html`, `/skills/install-automation.html`, `/skills/share-feedback.html`.
 - `docs/_config.yml`: `title`, `description`, `exclude: [agent_files]`; no theme line (inherit the same default as sparehand-auto).
-- Mermaid: skill pages carry a flow in a mermaid block, which the default theme shows as plain code. Add `docs/_includes/head-custom.html` loading mermaid from jsdelivr at a pinned version and rendering `code.language-mermaid`. [OPEN] confirm the default theme honors `head-custom.html`; fallback is `docs/_layouts/default.html`.
+- Mermaid: skill pages carry a flow in a mermaid block, which the default theme shows as plain code. Add `docs/_includes/head-custom.html` loading mermaid from jsdelivr at a pinned version and rendering `code.language-mermaid`. [RESOLVED: builder verifies during implementation - fallback `docs/_layouts/default.html`] confirm the default theme honors `head-custom.html`; fallback is `docs/_layouts/default.html`.
 - Links out of `docs/`: the four skill pages link `../../plugin/skills/<skill>/SKILL.md`, which is outside the Pages source and would 404. Change to absolute `https://github.com/tejitpabari99/sparehand-plugin/blob/main/plugin/skills/<skill>/SKILL.md` (README already uses absolute URLs for TERMS/PRIVACY).
 - Remove `docs/nonprofit-guide.pdf`, its README bullet ("Illustrated guide for nonprofits (PDF)"), its row in `docs/README.md` (the link checker would fail on it), and `scripts/build_guide_pdf.py` (its only output is the PDF; needs reportlab/Pillow, not in CI) [verified: grep of README, docs/*.md, CHANGELOG, PRIVACY, TERMS, .gitignore, build_zip.py, start SKILL.md found only the README line].
 - Keep `docs/guide-images/` (5 PNGs, ~400 KB, referenced by nothing else once the script goes) so a later web guide can reuse them; not served via a page link.
@@ -50,9 +50,9 @@ Part A order: PR with config and deletions, merge to `main`, then enable Pages (
 - Owner views the live site once for look and mermaid rendering.
 
 ## Risks / Open Questions
-- [OPEN] Mermaid under the default theme: whether `head-custom.html` is honored; test with a local `bundle exec jekyll build` or the first build. Fallback layout in Requirements.
-- [OPEN] Keep or delete `docs/guide-images/` (default: keep). Does the owner want a web version of the guide instead?
-- [OPEN] First Pages build can take a few minutes; poll `gh api repos/tejitpabari99/sparehand-plugin/pages/builds/latest` for `built`.
+- [RESOLVED: builder verifies during implementation - fallback layout in Requirements] Mermaid under the default theme: whether `head-custom.html` is honored; test with a local `bundle exec jekyll build` or the first build. Fallback layout in Requirements.
+- [RESOLVED: owner chose keep `docs/guide-images/`] Keep or delete `docs/guide-images/`.
+- [RESOLVED: builder verifies during implementation - poll until `built`] First Pages build can take a few minutes; poll `gh api repos/tejitpabari99/sparehand-plugin/pages/builds/latest` for `built`.
 - [RESOLVED: grep] No other repo references to the PDF beyond README and `docs/README.md`; the PDF script is the only consumer of guide-images.
 - [RESOLVED: verified] Pages already works on sparehand-auto in this mode, so the account supports it.
 - [DEFERRED] `start` and `share-feedback` have pages but no site cards (brief skips them).
