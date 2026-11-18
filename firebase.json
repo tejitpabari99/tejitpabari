@@ -28,7 +28,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-+Ozb/ItuZAdaQgJd2RebN2rKWj1XkBuXVaV6/lT4Juo=' 'sha256-+mcNSSnMJ3m0D4yNkNd8Gv1FQkw5f5zNRV0+ZenuzBg=' 'sha256-+t5Z3fJi7uJxARWEzFEVaSRgtaAn0r97XkxpJNbQiK0=' 'sha256-16hytVw2SSX3hkefJiVxan9CS+QkbJsd2H4IUWw8haw=' 'sha256-3T3SNxfkVCsSXLoqWCnMnaafmqifqcz/19S077omPB0=' 'sha256-Ed6Lei7deBSXT1iYYw0V36YZXaA4v7OsRknNjmNl/9c=' 'sha256-FHfozmosNdt5yUG9l8OmVM1S/oTxw2TNWHPejSjEr58=' 'sha256-Gu9zTsfluGJpkymXgR9+InomERohT7wqIZHED60BNEk=' 'sha256-S6wmYHJnHLN8bUgDFzGTw0ZpwUWUXsqLebjcjIjFqEw=' 'sha256-fGiNU6ZDUVs8auPa32WHrwMBEI5iKGxJo40pNCeaA5M=' 'sha256-kBRcNsbW8crj0MoebA9/qbHgRipNw3Gmn2wC/R9EQ1M=' 'sha256-z0X5LPrfvX6G2I7DI8t+2LiBGSEpYw2Ji3UbggChwc0='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
+              "value": "default-src 'self'; script-src 'self' https://www.googletagmanager.com 'sha256-+Ozb/ItuZAdaQgJd2RebN2rKWj1XkBuXVaV6/lT4Juo=' 'sha256-+t5Z3fJi7uJxARWEzFEVaSRgtaAn0r97XkxpJNbQiK0=' 'sha256-16hytVw2SSX3hkefJiVxan9CS+QkbJsd2H4IUWw8haw=' 'sha256-3T3SNxfkVCsSXLoqWCnMnaafmqifqcz/19S077omPB0=' 'sha256-Ed6Lei7deBSXT1iYYw0V36YZXaA4v7OsRknNjmNl/9c=' 'sha256-FHfozmosNdt5yUG9l8OmVM1S/oTxw2TNWHPejSjEr58=' 'sha256-Gu9zTsfluGJpkymXgR9+InomERohT7wqIZHED60BNEk=' 'sha256-S6wmYHJnHLN8bUgDFzGTw0ZpwUWUXsqLebjcjIjFqEw=' 'sha256-fGiNU6ZDUVs8auPa32WHrwMBEI5iKGxJo40pNCeaA5M=' 'sha256-hVanJq8h3N7f77N3vggfENtqCfbO6Y1BSjCnxud0C4I=' 'sha256-kBRcNsbW8crj0MoebA9/qbHgRipNw3Gmn2wC/R9EQ1M=' 'sha256-z0X5LPrfvX6G2I7DI8t+2LiBGSEpYw2Ji3UbggChwc0='; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://images.unsplash.com; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'none'"
             }
           ]
         },
@@ -53,6 +53,11 @@
       ],
       "redirects": [
         {
+          "source": "/projects/auto-emailer/live",
+          "destination": "https://tejitpabari99.github.io/sparehand-auto/",
+          "type": 301
+        },
+        {
           "source": "/projects/clip-verse/live",
           "destination": "https://clipverse-five.vercel.app/",
           "type": 301
@@ -68,13 +73,53 @@
           "type": 301
         },
         {
+          "source": "/projects/hospital-bill-checker/live",
+          "destination": "https://github.com/tejitpabari99/hospital-bill-checker",
+          "type": 301
+        },
+        {
+          "source": "/projects/install-automation/live",
+          "destination": "https://github.com/tejitpabari99/sparehand-plugin/blob/main/docs/skills/install-automation.md",
+          "type": 301
+        },
+        {
+          "source": "/projects/juno-app/live",
+          "destination": "https://app.meetjuno.health/",
+          "type": 301
+        },
+        {
+          "source": "/projects/juno-chatgpt-plugin/live",
+          "destination": "https://github.com/tejitpabari99/simplify-med-plugin",
+          "type": 301
+        },
+        {
+          "source": "/projects/juno-website/live",
+          "destination": "https://meetjuno.health/",
+          "type": 301
+        },
+        {
           "source": "/projects/med-doc-tracker/live",
           "destination": "https://tejitpabari.short.gy/med-doc-tracker",
           "type": 301
         },
         {
+          "source": "/projects/onolys/live",
+          "destination": "https://onolys.com",
+          "type": 301
+        },
+        {
+          "source": "/projects/partner-event-finder/live",
+          "destination": "https://github.com/tejitpabari99/sparehand-plugin/blob/main/docs/skills/partner-event-finder.md",
+          "type": 301
+        },
+        {
           "source": "/projects/smarttest/live",
           "destination": "https://doi.org/10.1007/s10461-019-02718-y",
+          "type": 301
+        },
+        {
+          "source": "/projects/thepass/live",
+          "destination": "https://github.com/tejitpabari99/thepass",
           "type": 301
         },
         {
