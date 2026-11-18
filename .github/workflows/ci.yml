@@ -1,7 +1,7 @@
 name: CI
 on:
   push:
-    branches: [main]
+    branches-ignore: [main] # main is covered by the merge workflow's ci job
   pull_request:
   workflow_call:
 permissions:

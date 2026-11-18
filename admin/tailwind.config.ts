@@ -6,5 +6,5 @@ import siteConfig from '../tailwind.config.ts';
 // own CSS output is unaffected.
 export default {
   presets: [siteConfig],
-  content: ['./admin/index.html', './admin/src/**/*.{ts,tsx}'],
+  content: ['./admin/index.html', './admin/src/**/*.{ts,tsx}', './src/components/TagPill.tsx'],
 } satisfies Config;
