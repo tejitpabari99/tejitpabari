@@ -35,3 +35,6 @@ coverage/
 
 logs
 npm-debug.log*
+
+.worktrees/
+**/_next-context_.md
