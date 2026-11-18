@@ -58,6 +58,7 @@ describe('Nav', () => {
   it('highlights About (last section link) near the page bottom', () => {
     const sy = Object.getOwnPropertyDescriptor(window, 'scrollY');
     const sh = Object.getOwnPropertyDescriptor(document.documentElement, 'scrollHeight');
+    const ih = Object.getOwnPropertyDescriptor(window, 'innerHeight');
     Object.defineProperty(window, 'scrollY', { value: 900, configurable: true });
     Object.defineProperty(document.documentElement, 'scrollHeight', { value: 1700, configurable: true });
     Object.defineProperty(window, 'innerHeight', { value: 800, configurable: true });
@@ -68,7 +69,8 @@ describe('Nav', () => {
       expect(active[0]).toHaveAttribute('href', '/#about');
     } finally {
       if (sy) Object.defineProperty(window, 'scrollY', sy); else Reflect.deleteProperty(window, 'scrollY');
-      if (sh) Object.defineProperty(document.documentElement, 'scrollHeight', sh);
+      if (sh) Object.defineProperty(document.documentElement, 'scrollHeight', sh); else Reflect.deleteProperty(document.documentElement, 'scrollHeight');
+      if (ih) Object.defineProperty(window, 'innerHeight', ih); else Reflect.deleteProperty(window, 'innerHeight');
     }
   });
 });
