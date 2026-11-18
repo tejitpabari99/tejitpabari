@@ -8,14 +8,14 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/subsites/docs/agent_
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Nonprofit config and analytics events | 01:T3, 03:T3 | todo |
-| 2 | CSV parser | none | todo |
-| 3 | Schedule mapping, grouping, hook | 1, 2 | todo |
-| 4 | Home sections and accordion | 1 | todo |
-| 5 | Schedule components | 1, 3 | todo |
-| 6 | Pages, RouteMeta, wiring | 01:T3, 02:T2, 03:T1, 4, 5 | todo |
-| 7 | Prerender and launch checks | 6 | todo |
-| 8 | Responsive and contrast checks | 6 | todo |
+| 1 | Nonprofit config and analytics events | 01:T3, 03:T3 | done |
+| 2 | CSV parser | none | done |
+| 3 | Schedule mapping, grouping, hook | 1, 2 | done |
+| 4 | Home sections and accordion | 1 | done |
+| 5 | Schedule components | 1, 3 | done |
+| 6 | Pages, RouteMeta, wiring | 01:T3, 02:T2, 03:T1, 4, 5 | done |
+| 7 | Prerender and launch checks | 6 | done |
+| 8 | Responsive and contrast checks | 6 | done |
 
 ## Task 1: Nonprofit config and analytics events
 What it is / what it means: One config file holds all nonprofit copy and URLs so PR review of copy is a single place. Three new analytics event names let the new UI report through the existing consent-gated `trackEvent`.
