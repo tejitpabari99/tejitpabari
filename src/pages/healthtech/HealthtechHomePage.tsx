@@ -1,14 +1,23 @@
 // src/pages/healthtech/HealthtechHomePage.tsx
-// Placeholder: title only. A later sub-project replaces the body without touching routes.
+// Hero plus the full health project list (newest first via projectsForSite).
 import { RouteMeta } from '@/components/RouteMeta';
 import { PageContainer } from '@/layout/PageContainer';
-import { SITE_CONFIG } from '@/config/site-target';
+import { HealthtechHero, HEALTHTECH_HERO_COPY } from '@/sections/HealthtechHero';
+import { ProjectListSection } from '@/sections/ProjectListSection';
+import { projectsForSite } from '@/data';
+
+// First sentence of the hero copy; well under 160 characters.
+const DESCRIPTION = HEALTHTECH_HERO_COPY.split('. ')[0] + '.';
 
 export function HealthtechHomePage() {
   return (
-    <PageContainer>
-      <RouteMeta title="Health Tech" description={SITE_CONFIG.description} path="/" />
-      <h1 className="text-3xl font-semibold text-teal">Health Tech</h1>
-    </PageContainer>
+    <>
+      <RouteMeta title="Tejit Pabari | Health Tech" description={DESCRIPTION} path="/" />
+      <HealthtechHero />
+      <PageContainer>
+        <h2 id="projects" className="scroll-mt-24 text-2xl font-semibold text-teal">All projects</h2>
+        <ProjectListSection items={projectsForSite('healthtech')} />
+      </PageContainer>
+    </>
   );
 }
