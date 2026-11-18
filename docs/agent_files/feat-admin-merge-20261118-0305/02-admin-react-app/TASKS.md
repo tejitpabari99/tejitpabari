@@ -14,9 +14,9 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 | 4 | Shell, RequireView gate, SignInGate, login | 3 | done |
 | 5 | Home and links pages | 4 | done |
 | 6 | Ideas list and add-idea flow | 4 | done |
-| 7 | Idea detail page | 4 | in-progress |
-| 8 | Rank and settings pages | 4 | in-progress |
-| 9 | CLAUDE.md + README admin section | 5, 6, 7, 8 | in-progress |
+| 7 | Idea detail page | 4 | done |
+| 8 | Rank and settings pages | 4 | done |
+| 9 | CLAUDE.md + README admin section | 5, 6, 7, 8 | done |
 
 ## Task 1 — Admin build scaffold
 What it is: the second Vite entry (PRD Decision 1).
