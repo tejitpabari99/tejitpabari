@@ -70,12 +70,12 @@ Done when: rules release visible; anon read of `ideas` without `settings/main` i
 
 ## Task 10 — Data export sync + migration run
 What it is: PRD Phase B.
-What changes at a high level: after the owner hands over the VPS tarball, diff and replace `migration/cc-content/`, commit; dry-run then `--yes` with the owner ADC file; delete the ADC file afterwards if Task 14 won't need it.
+What changes at a high level: after the owner hands over the VPS tarball, extract it to a scratch dir and run `npm run migrate -- --content-dir <extracted dir>` (dry-run, then `--yes`) with the owner ADC file; no commit to main (a content refresh, if desired, goes in the retirement PR); delete the ADC file afterwards if Task 14 won't need it.
 Done when: migrate prints `OK ideas N/N, links M/M, settings 1/1` matching export counts.
 
 ## Task 11 — Post-merge smoke on *.web.app
 What it is: PRD Phase C (after owner merges; CI deploys).
-What changes at a high level: run the smoke list: auth as owner, guest read-only, toggle test, CRUD, rank, go. live/missing/expired/`/`, deep link refresh, counts, curl cache headers (admin HTML no-cache, `/assets/*` immutable; main unchanged), emulator-literal grep, API key match, 3-idea re-rank comparison, nonprofit/healthtech 200.
+What changes at a high level: run the smoke list (owner sign-in, CRUD, rank and re-rank rows are gated on the owner steps: Google provider enabled and Gemini billing/prepay credits; mark them blocked-on-owner until done; the rest runs regardless): auth as owner, guest read-only, toggle test, CRUD, rank, go. live/missing/expired/`/`, deep link refresh, counts, curl cache headers (admin HTML no-cache, `/assets/*` immutable; main unchanged), emulator-literal grep, API key match, 3-idea re-rank comparison, nonprofit/healthtech 200.
 Done when: every row passes and is logged in DEPLOY.md.
 
 ## Task 12 — Custom domains admin./go. + Cloudflare DNS
@@ -90,13 +90,14 @@ Done when: all pass; rollback values recorded; 7-day window start date logged.
 
 ## Task 14 — Retirement (day 7+)
 What it is: PRD Phase G.
-What changes at a high level: delete `cc` record (token) or ask owner; stop local `cc-gateway` pm2 if present; delete secrets files; `git rm -r migration/cc-content`; `gh repo archive tejitpabari99/tejitpabari-gateway --yes`; update `/root/projects/README.md` rows (tejitpabari, cc-gateway, linkedin-outreach-tool flag).
+What changes at a high level: delete `cc` record (token) or ask owner; stop local `cc-gateway` pm2 if present; delete secrets files; on a branch + PR (owner merges the retirement PR; never push to main): `git rm -r migration/cc-content` (tests already use `tests/fixtures/cc-content`; optionally refresh content in the same PR first); `gh repo archive tejitpabari99/tejitpabari-gateway --yes`; update `/root/projects/README.md` rows (tejitpabari, cc-gateway, linkedin-outreach-tool flag).
 Done when: `dig cc.tejitpabari.com` empty; `gh repo view … --json isArchived` true; README rows updated; content folder gone.
 
 ## Owner-only steps
 1. Export `content/` from the old VPS and hand over the tarball (Task 10).
 2. Squash-merge the PR (after rebasing on main once PR #5 lands) — this deploys (Task 11).
 3. Create a Cloudflare API token (Zone:DNS:Edit, zone tejitpabari.com) saved to `~/.secrets/cloudflare-dns.token`, or add the printed records by hand (Tasks 12, 14).
-4. If the API path fails: enable Google sign-in provider; AI Logic "Get started → Gemini Developer API"; lower AI Logic per-user quota to ~10 RPM (Tasks 4, 7).
+4. REQUIRED (Tasks 4, 7, 9): (a) enable Google sign-in provider at https://console.firebase.google.com/project/tejitpabari-99/authentication/providers (API failed: "client_id cannot be empty"); (b) Gemini billing/prepay credits for the AI Logic Gemini Developer API project at https://ai.studio/projects (429 "prepayment credits are depleted"), and confirm AI Logic setup + ~10 RPM per-user limit at https://console.firebase.google.com/project/tejitpabari-99/ailogic. Merge is allowed before these (deploy works), but sign-in and AI stay unavailable until done.
 5. Check GA4 realtime for `go_click` (Task 13).
-6. Shut down the old VPS / pm2 and cancel billing; OK removal of `/root/projects/cc-gateway` (Task 14).
+6. Merge the retirement PR (Task 14).
+7. Shut down the old VPS / pm2 and cancel billing; OK removal of `/root/projects/cc-gateway` (Task 14).

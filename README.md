@@ -18,7 +18,7 @@ See `.dev/IMAGE-SPECS.md` for the pixel dimensions, format, and file-size budget
 
 ## Deploy
 
-`firebase deploy` (requires `firebase login` with access to the `tejitpabari-99` project). See `firebase.json`/`.firebaserc`.
+Merge to `main` deploys all hosting targets + Firestore rules via CI. Manual deploy only `npm run deploy:static` (static targets); see `docs/DEPLOY.md`. Needs `firebase login` with access to `tejitpabari-99`; config in `firebase.json`/`.firebaserc`.
 
 ## Admin and hosting targets
 

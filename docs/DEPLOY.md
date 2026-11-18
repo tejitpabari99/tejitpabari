@@ -14,6 +14,9 @@ Fallback: owner creates a service-account key at `~/.secrets/tejitpabari-99.json
 If an API returns 403 insufficient scopes: record as owner step, do not work around.
 
 ## Phase A - pre-merge infra (must finish before the PR merges; merge = deploy)
+Merging the PR is allowed with T4 (Google provider) and T9 (Gemini billing) blocked: the deploy works, but sign-in and AI stay unavailable until those owner steps are done.
+Owner steps REQUIRED for live sign-in and AI: (a) enable the Google sign-in provider at https://console.firebase.google.com/project/tejitpabari-99/authentication/providers (API path failed: "client_id cannot be empty"); (b) Gemini billing/prepay credits for the AI Logic Gemini Developer API project at https://ai.studio/projects (429 "prepayment credits are depleted"), and confirm AI Logic setup + ~10 RPM per-user limit at https://console.firebase.google.com/project/tejitpabari-99/ailogic.
+
 | # | Step | How | Owner fallback |
 |---|---|---|---|
 | A1 | Snapshot state | `firebase hosting:sites:list`; firebasehosting v1beta1 `sites/<s>/customDomains`; serviceusage `services?filter=state:ENABLED` | - |
@@ -28,7 +31,7 @@ If an API returns 403 insufficient scopes: record as owner step, do not work aro
 | A10 | Gemini smoke (rank 1 throwaway idea via `dev:admin` + debug token) | manual | - |
 
 ## Phase B - data
-Owner exports `content/` from old VPS (`tar czf`); agent diffs vs `migration/cc-content/`, replaces, commits `chore: sync content from production`. Soft freeze on old site. `GOOGLE_APPLICATION_CREDENTIALS=~/.secrets/adc-owner.json npm run migrate -- --dry-run`, then `-- --yes`; expect `OK ideas N/N, links M/M, settings 1/1`. Never rerun after DNS flip without `--force-overwrite` intent.
+Owner exports `content/` from old VPS (`tar czf`); agent extracts it to a scratch dir (no commit to main; a content refresh, if desired, goes in the retirement PR). Soft freeze on old site. `GOOGLE_APPLICATION_CREDENTIALS=~/.secrets/adc-owner.json npm run migrate -- --content-dir <extracted dir> --dry-run`, then `--yes` (same args); expect `OK ideas N/N, links M/M, settings 1/1`. Never rerun after DNS flip without `--force-overwrite` intent.
 
 ## Phase C - deploy + smoke on web.app
 Owner squash-merges (rebased after PR #5); CI deploys. Smoke on `tejitpabari-admin.web.app` and `tejitpabari-go.web.app/<slug>`: auth as owner, guest read-only, CRUD, rank, go. live/missing/expired/`/`, deep-link refresh; admin HTML `cache-control: no-cache`, `/assets/*` immutable; main site unchanged; `grep -rn "127.0.0.1:9099\|127.0.0.1:8080" dist-admin` = 0; `go.js` API_KEY == `firebase-config.js` apiKey; nonprofit/healthtech 200.
@@ -43,7 +46,7 @@ Old VPS + `cc.` record untouched. Log window start date here.
 Restore recorded `go` A values (orange, Flexible), delete `admin` record. Firestore edits during window re-entered manually.
 
 ## Phase G - retirement (after 7 clean days)
-Delete `cc` record (token or owner); owner stops old VPS; delete `~/.secrets/adc-owner.json`/SA key; `git rm -r migration/cc-content`; `gh repo archive tejitpabari99/tejitpabari-gateway --yes`; update `/root/projects/README.md` rows; owner OK then remove `/root/projects/cc-gateway`.
+Done on a branch + PR that the owner merges (owner-only step; never push to main). Delete `cc` record (token or owner); owner stops old VPS; delete `~/.secrets/adc-owner.json`/SA key; in the PR `git rm -r migration/cc-content` (tests use `tests/fixtures/cc-content`, so no other code change); `gh repo archive tejitpabari99/tejitpabari-gateway --yes`; update `/root/projects/README.md` rows; owner OK then remove `/root/projects/cc-gateway`.
 
 ---
 # Recorded state / evidence (append-only log)

@@ -33,6 +33,7 @@ Owner, 2026-11-18 (full rows in brainstorm.md O1-O7):
 4. All prior cc-gateway decisions hold (Spark, no Functions, Google sign-in, admin `tejitpabari99@gmail.com` + drift test, guest gating via `settings/main.guestVisibility`, slug rules, go. JS redirect + GA4 `go_click` 1500 ms, caching, `VITE_USE_EMULATORS`, Gemini via AI Logic + App Check, no LinkedIn, no cc. redirect, firebase `^12`).
 5. Fresh port; archive `tejitpabari-gateway` at cutover; local cc-gateway stays until verified.
 6. Infra by agents via CLI/API; Cloudflare via owner token or owner manual.
+   Owner decision 2026-11-18: keep Gemini for ranking (Claude considered and declined).
 7. CI/CD from this repo: merge deploys all hosting targets + rules; PR previews ≥ main + admin; pinned SHAs, least-privilege permissions.
 
 Orchestrator defaults (brainstorm.md D1-D12): ported modules stay JS (`allowJs`), new code TS; admin in `admin/` with `vite.admin.config.ts`; `hosting/<target>/`; `migration/cc-content/`; node:test for ported suites, vitest for UI; Node 22; merge deploy via firebase-tools CLI, previews via pinned action with `target`; site palette, no dark mode; admin CSP still deferred; new web app `tejitpabari-admin`; migration via owner OAuth ADC.
@@ -62,13 +63,13 @@ Orchestrator defaults (brainstorm.md D1-D12): ported modules stay JS (`allowJs`)
 - **Single PR spans all sub-projects**: between 01 and 04 the old PR-preview workflow would deploy every target and fail on missing `dist-admin/`; don't push until 04 is done (dev-ship at the end).
 - **Emulator literals in prod**: 02 inlines the flag check; 04 `check:admin-build` greps `dist-admin/`.
 - **App Check on AI Logic mandatory since 2026-11-02**: 05 T7 before admin use.
-- **Google provider / Gemini provisioning may need owner clicks** (no API to mint OAuth client) — logged as owner fallbacks.
+- **Google provider / Gemini billing are REQUIRED owner steps** (no API to mint OAuth client; Gemini 429 prepay credits depleted). Merging the PR is allowed with 05 T4/T9 blocked: deploy works, but sign-in and AI stay unavailable until those owner steps are done.
 - **Content is public** (already public in `tejitpabari-gateway`); removed after cutover.
 - No `[OPEN]` items in any PRD.
 
 ## Owner-only (collected)
 
-VPS `content/` export; squash-merge the PR; Cloudflare token or manual DNS; Google provider / AI Logic / quota clicks only if APIs fail; GA4 realtime check; VPS shutdown; OK to delete `/root/projects/cc-gateway`.
+VPS `content/` export; squash-merge the PR; Cloudflare token or manual DNS; **REQUIRED:** enable Google sign-in provider (https://console.firebase.google.com/project/tejitpabari-99/authentication/providers) and Gemini billing/prepay credits (https://ai.studio/projects) + confirm AI Logic setup and ~10 RPM per-user limit (https://console.firebase.google.com/project/tejitpabari-99/ailogic); GA4 realtime check; VPS shutdown; merge the retirement PR (T14); OK to delete `/root/projects/cc-gateway`.
 
 ## Not verified during planning
 

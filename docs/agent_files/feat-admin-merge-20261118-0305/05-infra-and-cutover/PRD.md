@@ -63,7 +63,7 @@ Nothing for admin/go is provisioned: Firestore API disabled [verified: 403 on `f
 | 10 | Runbook | `docs/DEPLOY.md` | agent_files only | Outlives branch |
 
 ## Manual steps
-Owner-only: B1 VPS export; merge the PR; Cloudflare token creation (or manual records); Google provider click if API can't; AI Logic "Get started" click and per-user quota if API can't; GA4 realtime check; old VPS shutdown/billing; OK to delete `/root/projects/cc-gateway`.
+Owner-only: B1 VPS export; merge the PR; Cloudflare token creation (or manual records); REQUIRED Google provider click (API failed) and Gemini billing/prepay credits (https://ai.studio/projects) plus AI Logic setup and ~10 RPM per-user quota confirmation (console ailogic page); GA4 realtime check; old VPS shutdown/billing; merge the retirement PR (Phase G); OK to delete `/root/projects/cc-gateway`.
 
 ## Risks / Open Questions
 - [RESOLVED: try API, owner click fallback] Google IdP needs an OAuth client; APIs can't mint one generally.
