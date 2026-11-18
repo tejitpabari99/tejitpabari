@@ -1,0 +1,31 @@
+[
+  {
+    "slug": "meet",
+    "url": "https://cal.com/tejitpabari/meet",
+    "tags": ["Meet"],
+    "created": "2026-03-26",
+    "clicks": 58,
+    "lastClicked": "2026-08-30T00:55:05.224Z",
+    "expiresAt": null,
+    "redirectType": "302"
+  },
+  {
+    "slug": "juno/pitch-deck",
+    "url": "https://example.com/deck",
+    "tags": ["Juno", "Deck"],
+    "description": "",
+    "created": "2026-06-13",
+    "clicks": 40,
+    "lastClicked": "2026-08-01T00:00:00.000Z",
+    "expiresAt": null,
+    "redirectType": "302"
+  },
+  {
+    "slug": "Docs",
+    "url": "https://example.com/docs",
+    "tags": [],
+    "description": "Mixed-case slug",
+    "created": "2026-04-01",
+    "expiresAt": null
+  }
+]

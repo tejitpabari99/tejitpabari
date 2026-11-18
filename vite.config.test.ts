@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { readLiveRedirects } from './vite.config';
+import { applyLiveRedirects, readLiveRedirects } from './vite.config';
 import viteConfig from './vite.config';
 
 function writeMdFile(dir: string, filename: string, frontmatter: string, body = 'Some body.'): void {
@@ -223,5 +223,41 @@ describe('liveRedirectsPlugin build-only guard', () => {
 
     expect(liveRedirects).toBeDefined();
     expect(liveRedirects?.apply).toBe('build');
+  });
+});
+
+describe('applyLiveRedirects (writes the main hosting entry only)', () => {
+  const redirects = [{ source: '/projects/juno/live', destination: 'https://app.meetjuno.health' }];
+  const entry = (target: string) => ({ target, public: target, headers: [{ source: '**', headers: [] }] });
+  const fixture = () => ({
+    hosting: [entry('admin'), entry('go'), entry('main'), entry('nonprofit'), entry('healthtech')],
+    firestore: { rules: 'firestore.rules' },
+  });
+
+  it('sets redirects on main only; the other four entries and top-level keys deep-equal before', () => {
+    const config = fixture();
+    const before = JSON.parse(JSON.stringify(config));
+
+    applyLiveRedirects(config, redirects);
+
+    for (const i of [0, 1, 3, 4]) expect(config.hosting[i]).toEqual(before.hosting[i]);
+    expect(config.firestore).toEqual(before.firestore);
+    expect(config.hosting[2]).toEqual({
+      ...before.hosting[2],
+      redirects: [{ source: '/projects/juno/live', destination: 'https://app.meetjuno.health', type: 301 }],
+    });
+  });
+
+  it('throws a named error, changing nothing, when no entry has target "main"', () => {
+    const config = fixture();
+    config.hosting = config.hosting.filter((h) => h.target !== 'main');
+    const before = JSON.parse(JSON.stringify(config));
+
+    expect(() => applyLiveRedirects(config, redirects)).toThrow(/live-redirects: firebase\.json has no hosting entry with target "main"/);
+    expect(config).toEqual(before);
+  });
+
+  it('throws for the legacy single-object hosting form (firebase.json is now an array)', () => {
+    expect(() => applyLiveRedirects({ hosting: { public: 'dist' } }, redirects)).toThrow(/target "main"/);
   });
 });

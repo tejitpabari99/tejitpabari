@@ -1,0 +1,41 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Admin = verified owner email. Keep in sync with ADMIN_EMAILS in admin/src/lib/config.js
+    // (a rules test asserts they match). See docs/firestore-schema.md.
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['tejitpabari99@gmail.com'];
+    }
+
+    // Guest visibility toggle for a page prefix. Missing settings/main => get() errors => denied.
+    // The '/' toggle is UI-only and intentionally not referenced here.
+    function visible(p) {
+      return get(/databases/$(database)/documents/settings/main)
+        .data.get('guestVisibility', {}).get(p, false) == true;
+    }
+
+    match /ideas/{id} {
+      allow read: if isAdmin() || visible('/ideas');
+      allow write: if isAdmin();
+    }
+
+    match /links/{id} {
+      allow get: if true;
+      allow list: if isAdmin() || visible('/links');
+      allow write: if isAdmin();
+    }
+
+    match /settings/main {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

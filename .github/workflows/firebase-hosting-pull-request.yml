@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
-          node-version: 20
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -34,8 +34,8 @@ jobs:
       - name: Check — pre-launch content gate
         run: npm run check:launch
 
-      - name: Build
-        run: npm run build
+      - name: Build (main + admin)
+        run: npm run build:all
         env:
           # Deliberately no failure guard here (unlike the merge workflow,
           # §4.5) — preview builds should not be sending analytics at all,
@@ -43,7 +43,7 @@ jobs:
           # misconfiguration to catch. See §4.7 for the full asymmetry.
           VITE_GA_MEASUREMENT_ID: ${{ vars.VITE_GA_MEASUREMENT_ID }}
 
-      - name: Deploy preview channel
+      - name: Deploy preview channel (main)
         # Repository secrets are never exposed to a workflow run triggered by
         # a pull_request from a fork — GitHub's own security boundary, not a
         # bug. Without this guard, a fork PR would reach this step, find
@@ -59,4 +59,17 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
           projectId: tejitpabari-99
+          target: main
+          expires: 7d
+
+      - name: Deploy preview channel (admin)
+        # Same fork guard as above. Admin previews are guest-mode only: channel
+        # hosts are not authorized for Google sign-in or reCAPTCHA.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a  # v0.11.0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
+          projectId: tejitpabari-99
+          target: admin
           expires: 7d

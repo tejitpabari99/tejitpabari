@@ -121,6 +121,29 @@ export function readLiveRedirects(dir: string, routePrefix: 'projects' | 'resear
     });
 }
 
+// firebase.json's `hosting` is an array of per-site entries; only the main
+// site's entry (`target: "main"`) gets the live redirects.
+export function applyLiveRedirects(config: { hosting?: unknown }, entries: LiveRedirectEntry[]): void {
+  const hosting = config.hosting as Record<string, unknown>[] | undefined;
+  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : undefined;
+  if (!main) {
+    throw new Error('live-redirects: firebase.json has no hosting entry with target "main" to write redirects into.');
+  }
+  main.redirects = entries.map(({ source, destination }) => ({
+    source,
+    destination,
+    // 301 (permanent), not the pre-round-3 302: the whole point of the
+    // canonical /live URL is a stable, owner-controlled indirection the
+    // owner hands out and shares - a cold hit on it should redirect
+    // immediately and cache well, not flash the app first. The owner
+    // updates the destination by editing frontmatter and redeploying,
+    // same as any other content change; a stale cached 301 is no
+    // different from a stale cached page anywhere else on this static
+    // site.
+    type: 301,
+  }));
+}
+
 function liveRedirectsPlugin(): Plugin {
   return {
     name: 'live-redirects',
@@ -137,7 +160,7 @@ function liveRedirectsPlugin(): Plugin {
       // `npm run build` invocations idempotent (never duplicating or
       // accumulating stale redirect entries): every run recomputes the
       // complete table from current content and overwrites
-      // hosting.redirects wholesale. scripts/inject-csp-hashes.mjs (the
+      // the main entry's redirects wholesale. scripts/inject-csp-hashes.mjs (the
       // separate postbuild step) only ever touches hosting.headers's CSP
       // entry on the same firebase.json object, so it can't disturb what
       // this hook wrote here.
@@ -147,19 +170,7 @@ function liveRedirectsPlugin(): Plugin {
       ];
       const firebaseJsonPath = path.resolve(__dirname, 'firebase.json');
       const config = JSON.parse(readFileSync(firebaseJsonPath, 'utf-8'));
-      config.hosting.redirects = entries.map(({ source, destination }) => ({
-        source,
-        destination,
-        // 301 (permanent), not the pre-round-3 302: the whole point of the
-        // canonical /live URL is a stable, owner-controlled indirection the
-        // owner hands out and shares - a cold hit on it should redirect
-        // immediately and cache well, not flash the app first. The owner
-        // updates the destination by editing frontmatter and redeploying,
-        // same as any other content change; a stale cached 301 is no
-        // different from a stale cached page anywhere else on this static
-        // site.
-        type: 301,
-      }));
+      applyLiveRedirects(config, entries);
       writeFileSync(firebaseJsonPath, JSON.stringify(config, null, 2) + '\n');
     },
   };
@@ -190,6 +201,6 @@ export default defineConfig({
     // `check:launch` sets `CHECK_LAUNCH=1` to lift the exclusion for that
     // one invocation only, letting its own explicit file argument narrow
     // discovery back down to exactly that one file.
-    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude] : [...configDefaults.exclude, 'scripts/**'],
+    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude, 'tests/**', 'admin/**', 'hosting/**', 'migration/**'] : [...configDefaults.exclude, 'scripts/**', 'tests/**', 'admin/**', 'hosting/**', 'migration/**'],
   },
 });
