@@ -128,3 +128,4 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 
 ## A10 positive re-run (2026-11-18, Task 9 verified)
 - 2026-11-18 positive re-run: owner imported tejitpabari-99 into AI Studio, added prepay credits + spend cap. gemini-3.8-flash exists (generateContent 200). Rank prompt 200, valid JSON scores. Negative (no App Check header) still 401.
+- Current model (owner request, verified live: 200 + valid JSON schema output, no thinking tokens, ~2.7x cheaper): `GEMINI_MODEL` = `gemini-3.5-flash-lite`. Earlier entries above refer to the previously used `gemini-3.8-flash`.

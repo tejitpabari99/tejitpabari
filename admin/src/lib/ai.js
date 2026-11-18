@@ -17,7 +17,7 @@ import {
 import { toUserMessage } from './ai-errors.js';
 
 // Single place to change the model (retirement is mapped to a "not set up" message).
-export const GEMINI_MODEL = 'gemini-3.8-flash';
+export const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 let aiPromise;
 // Lazy: firebase/ai stays out of the initial bundle. Memoized; a failed import is not cached.

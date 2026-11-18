@@ -91,8 +91,8 @@ describe('getAI setup', () => {
     expect(opts.backend.kind).toBe('google');
   });
 
-  it('GEMINI_MODEL is a gemini flash id', () => {
-    expect(ai.GEMINI_MODEL).toBe('gemini-3.8-flash');
+  it('GEMINI_MODEL is gemini-3.5-flash-lite', () => {
+    expect(ai.GEMINI_MODEL).toBe('gemini-3.5-flash-lite');
   });
 });
 
