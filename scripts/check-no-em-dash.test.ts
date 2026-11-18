@@ -1,6 +1,9 @@
 // scripts/check-no-em-dash.test.ts
-import { describe, expect, it } from 'vitest';
-import { findMatches, scanTsxSource, scanSiteConfigSource } from './check-no-em-dash.mjs';
+import { afterEach, describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { findMatches, scanTsxSource, scanSiteConfigSource, scanBuiltOutput } from './check-no-em-dash.mjs';
 
 describe('findMatches', () => {
   it('returns all three pattern names for a string containing all three forms', () => {
@@ -81,5 +84,49 @@ describe('scanSiteConfigSource', () => {
       export const OTHER_CONSTANT = 'a — b';
     `;
     expect(scanSiteConfigSource('site.ts', source)).toEqual([]);
+  });
+});
+
+describe('scanBuiltOutput (dist-<site>)', () => {
+  const dirs: string[] = [];
+  afterEach(() => {
+    while (dirs.length) rmSync(dirs.pop()!, { recursive: true, force: true });
+  });
+  function root(files: Record<string, string>) {
+    const r = mkdtempSync(path.join(tmpdir(), 'em-dash-dist-'));
+    dirs.push(r);
+    for (const [rel, content] of Object.entries(files)) {
+      mkdirSync(path.dirname(path.join(r, rel)), { recursive: true });
+      writeFileSync(path.join(r, rel), content);
+    }
+    return r;
+  }
+
+  it('passes on clean dist-<site> output', () => {
+    const r = root({ 'dist-healthtech/index.html': '<p>clean – en dash ok</p>', 'dist-nonprofit/a/index.html': '<p>fine</p>' });
+    expect(scanBuiltOutput(r)).toEqual([]);
+  });
+
+  it.each([['healthtech'], ['nonprofit']])('catches a violation planted in dist-%s', (site) => {
+    const r = root({ [`dist-${site}/projects/x/index.html`]: `<html><p>before ${'a'.repeat(200)} \u2014 after</p></html>` });
+    const found = scanBuiltOutput(r);
+    expect(found).toHaveLength(1);
+    expect(found[0].file).toBe(`dist-${site}/projects/x/index.html:1`);
+    expect(found[0].kinds).toEqual(['em dash (\u2014)']);
+    expect(found[0].snippet).toContain('after');
+  });
+
+  it('catches entity forms too', () => {
+    const r = root({ 'dist-nonprofit/index.html': '<p>a &mdash; b &#8212; c</p>' });
+    expect(scanBuiltOutput(r)[0].kinds).toEqual(['&mdash; entity', '&#8212; entity']);
+  });
+
+  it('ignores dist-admin and non-dist dirs', () => {
+    const r = root({ 'dist-admin/index.html': '<p>a \u2014 b</p>', 'other/index.html': '<p>a \u2014 b</p>' });
+    expect(scanBuiltOutput(r)).toEqual([]);
+  });
+
+  it('is a no-op when no dist-* exists', () => {
+    expect(scanBuiltOutput(root({}))).toEqual([]);
   });
 });

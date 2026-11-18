@@ -98,6 +98,30 @@ function walkDir(dir, exts, fn) {
   }
 }
 
+/** Built output: every `dist-<site>` dir (dist-admin excluded, it is the
+ *  internal admin app, not user-visible site copy) is scanned for the same
+ *  banned dashes in its .html files. Pages are minified to few long lines, so
+ *  the snippet is a window around the first match. Returns [{ file, snippet,
+ *  kinds }] with `file` relative to `root`. A missing dist-* is simply
+ *  nothing to scan. */
+export function scanBuiltOutput(root = ROOT) {
+  const found = [];
+  const dirs = readdirSync(root).filter(
+    (d) => d.startsWith('dist-') && d !== 'dist-admin' && statSync(path.join(root, d)).isDirectory(),
+  );
+  for (const d of dirs) {
+    walkDir(path.join(root, d), ['.html'], (file) => {
+      readFileSync(file, 'utf-8').split('\n').forEach((line, i) => {
+        const kinds = findMatches(line);
+        if (kinds.length === 0) return;
+        const at = Math.min(...['—', '&mdash;', '&#8212;'].map((m) => line.indexOf(m)).filter((n) => n >= 0));
+        found.push({ file: `${path.relative(root, file)}:${i + 1}`, snippet: line.slice(Math.max(0, at - 40), at + 50).trim(), kinds });
+      });
+    });
+  }
+  return found;
+}
+
 function main() {
   // 1. src/**/*.tsx, excluding *.test.tsx
   walkDir(path.join(ROOT, 'src'), ['.tsx'], (file) => {
@@ -120,6 +144,9 @@ function main() {
   // 4. index.html — whole file, line by line
   const htmlFile = path.join(ROOT, 'index.html');
   readFileSync(htmlFile, 'utf-8').split('\n').forEach((line, i) => report(htmlFile, i + 1, line));
+
+  // 5. Built output: dist-<site>/**/*.html
+  for (const f of scanBuiltOutput()) failures.push({ file: f.file, line: '-', snippet: f.snippet, kinds: f.kinds });
 
   if (failures.length > 0) {
     console.error(`check-no-em-dash: found ${failures.length} offending line(s):\n`);
