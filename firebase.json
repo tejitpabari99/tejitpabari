@@ -68,11 +68,6 @@
           "type": 301
         },
         {
-          "source": "/projects/juno/live",
-          "destination": "https://meetjuno.health/",
-          "type": 301
-        },
-        {
           "source": "/projects/med-doc-tracker/live",
           "destination": "https://tejitpabari.short.gy/med-doc-tracker",
           "type": 301

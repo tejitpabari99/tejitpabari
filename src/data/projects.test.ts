@@ -16,7 +16,7 @@ import { projects, parseProject, SITE_IDS, projectsForSite, selectForSite, type 
 
 describe('migrated project links', () => {
   it('keeps the Juno Website link on HTTPS, marked primary with a globe icon', () => {
-    const juno = projects.find((project) => project.slug === 'juno');
+    const juno = projects.find((project) => project.slug === 'juno-website');
     expect(juno?.links).toContainEqual({
       label: 'Website', href: 'https://meetjuno.health/', icon: 'globe', primary: true,
     });

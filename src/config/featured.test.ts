@@ -26,10 +26,11 @@ vi.mock('@/data', async () => {
     links: [],
     date: '2024-01-01',
     body: '',
+    sites: ['main'],
   });
   return {
     projects: [
-      mkProject('juno'),
+      mkProject('juno-app'),
       mkProject('smarttest'),
       mkProject('med-doc-tracker'),
       mkProject('clip-verse'),
