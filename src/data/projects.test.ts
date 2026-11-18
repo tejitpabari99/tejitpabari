@@ -12,7 +12,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { projects, parseProject, SITE_IDS } from './projects';
+import { projects, parseProject, SITE_IDS, projectsForSite, selectForSite, type Project } from './projects';
 
 describe('migrated project links', () => {
   it('keeps the Juno Website link on HTTPS, marked primary with a globe icon', () => {
@@ -137,5 +137,46 @@ describe('sites frontmatter', () => {
   });
   it.each([['[foo]'], ['[]'], ['[main, main]'], ['main']])('throws with file path for sites: %s', (v) => {
     expect(() => parseProject(PATH, doc(`sites: ${v}\n`))).toThrow(PATH);
+  });
+});
+
+describe('projectsForSite', () => {
+  const fx = (slug: string, date: string, sites: Project['sites'], title = slug): Project => ({
+    slug, title, description: 'd', image: '/x.png', tags: ['Others'], techTags: [], links: [], date, body: '', sites,
+  });
+  const list = [
+    fx('old-main', '2023-01-01', ['main']),
+    fx('new-ht', '2024-06-01', ['healthtech']),
+    fx('both', '2024-03-01', ['main', 'healthtech']),
+    fx('tie-b', '2024-01-01', ['main'], 'Banana'),
+    fx('tie-a', '2024-01-01', ['main'], 'Apple'),
+    fx('np', '2024-02-01', ['nonprofit']),
+  ];
+
+  it('filters by site', () => {
+    expect(selectForSite(list, 'healthtech').map((p) => p.slug)).toEqual(['new-ht', 'both']);
+    expect(selectForSite(list, 'nonprofit').map((p) => p.slug)).toEqual(['np']);
+    expect(selectForSite(list, 'main').map((p) => p.slug)).toEqual(['both', 'tie-a', 'tie-b', 'old-main']);
+  });
+  it('sorts newest first with title tie-break', () => {
+    const r = selectForSite(list, 'main');
+    expect(r.map((p) => p.date)).toEqual(['2024-03-01', '2024-01-01', '2024-01-01', '2023-01-01']);
+    expect(r[1].title).toBe('Apple');
+  });
+  it('returns a fresh array and does not mutate the source', () => {
+    const before = list.map((p) => p.slug);
+    const a = selectForSite(list, 'main');
+    a.pop();
+    a.reverse();
+    expect(selectForSite(list, 'main')).toHaveLength(4);
+    expect(list.map((p) => p.slug)).toEqual(before);
+  });
+  it('exported fn uses the real list and leaves `projects` unchanged', () => {
+    const snapshot = projects.map((p) => p.slug);
+    const a = projectsForSite('main');
+    expect(a.every((p) => p.sites.includes('main'))).toBe(true);
+    a.length = 0;
+    expect(projectsForSite('main').length).toBeGreaterThan(0);
+    expect(projects.map((p) => p.slug)).toEqual(snapshot);
   });
 });

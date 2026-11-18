@@ -108,3 +108,14 @@ for (const p of projects) {
   }
   seenProjectSlugs.add(p.slug);
 }
+
+/** Pure filter+sort: cards for `site`, newest first, ties by title. Fresh array. */
+export function selectForSite(list: readonly Project[], site: SiteId): Project[] {
+  return list
+    .filter((p) => p.sites.includes(site))
+    .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
+}
+
+export function projectsForSite(site: SiteId): Project[] {
+  return selectForSite(projects, site);
+}
