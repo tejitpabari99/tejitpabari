@@ -14,10 +14,26 @@ import {
 	validateEnhance,
 	validateRank
 } from './ai-shape.js';
-import { toUserMessage } from './ai-errors.js';
+import { CooldownError, toUserMessage } from './ai-errors.js';
 
 // Single place to change the model (retirement is mapped to a "not set up" message).
 export const GEMINI_MODEL = 'gemini-3.5-flash-lite';
+
+// Client-side throttle: one call in flight, min interval between call starts.
+// Matches the project-level 5 requests/minute Gemini quota set server-side.
+export const AI_COOLDOWN_MS = 12_000;
+
+let inFlight = false;
+let lastStart = -Infinity;
+
+// Throws CooldownError if blocked; otherwise marks a call as started.
+function acquire() {
+	if (inFlight) throw new CooldownError(0);
+	const wait = lastStart + AI_COOLDOWN_MS - Date.now();
+	if (wait > 0) throw new CooldownError(wait);
+	inFlight = true;
+	lastStart = Date.now();
+}
 
 let aiPromise;
 // Lazy: firebase/ai stays out of the initial bundle. Memoized; a failed import is not cached.
@@ -41,8 +57,12 @@ function requireAdmin() {
 }
 
 // Runs one generation + validation, retrying once on malformed output only.
+// The retry is part of the same call, so the cooldown is checked once, up front.
 async function run({ prompt, schemaDescriptor, validate }) {
+	let acquired = false;
 	try {
+		acquire();
+		acquired = true;
 		const { sdk, ai } = await loadAI();
 		const generationConfig = schemaDescriptor
 			? { responseMimeType: 'application/json', responseSchema: buildSchema(sdk.Schema, schemaDescriptor) }
@@ -61,6 +81,8 @@ async function run({ prompt, schemaDescriptor, validate }) {
 		throw lastErr;
 	} catch (err) {
 		throw new Error(toUserMessage(err));
+	} finally {
+		if (acquired) inFlight = false;
 	}
 }
 

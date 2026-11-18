@@ -7,6 +7,7 @@ export const MESSAGES = {
 	notSetUp: 'AI model or AI Logic not set up',
 	declined: 'Gemini declined this content',
 	malformed: 'AI returned malformed output, try again',
+	busy: 'An AI request is already running, please wait',
 	generic: 'AI request failed'
 };
 
@@ -15,12 +16,26 @@ function statusOf(err) {
 	return typeof s === 'number' ? s : undefined;
 }
 
+// Thrown by the client-side cooldown in ai.js (no SDK call made).
+export class CooldownError extends Error {
+	constructor(retryAfterMs) {
+		super('AI cooldown');
+		this.name = 'CooldownError';
+		this.retryAfterMs = retryAfterMs; // 0 = another request is in flight
+	}
+}
+
 export function toUserMessage(err, { log = console.error } = {}) {
 	const status = statusOf(err);
 	const code = typeof err?.code === 'string' ? err.code : '';
 	const msg = String(err?.message ?? '');
 	const lower = msg.toLowerCase();
 
+	if (err?.name === 'CooldownError') {
+		if (!(err.retryAfterMs > 0)) return MESSAGES.busy;
+		const n = Math.max(1, Math.ceil(err.retryAfterMs / 1000));
+		return `Please wait ${n} ${n === 1 ? 'second' : 'seconds'} before the next AI request.`;
+	}
 	if (err?.name === 'MalformedOutputError' || code === 'parse-failed') return MESSAGES.malformed;
 	if (status === 403) return MESSAGES.appCheck;
 	if (status === 429) return MESSAGES.quota;

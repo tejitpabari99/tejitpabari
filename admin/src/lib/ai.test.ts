@@ -44,6 +44,8 @@ beforeEach(async () => {
   h.generateContent.mockReset();
   h.getGenerativeModel.mockReset().mockReturnValue({ generateContent: h.generateContent });
   vi.spyOn(console, 'error').mockImplementation(() => {});
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
   ai = await import('./ai.js');
 });
 
@@ -83,6 +85,7 @@ describe('getAI setup', () => {
   it('memoizes getAI with GoogleAIBackend and limited-use tokens', async () => {
     h.generateContent.mockResolvedValue(reply('# x'));
     await ai.enhanceIdea('a', 'b');
+    vi.advanceTimersByTime(ai.AI_COOLDOWN_MS);
     await ai.enhanceIdea('a', 'b');
     expect(h.getAI).toHaveBeenCalledTimes(1);
     const [app, opts] = h.getAI.mock.calls[0];
@@ -126,5 +129,68 @@ describe('malformed output', () => {
     h.generateContent.mockRejectedValue(Object.assign(new Error('x'), { customErrorData: { status: 429 } }));
     await expect(ai.rankIdea(idea, criteria)).rejects.toThrow('Gemini quota reached, try again later');
     expect(h.generateContent).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('cooldown', () => {
+  const ok = () => h.generateContent.mockResolvedValue(reply('# x'));
+
+  it('AI_COOLDOWN_MS is 12s', () => {
+    expect(ai.AI_COOLDOWN_MS).toBe(12_000);
+  });
+
+  it('blocks a second call within the interval with a friendly message, no SDK call', async () => {
+    ok();
+    await ai.enhanceIdea('a', 'b');
+    vi.advanceTimersByTime(2_500);
+    await expect(ai.enhanceIdea('a', 'b')).rejects.toThrow('Please wait 10 seconds before the next AI request.');
+    expect(h.generateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('rounds seconds up', async () => {
+    ok();
+    await ai.enhanceIdea('a', 'b');
+    vi.advanceTimersByTime(11_001);
+    await expect(ai.parseIdea('x')).rejects.toThrow('Please wait 1 second before the next AI request.');
+  });
+
+  it('allows a call once the interval has passed', async () => {
+    ok();
+    await ai.enhanceIdea('a', 'b');
+    vi.advanceTimersByTime(12_000);
+    await expect(ai.enhanceIdea('a', 'b')).resolves.toEqual({ content: '# x' });
+    expect(h.generateContent).toHaveBeenCalledTimes(2);
+  });
+
+  it('blocks a concurrent call while one is in flight', async () => {
+    let release!: (v: unknown) => void;
+    h.generateContent.mockReturnValue(new Promise((r) => (release = r)));
+    const first = ai.enhanceIdea('a', 'b');
+    await expect(ai.enhanceIdea('a', 'b')).rejects.toThrow(/wait/i);
+    release(reply('# x'));
+    await first;
+    expect(h.generateContent).toHaveBeenCalledTimes(1);
+  });
+
+  it('a failed call still counts toward the interval', async () => {
+    h.generateContent.mockRejectedValue(new Error('boom'));
+    await expect(ai.enhanceIdea('a', 'b')).rejects.toThrow('AI request failed');
+    await expect(ai.enhanceIdea('a', 'b')).rejects.toThrow('Please wait 12 seconds');
+  });
+
+  it('the malformed-output retry is not blocked by the cooldown', async () => {
+    h.generateContent.mockResolvedValueOnce(reply('not json')).mockResolvedValueOnce(
+      reply(JSON.stringify({ title: 'A', content: 'B', tags: [], brief: '' })),
+    );
+    expect((await ai.parseIdea('x')).title).toBe('A');
+    expect(h.generateContent).toHaveBeenCalledTimes(2);
+  });
+
+  it('guest rejection does not consume the cooldown', async () => {
+    ok();
+    h.role = 'guest';
+    await expect(ai.enhanceIdea('a', 'b')).rejects.toThrow('Admin only');
+    h.role = 'admin';
+    await expect(ai.enhanceIdea('a', 'b')).resolves.toBeDefined();
   });
 });
