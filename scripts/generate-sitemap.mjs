@@ -2,20 +2,24 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import matter from 'gray-matter';
-
-// Deliberately duplicated from src/config/site.ts — see PRD §4.1.
-const SITE_URL = 'https://tejitpabari.com';
+import { currentSite, loadSites, sitesOf } from './lib/site-config.mjs';
+import { pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 
 // SP01's static route table, minus the client-only catch-all ('*' has no
 // concrete path to list) and minus any /live path — handled separately.
-export const STATIC_ROUTES = ['/', '/projects', '/work-experience', '/research', '/privacy', '/terms'];
+// Main's table, kept for tests/back-compat; main() uses sites.json staticRoutes.
+export const STATIC_ROUTES = loadSites().main.staticRoutes;
 
-export function collectionSlugs(dir) {
+// `site`, when given, keeps only entries whose frontmatter `sites:` includes
+// it (missing `sites:` = ['main'], same default as src/data).
+export function collectionSlugs(dir, site) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
-    .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data.slug);
+    .map((f) => matter(readFileSync(path.join(dir, f), 'utf-8')).data)
+    .filter((data) => site === undefined || sitesOf(data).includes(site))
+    .map((data) => data.slug);
 }
 
 // Round 3.1 restoration of the /live subsystem's sitemap entry: only a
@@ -82,10 +86,11 @@ export function hostedPageNames(liveDir, registryPath = path.join(liveDir, 'regi
 // later during the main build's SSR step - this `prebuild` script runs
 // first and would otherwise happily publish a sitemap URL for a page that
 // the main build is about to reject).
-export function selfHostedLiveUrls(dir, routePrefix, hostedNames) {
+export function selfHostedLiveUrls(dir, routePrefix, hostedNames, site) {
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
     .map((f) => ({ file: f, data: matter(readFileSync(path.join(dir, f), 'utf-8')).data }))
+    .filter(({ data }) => site === undefined || sitesOf(data).includes(site))
     .filter(({ data }) => data.live && data.live.type === 'self')
     .map(({ file, data }) => {
       if (!hostedNames.includes(data.live.page)) {
@@ -129,35 +134,55 @@ export function buildSitemapUrls(staticRoutes, projectSlugs, researchSlugs, host
   ];
 }
 
-function main() {
-  const liveDir = path.join(ROOT, 'src/pages/live');
+/** Sitemap URL list for one site. `/live` paths and research entries exist
+ *  on main only (sites.json hasLiveRoutes; subsites route neither). */
+export function sitemapUrlsForSite(site, siteConfig, { projectsDir, researchDir, liveDir }) {
+  const projectSlugs = collectionSlugs(projectsDir, site);
+  if (!siteConfig.hasLiveRoutes) {
+    return buildSitemapUrls(siteConfig.staticRoutes, projectSlugs, []);
+  }
   const hostedNames = hostedPageNames(liveDir);
-
-  const urls = buildSitemapUrls(
-    STATIC_ROUTES,
-    collectionSlugs(path.join(ROOT, 'src/content/projects')),
-    collectionSlugs(path.join(ROOT, 'src/content/research')),
+  return buildSitemapUrls(
+    siteConfig.staticRoutes,
+    projectSlugs,
+    collectionSlugs(researchDir),
     [
-      ...selfHostedLiveUrls(path.join(ROOT, 'src/content/projects'), 'projects', hostedNames),
-      ...selfHostedLiveUrls(path.join(ROOT, 'src/content/research'), 'research', hostedNames),
+      ...selfHostedLiveUrls(projectsDir, 'projects', hostedNames, site),
+      ...selfHostedLiveUrls(researchDir, 'research', hostedNames),
     ],
   );
+}
 
-  const xml = [
+export function sitemapXml(siteUrl, urls) {
+  return [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...urls.map((u) => `  <url><loc>${escapeXml(SITE_URL + u)}</loc></url>`),
+    ...urls.map((u) => `  <url><loc>${escapeXml(siteUrl + u)}</loc></url>`),
     '</urlset>',
     '',
   ].join('\n');
+}
 
-  writeFileSync(path.join(ROOT, 'public/sitemap.xml'), xml);
-  console.log(`sitemap.xml: ${urls.length} URLs`);
+// Allow-all plus this site's own sitemap. Never a noindex: subsites are meant to be indexed.
+export function robotsTxt(siteUrl) {
+  return `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`;
+}
 
-  writeFileSync(path.join(ROOT, 'public/robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${SITE_URL}/sitemap.xml\n`);
+function main() {
+  const { site, config } = currentSite();
+  const urls = sitemapUrlsForSite(site, config, {
+    projectsDir: path.join(ROOT, 'src/content/projects'),
+    researchDir: path.join(ROOT, 'src/content/research'),
+    liveDir: path.join(ROOT, 'src/pages/live'),
+  });
+
+  writeFileSync(path.join(ROOT, 'public/sitemap.xml'), sitemapXml(config.url, urls));
+  console.log(`sitemap.xml (${site}): ${urls.length} URLs`);
+
+  writeFileSync(path.join(ROOT, 'public/robots.txt'), robotsTxt(config.url));
   console.log('robots.txt written');
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main();
 }
