@@ -10,7 +10,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   build_and_deploy:
+    needs: ci
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -50,18 +54,34 @@ jobs:
           fi
           echo "VITE_GA_MEASUREMENT_ID is set."
 
-      - name: Build
-        run: npm run build
+      - name: Verify VITE_RECAPTCHA_SITE_KEY is set
+        env:
+          RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
+        run: |
+          if [ -z "$RECAPTCHA_SITE_KEY" ]; then
+            echo "::error::VITE_RECAPTCHA_SITE_KEY repository variable is empty or unset."
+            echo "::error::Without it the admin build skips App Check and AI calls fail in production."
+            exit 1
+          fi
+          echo "VITE_RECAPTCHA_SITE_KEY is set."
+
+      - name: Build all
+        run: npm run build:all
         env:
           VITE_GA_MEASUREMENT_ID: ${{ vars.VITE_GA_MEASUREMENT_ID }}
+          VITE_RECAPTCHA_SITE_KEY: ${{ vars.VITE_RECAPTCHA_SITE_KEY }}
 
-      - name: Deploy to live channel
-        # No fork-PR guard needed here — this workflow triggers only on
-        # `push` to `main`, which by definition never runs against a fork's
-        # copy of the repo. See §4.8.
-        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a  # v0.11.0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
-          projectId: tejitpabari-99
-          channelId: live
+      - name: Write service account credentials
+        env:
+          SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}
+        run: |
+          printf '%s' "$SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/gcp-sa.json"
+          echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/gcp-sa.json" >> "$GITHUB_ENV"
+
+      - name: Deploy hosting and firestore
+        # Only runs on push to main (never a fork), see §4.8.
+        run: npx firebase deploy --only hosting,firestore --project tejitpabari-99 --non-interactive
+
+      - name: Remove service account credentials
+        if: always()
+        run: rm -f "$RUNNER_TEMP/gcp-sa.json"
