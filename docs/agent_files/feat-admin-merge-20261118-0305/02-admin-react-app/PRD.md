@@ -47,7 +47,7 @@ Role change → context update → `RequireView` and pages re-render; replaces o
 
 **Firebase init**: `admin/src/lib/firebase.js` (ported) changed only so the emulator branch reads `import.meta.env.VITE_USE_EMULATORS === 'true'` (no optional chaining) wrapping the `connect*Emulator` calls inline, so prod builds drop the `127.0.0.1` literals by dead-code elimination; SP03 marker comments kept. Its test moves to vitest (`import.meta.env` exists there).
 
-**Markdown/QR**: `marked` (render, owner-only content, old D7: no sanitizer) via `dangerouslySetInnerHTML` in one `Markdown` component; `qrcode` dynamic import on the links page.
+**Markdown/QR**: `marked` (render, owner-only content, old D7: no sanitizer; [RESOLVED: 2026-11-18 review — sanitize with DOMPurify; AI output can reach stored bodies]) via `dangerouslySetInnerHTML` in one `Markdown` component; `qrcode` dynamic import on the links page.
 
 **Dev workflow**: `npm run emulators` (auth + firestore + hosting) in one shell, `VITE_USE_EMULATORS=true npm run dev:admin` in another; seed with `FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run migrate -- --yes`. Documented in CLAUDE.md.
 

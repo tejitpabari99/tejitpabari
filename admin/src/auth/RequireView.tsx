@@ -13,6 +13,7 @@ export function RequireView() {
   const { pathname } = useLocation();
   const [guestVisibility, setGuestVisibility] = useState<Record<string, boolean> | null>(null);
   const [settingsError, setSettingsError] = useState<Error | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (!authReady) return;
@@ -32,7 +33,7 @@ export function RequireView() {
     return () => {
       cancelled = true;
     };
-  }, [authReady, role]);
+  }, [authReady, role, pathname, attempt]);
 
   const ready = authReady && guestVisibility !== null;
   const value = useMemo<AccessState>(() => {
@@ -44,7 +45,10 @@ export function RequireView() {
   if (!value.allowed && settingsError) {
     return (
       <p role="alert" className="mt-16 text-center text-sm text-red-700">
-        Could not load settings: {settingsError.message}
+        Could not load settings: {settingsError.message}{' '}
+        <button type="button" className="underline" onClick={() => setAttempt((n) => n + 1)}>
+          Retry
+        </button>
       </p>
     );
   }

@@ -176,6 +176,33 @@ describe('IdeaDetail', () => {
     await waitFor(() => expect(h.resetRanking).toHaveBeenCalledWith('foo'));
   });
 
+  it('reloads the idea after ranking writes so Add More Info uses fresh content', async () => {
+    h.rankIdea.mockResolvedValue({ scores: { a: 4 }, analysis: 'because' });
+    h.enhanceIdea.mockResolvedValue({ content: '## Merged' });
+    page('admin');
+    await screen.findByRole('heading', { name: 'Foo' });
+    expect(h.getIdea).toHaveBeenCalledTimes(1);
+    const FRESH = BODY + '\n\n## Ranking Analysis\n\nbecause';
+    h.getIdea.mockResolvedValue({ ...IDEA, content: FRESH, html: renderMarkdown(FRESH) });
+    fireEvent.click(screen.getByRole('button', { name: 'Auto-rank' }));
+    await waitFor(() => expect(h.setRanking).toHaveBeenCalled());
+    await waitFor(() => expect(h.getIdea).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByTestId('markdown').innerHTML).toBe(renderMarkdown(FRESH)));
+    fireEvent.click(screen.getByRole('button', { name: '+ Add More Info' }));
+    fireEvent.change(screen.getByPlaceholderText(/additional notes/), { target: { value: 'more' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Enhance with AI' }));
+    expect(h.enhanceIdea).toHaveBeenCalledWith(FRESH, 'more');
+  });
+
+  it('reloads after save ranking and reset', async () => {
+    page('admin');
+    await screen.findByRole('heading', { name: 'Foo' });
+    fireEvent.click(screen.getByRole('button', { name: 'Save ranking' }));
+    await waitFor(() => expect(h.getIdea).toHaveBeenCalledTimes(2));
+    fireEvent.click(await screen.findByRole('button', { name: 'Reset' }));
+    await waitFor(() => expect(h.getIdea).toHaveBeenCalledTimes(3));
+  });
+
   it('auto-rank surfaces the AI stub error', async () => {
     h.rankIdea.mockRejectedValue(new Error('AI is not configured yet'));
     page('admin');

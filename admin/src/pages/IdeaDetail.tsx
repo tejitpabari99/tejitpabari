@@ -109,7 +109,7 @@ function EnhanceModal({ idea, onClose, onSaved }: { idea: Idea; onClose: () => v
   );
 }
 
-function Ranking({ idea, criteria, isAdmin }: { idea: Idea; criteria: Criterion[]; isAdmin: boolean }) {
+function Ranking({ idea, criteria, isAdmin, onChanged }: { idea: Idea; criteria: Criterion[]; isAdmin: boolean; onChanged: () => void }) {
   const [scores, setScores] = useState<Record<string, number>>({ ...idea.scores });
   const [analysis, setAnalysis] = useState('');
   const [ranked, setRanked] = useState(idea.ranked);
@@ -127,6 +127,7 @@ function Ranking({ idea, criteria, isAdmin }: { idea: Idea; criteria: Criterion[
       setScores(merged);
       setAnalysis(res.analysis || '');
       setRanked(true);
+      onChanged();
     } catch (e) {
       setError((e as Error).message || 'Auto-rank failed');
     } finally {
@@ -140,6 +141,7 @@ function Ranking({ idea, criteria, isAdmin }: { idea: Idea; criteria: Criterion[
       await setRanking(idea.slug, { scores, analysis });
       setAnalysis('');
       setRanked(true);
+      onChanged();
     } catch (e) {
       setError((e as Error).message || 'Save failed');
     } finally {
@@ -154,6 +156,7 @@ function Ranking({ idea, criteria, isAdmin }: { idea: Idea; criteria: Criterion[
       setScores({});
       setAnalysis('');
       setRanked(false);
+      onChanged();
     } catch (e) {
       setError((e as Error).message || 'Reset failed');
     }
@@ -326,7 +329,7 @@ export default function IdeaDetail() {
       </div>
 
       <Markdown source={idea.content} />
-      <Ranking key={idea.slug} idea={idea} criteria={criteria} isAdmin={isAdmin} />
+      <Ranking key={idea.slug} idea={idea} criteria={criteria} isAdmin={isAdmin} onChanged={reload} />
       {isAdmin && showEnhance && <EnhanceModal idea={idea} onClose={() => setShowEnhance(false)} onSaved={reload} />}
     </div>
   );

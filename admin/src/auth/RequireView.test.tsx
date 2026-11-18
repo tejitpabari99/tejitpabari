@@ -129,6 +129,28 @@ describe('RequireView gate', () => {
     await waitFor(() => expect(screen.getByTestId('page')).toHaveTextContent('page:settings'));
   });
 
+  it('settings failure shows a retry that re-fetches settings', async () => {
+    h.getSettings.mockRejectedValueOnce(new Error('offline'));
+    mount('/links');
+    await fire(null);
+    expect(await screen.findByRole('alert')).toHaveTextContent('offline');
+    h.getSettings.mockResolvedValue({ guestVisibility: { '/links': true } });
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(await screen.findByTestId('page')).toHaveTextContent('page:links');
+    expect(h.getSettings).toHaveBeenCalledTimes(2);
+  });
+
+  it('settings are re-fetched on navigation', async () => {
+    const router = mount('/');
+    await fire(null);
+    await screen.findByTestId('page');
+    expect(h.getSettings).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      await router.navigate('/links');
+    });
+    await waitFor(() => expect(h.getSettings).toHaveBeenCalledTimes(2));
+  });
+
   it('gate sign-in button calls popup sign-in; popup-closed is ignored, other errors shown', async () => {
     mount('/links');
     await fire(null);
