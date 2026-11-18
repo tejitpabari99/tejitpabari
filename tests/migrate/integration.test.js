@@ -1,4 +1,4 @@
-// Runs the real script against the Firestore emulator on a copy of the real migration/cc-content/.
+// Runs the real script against the Firestore emulator on a copy of tests/fixtures/cc-content/.
 // Needs FIRESTORE_EMULATOR_HOST (use `npm run test:migrate`); skipped otherwise.
 import assert from 'node:assert/strict';
 import { test, describe, before } from 'node:test';
@@ -13,20 +13,21 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { slugToDocId } from '../../admin/src/lib/slug.js';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const FIXTURE = join(root, 'tests/fixtures/cc-content');
 const script = join(root, 'scripts/migrate-to-firestore.js');
 const HOST = process.env.FIRESTORE_EMULATOR_HOST;
 const PROJECT = 'tejitpabari-99';
 
-// ---- expectations derived from the actual migration/cc-content/ at run time ----
-const ideaFiles = readdirSync(join(root, 'migration/cc-content/ideas')).filter((f) => f.endsWith('.md'));
-const parsed = ideaFiles.map((f) => ({ slug: f.slice(0, -3), ...matter(readFileSync(join(root, 'migration/cc-content/ideas', f), 'utf8')) }));
-const rawLinks = JSON.parse(readFileSync(join(root, 'migration/cc-content/links.json'), 'utf8'));
+// ---- expectations derived from the fixture at run time ----
+const ideaFiles = readdirSync(join(FIXTURE, 'ideas')).filter((f) => f.endsWith('.md'));
+const parsed = ideaFiles.map((f) => ({ slug: f.slice(0, -3), ...matter(readFileSync(join(FIXTURE, 'ideas', f), 'utf8')) }));
+const rawLinks = JSON.parse(readFileSync(join(FIXTURE, 'links.json'), 'utf8'));
 const rankingN = parsed.filter((p) => p.content.includes('## Ranking Analysis')).length;
 const unrankedSlugs = parsed.filter((p) => p.data.ranked === undefined).map((p) => p.slug);
 
 function makeContent() {
 	const dir = mkdtempSync(join(tmpdir(), 'migint-'));
-	cpSync(join(root, 'migration/cc-content'), dir, { recursive: true });
+	cpSync(FIXTURE, dir, { recursive: true });
 	return dir;
 }
 function run(args, dir) {
@@ -45,7 +46,7 @@ async function dump(db) {
 	return out;
 }
 
-describe('emulator integration (real migration/cc-content/)', { skip: !HOST && 'FIRESTORE_EMULATOR_HOST not set (run npm run test:migrate)' }, () => {
+describe('emulator integration (fixture content)', { skip: !HOST && 'FIRESTORE_EMULATOR_HOST not set (run npm run test:migrate)' }, () => {
 	let db;
 	let dir;
 	before(async () => {
@@ -54,7 +55,7 @@ describe('emulator integration (real migration/cc-content/)', { skip: !HOST && '
 		await clearAll();
 	});
 
-	test('actual content counts (informational sanity)', () => {
+	test('fixture content counts (informational sanity)', () => {
 		assert.equal(parsed.length, ideaFiles.length);
 		assert.ok(parsed.length > 0 && rawLinks.length > 0);
 		console.log(`# content: ${parsed.length} ideas, ${rawLinks.length} links, ${rankingN} with Ranking Analysis`);
@@ -90,7 +91,7 @@ describe('emulator integration (real migration/cc-content/)', { skip: !HOST && '
 	});
 
 	test('spot checks', () => {
-		const osf = first.ideas['open-source-funding-platform'];
+		const osf = first.ideas['fixture-ranked'];
 		assert.equal(typeof osf.date, 'string');
 		assert.equal(osf.date, '2026-03-29');
 		assert.ok(unrankedSlugs.length > 0, 'content has an idea lacking ranked');
@@ -99,6 +100,7 @@ describe('emulator integration (real migration/cc-content/)', { skip: !HOST && '
 			assert.deepEqual(first.ideas[s].scores, {}, s);
 		}
 		assert.equal(first.links.meet.description, '');
+		assert.equal(first.links.docs.slug, 'docs');
 		assert.equal(first.links['juno~pitch-deck'].slug, 'juno/pitch-deck');
 		for (const l of rawLinks) {
 			const slug = l.slug.toLowerCase();

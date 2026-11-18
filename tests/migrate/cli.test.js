@@ -7,6 +7,7 @@ import { join, resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const FIXTURE = join(root, 'tests/fixtures/cc-content');
 const script = join(root, 'scripts/migrate-to-firestore.js');
 
 function run(args, env = {}) {
@@ -82,11 +83,11 @@ describe('dry-run report', () => {
 	});
 });
 
-describe('real migration/cc-content/', () => {
-	test('dry-run counts match what is actually in migration/cc-content/', () => {
-		const ideasN = readdirSync(join(root, 'migration/cc-content/ideas')).filter((f) => f.endsWith('.md')).length;
-		const linksN = JSON.parse(readFileSync(join(root, 'migration/cc-content/links.json'), 'utf8')).length;
-		const r = run(['--dry-run'], EMU);
+describe('fixture content (tests/fixtures/cc-content/)', () => {
+	test('dry-run counts match what is actually in the fixture', () => {
+		const ideasN = readdirSync(join(FIXTURE, 'ideas')).filter((f) => f.endsWith('.md')).length;
+		const linksN = JSON.parse(readFileSync(join(FIXTURE, 'links.json'), 'utf8')).length;
+		const r = run(['--dry-run', '--content-dir', FIXTURE], EMU);
 		assert.match(r.stdout, new RegExp(`ideas: ${ideasN} docs`));
 		assert.match(r.stdout, new RegExp(`links: ${linksN} docs`));
 		assert.match(r.stdout, /settings: 1 docs/);

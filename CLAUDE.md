@@ -17,7 +17,7 @@ Source `admin/src`, own Vite config `vite.admin.config.ts`, own tsconfig `tsconf
 
 ```bash
 npm run emulators      # auth :9099, firestore :8080, hosting :5000 (project tejitpabari-99)
-FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node scripts/migrate-to-firestore.js --yes   # seed emulator from migration/cc-content
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node scripts/migrate-to-firestore.js --yes --content-dir tests/fixtures/cc-content   # seed emulator from fixture content
 VITE_USE_EMULATORS=true npm run dev:admin                                          # dev server against emulators
 npm run test:admin     # admin vitest (jsdom, data layer mocked)
 npm run build:admin    # typecheck + build to dist-admin/ (must contain no 127.0.0.1)
