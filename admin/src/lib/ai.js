@@ -20,19 +20,26 @@ import { CooldownError, toUserMessage } from './ai-errors.js';
 export const GEMINI_MODEL = 'gemini-3.5-flash-lite';
 
 // Client-side throttle: one call in flight, min interval between call starts.
-// Matches the project-level 5 requests/minute Gemini quota set server-side.
+// Client safety net; the server quota is 5 requests/minute per user.
 export const AI_COOLDOWN_MS = 12_000;
 
 let inFlight = false;
 let lastStart = -Infinity;
 
+const now = () => performance.now();
+
+// Ms until the next call may start (0 if allowed now). Lets bulk callers wait instead of failing.
+export function cooldownRemainingMs() {
+	return Math.max(0, lastStart + AI_COOLDOWN_MS - now());
+}
+
 // Throws CooldownError if blocked; otherwise marks a call as started.
 function acquire() {
 	if (inFlight) throw new CooldownError(0);
-	const wait = lastStart + AI_COOLDOWN_MS - Date.now();
+	const wait = lastStart + AI_COOLDOWN_MS - now();
 	if (wait > 0) throw new CooldownError(wait);
 	inFlight = true;
-	lastStart = Date.now();
+	lastStart = now();
 }
 
 let aiPromise;

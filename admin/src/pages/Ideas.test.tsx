@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const h = vi.hoisted(() => ({
@@ -10,6 +10,7 @@ const h = vi.hoisted(() => ({
   getCriteria: vi.fn(),
   parseIdea: vi.fn(),
   rankIdea: vi.fn(),
+  cooldownRemainingMs: vi.fn(),
 }));
 vi.mock('../lib/firebase.js', () => ({ db: {}, auth: {} }));
 vi.mock('../lib/ideas.js', async (orig) => ({
@@ -21,7 +22,7 @@ vi.mock('../lib/ideas.js', async (orig) => ({
   resetAllRankings: h.resetAllRankings,
 }));
 vi.mock('../lib/settings.js', () => ({ getCriteria: h.getCriteria }));
-vi.mock('../lib/ai.js', () => ({ parseIdea: h.parseIdea, rankIdea: h.rankIdea }));
+vi.mock('../lib/ai.js', () => ({ parseIdea: h.parseIdea, rankIdea: h.rankIdea, cooldownRemainingMs: h.cooldownRemainingMs }));
 
 import { renderPage } from '../test-utils';
 import Ideas from './Ideas';
@@ -48,6 +49,7 @@ beforeEach(() => {
   h.getIdea.mockImplementation(async (slug: string) => ({ ...idea(slug), content: `body ${slug}`, brief: `brief ${slug}` }));
   h.setRanking.mockResolvedValue(undefined);
   h.resetAllRankings.mockResolvedValue(undefined);
+  h.cooldownRemainingMs.mockReturnValue(0);
   vi.spyOn(window, 'confirm').mockReturnValue(true);
 });
 
@@ -157,26 +159,41 @@ describe('bulk actions', () => {
     expect(h.resetAllRankings).not.toHaveBeenCalled();
   });
 
-  it('auto-rank all runs at most 3 rankIdea calls at once and saves each', async () => {
-    const many = Array.from({ length: 8 }, (_, i) => idea(`n${i}`));
+  it('auto-rank all is sequential and waits out the AI cooldown between calls', async () => {
+    const many = Array.from({ length: 3 }, (_, i) => idea(`n${i}`));
     h.listIdeas.mockResolvedValue(many);
-    let inFlight = 0;
-    let max = 0;
-    h.rankIdea.mockImplementation(async () => {
-      inFlight++;
-      max = Math.max(max, inFlight);
-      await new Promise((r) => setTimeout(r, 5));
-      inFlight--;
-      return { scores: { a: 3 }, analysis: 'ok' };
-    });
     renderPage(<Ideas />, 'admin');
     await screen.findByTestId('row-n0');
-    fireEvent.click(screen.getByRole('button', { name: 'Auto-rank all' }));
-    await waitFor(() => expect(h.setRanking).toHaveBeenCalledTimes(8));
-    expect(max).toBe(3);
-    expect(h.rankIdea).toHaveBeenCalledWith({ title: 'N0', brief: 'brief n0', content: 'body n0' }, CRITERIA);
-    expect(h.setRanking).toHaveBeenCalledWith('n0', { scores: { a: 3 }, analysis: 'ok' });
-    expect(await screen.findByText(/8 ranked/)).toBeInTheDocument();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'Date'] });
+    try {
+      let lastStart = -Infinity;
+      let inFlight = 0;
+      let max = 0;
+      h.cooldownRemainingMs.mockImplementation(() => Math.max(0, lastStart + 12_000 - Date.now()));
+      h.rankIdea.mockImplementation(async () => {
+        if (h.cooldownRemainingMs() > 0) throw new Error('Please wait');
+        lastStart = Date.now();
+        inFlight++;
+        max = Math.max(max, inFlight);
+        await Promise.resolve();
+        inFlight--;
+        return { scores: { a: 3 }, analysis: 'ok' };
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Auto-rank all' }));
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      expect(h.setRanking).toHaveBeenCalledTimes(1);
+      expect(screen.getByText(/waiting for AI cooldown/)).toBeInTheDocument();
+      await act(async () => { await vi.advanceTimersByTimeAsync(12_000); });
+      expect(h.setRanking).toHaveBeenCalledTimes(2);
+      await act(async () => { await vi.advanceTimersByTimeAsync(12_000); });
+      expect(h.setRanking).toHaveBeenCalledTimes(3);
+      expect(max).toBe(1);
+      expect(h.rankIdea).toHaveBeenCalledWith({ title: 'N0', brief: 'brief n0', content: 'body n0' }, CRITERIA);
+      expect(h.setRanking).toHaveBeenCalledWith('n0', { scores: { a: 3 }, analysis: 'ok' });
+      expect(screen.getByText(/3 ranked/)).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('auto-rank surfaces the AI stub error count/message', async () => {

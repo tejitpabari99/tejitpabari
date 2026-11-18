@@ -44,7 +44,7 @@ beforeEach(async () => {
   h.generateContent.mockReset();
   h.getGenerativeModel.mockReset().mockReturnValue({ generateContent: h.generateContent });
   vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.useFakeTimers({ toFake: ['Date', 'performance'] });
   vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
   ai = await import('./ai.js');
 });
@@ -152,6 +152,17 @@ describe('cooldown', () => {
     await ai.enhanceIdea('a', 'b');
     vi.advanceTimersByTime(11_001);
     await expect(ai.parseIdea('x')).rejects.toThrow('Please wait 1 second before the next AI request.');
+  });
+
+  it('cooldownRemainingMs reports time until the next call may start', async () => {
+    ok();
+    expect(ai.cooldownRemainingMs()).toBe(0);
+    await ai.enhanceIdea('a', 'b');
+    expect(ai.cooldownRemainingMs()).toBe(12_000);
+    vi.advanceTimersByTime(5_000);
+    expect(ai.cooldownRemainingMs()).toBe(7_000);
+    vi.advanceTimersByTime(7_000);
+    expect(ai.cooldownRemainingMs()).toBe(0);
   });
 
   it('allows a call once the interval has passed', async () => {

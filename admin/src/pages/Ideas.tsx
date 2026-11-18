@@ -1,15 +1,14 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { TagPill } from '@site/components/TagPill';
 import { useAuth } from '../auth/useAuth';
 import { useLoader } from '../hooks/useLoader';
-import { parseIdea, rankIdea } from '../lib/ai.js';
+import { cooldownRemainingMs, parseIdea, rankIdea } from '../lib/ai.js';
 import { computeScore, createIdea, getIdea, listIdeas, resetAllRankings, setRanking, slugifyTitle } from '../lib/ideas.js';
 import { getCriteria } from '../lib/settings.js';
 import type { Criterion } from '../types';
-import { filterIdeas, runPool, sortIdeas, STATUS_LABEL, type IdeaRow, type SortCol, type SortDir } from './ideas-utils';
+import { filterIdeas, sortIdeas, STATUS_LABEL, type IdeaRow, type SortCol, type SortDir } from './ideas-utils';
 
-const BULK_CONCURRENCY = 3;
 const input = 'w-full rounded-card border border-teal-secondary/30 bg-white px-3 py-2 text-sm';
 const ghost = 'rounded-pill border border-teal-secondary px-3 py-1 text-xs font-semibold text-teal-secondary hover:bg-teal-secondary hover:text-white disabled:opacity-40';
 
@@ -98,6 +97,7 @@ interface Bulk {
   failed: number;
   total: number;
   lastError: string;
+  waiting?: boolean;
 }
 
 export default function Ideas() {
@@ -117,6 +117,13 @@ export default function Ideas() {
   const [resetting, setResetting] = useState(false);
   const [actionError, setActionError] = useState('');
   const navigate = useNavigate();
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   const allTags = useMemo(() => [...new Set(ideas.flatMap((i) => i.tags))].sort(), [ideas]);
   const rows = useMemo(
@@ -139,7 +146,16 @@ export default function Ideas() {
     if (targets.length === 0) return;
     const state: Bulk = { running: true, done: 0, failed: 0, total: targets.length, lastError: '' };
     setBulk({ ...state });
-    await runPool(targets, BULK_CONCURRENCY, async (i) => {
+    // Sequential: the AI client allows one call at a time with a minimum gap between starts.
+    for (const i of targets) {
+      if (!mounted.current) return;
+      const wait = cooldownRemainingMs();
+      if (wait > 0) {
+        setBulk({ ...state, waiting: true });
+        await new Promise((r) => setTimeout(r, wait));
+        if (!mounted.current) return;
+      }
+      setBulk({ ...state });
       try {
         const full = await getIdea(i.slug);
         if (!full) throw new Error('Idea not found');
@@ -150,8 +166,9 @@ export default function Ideas() {
         state.failed++;
         state.lastError = (e as Error).message;
       }
-      setBulk({ ...state });
-    });
+      if (mounted.current) setBulk({ ...state });
+    }
+    if (!mounted.current) return;
     setBulk({ ...state, running: false });
     reload();
   }
@@ -194,7 +211,7 @@ export default function Ideas() {
       {bulk && (
         <p role="status" className="mb-4 rounded-card bg-sage p-3 text-sm">
           {bulk.running
-            ? `Ranking… ${bulk.done + bulk.failed} / ${bulk.total} done`
+            ? `Ranking… ${bulk.done + bulk.failed} / ${bulk.total} done${bulk.waiting ? ' (waiting for AI cooldown)' : ''}`
             : `Done: ${bulk.done} ranked${bulk.failed ? `, ${bulk.failed} failed` : ''}`}
           {bulk.lastError && ` (${bulk.lastError})`}
         </p>
