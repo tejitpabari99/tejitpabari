@@ -54,3 +54,12 @@ _Placeholder: filled in by SP04 (workflow names, triggers, required secrets/vars
 ### Hosting targets and cutover (SP05)
 
 _Placeholder: filled in by SP05 (site-to-target map, custom domains, DNS cutover status)._
+
+## AI
+
+Admin idea parse/enhance/rank runs client-side on Gemini via `firebase/ai` (GoogleAIBackend), in `admin/src/lib/ai.js` (prompts `ai-prompts.js`, output shaping `ai-shape.js`, error mapping `ai-errors.js`). No API keys in the repo or bundle.
+
+- Model: `GEMINI_MODEL` constant in `admin/src/lib/ai.js` (change it there only).
+- Env: `VITE_RECAPTCHA_SITE_KEY` (App Check reCAPTCHA key; empty skips App Check with a warning), `VITE_APPCHECK_DEBUG_TOKEN` (dev only; unset uses an auto-generated token printed in the console, register it in Firebase console App Check).
+- App Check: initialized in `admin/src/lib/firebase.js`; AI calls use limited-use tokens. Admin role only (guests get "Admin only", no SDK call).
+- Tests: `admin/src/lib/ai.test.ts` (mocked `firebase/ai`); rank schema excludes `interest`.
