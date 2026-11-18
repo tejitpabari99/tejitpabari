@@ -8,14 +8,14 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | DEPLOY.md skeleton + token helper | SP01 | todo |
-| 2 | State snapshot (sites, domains, apps, services) | 1 | todo |
-| 3 | Enable APIs + create Firestore nam5 | 2 | todo |
-| 4 | Auth: authorized domains + Google provider | 3 | todo |
-| 5 | Web app + real config committed | 3 | todo |
-| 6 | Browser API key referrers (add-only) | 5 | todo |
+| 1 | DEPLOY.md skeleton + token helper | SP01 | in-progress |
+| 2 | State snapshot (sites, domains, apps, services) | 1 | in-progress |
+| 3 | Enable APIs + create Firestore nam5 | 2 | in-progress |
+| 4 | Auth: authorized domains + Google provider | 3 | in-progress |
+| 5 | Web app + real config committed | 3 | in-progress |
+| 6 | Browser API key referrers (add-only) | 5 | in-progress |
 | 7 | reCAPTCHA key, App Check, AI Logic, debug token, repo var | 5, SP03 | todo |
-| 8 | CI service-account IAM roles | 3 | todo |
+| 8 | CI service-account IAM roles | 3 | in-progress |
 | 9 | Rules + indexes deploy, Gemini smoke | 3, 7, SP01 | todo |
 | 10 | Data export sync + migration run | 9 | todo |
 | 11 | Post-merge smoke on *.web.app | 10, SP04, PR merged | todo |

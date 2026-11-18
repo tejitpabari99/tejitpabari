@@ -8,9 +8,9 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Admin build scaffold | SP01 | todo |
-| 2 | Firebase init emulator guard + test | 1 | todo |
-| 3 | Auth core + AuthProvider | 1 | todo |
+| 1 | Admin build scaffold | SP01 | in-progress |
+| 2 | Firebase init emulator guard + test | 1 | in-progress |
+| 3 | Auth core + AuthProvider | 1 | in-progress |
 | 4 | Shell, RequireView gate, SignInGate, login | 3 | todo |
 | 5 | Home and links pages | 4 | todo |
 | 6 | Ideas list and add-idea flow | 4 | todo |
