@@ -71,3 +71,9 @@ Sites: `tejitpabari-99` (main), `-nonprofit`, `-healthtech`, `-admin`, `-go` (al
 Nonprofit/np/healthtech/htech DNS pending (Cloudflare, owner; Task 12 finishes).
 Web apps: 1 - `tejitpabari-website` (`1:869772411310:web:ce899107a79838ba5b483f`, WEB).
 Enabled services (48): includes firebase, firebasehosting, firebaserules, identitytoolkit, securetoken, datastore, iam, iamcredentials, cloudresourcemanager, serviceusage, storage*, run, cloudbuild, secretmanager, etc. NOT enabled: firestore, firebaseappcheck, recaptchaenterprise, firebasevertexai, generativelanguage, apikeys.
+
+## A2/A3 APIs + Firestore (2026-11-18)
+- Before: firestore, firebaseappcheck, recaptchaenterprise, firebasevertexai, generativelanguage, apikeys disabled (firebaserules, identitytoolkit were already enabled).
+- `services:batchEnable` of all eight: operation done, no error. After: all eight ENABLED.
+- Firestore: before `firebase firestore:databases:list` = "No databases found". `firebase firestore:databases:create "(default)" --location nam5` -> after: `(default)`, FIRESTORE_NATIVE, locationId `nam5`.
+- Rules check: new DB is created with CLOSED rules (CLI says so; `firebaserules releases` list empty; anonymous REST read of `links` -> 403). Not open test-mode, so no emergency rules deploy; real rules go live in A9 (Task 9).
