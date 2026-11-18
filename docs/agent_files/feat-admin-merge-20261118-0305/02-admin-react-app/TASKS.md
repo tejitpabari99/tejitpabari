@@ -8,12 +8,12 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Admin build scaffold | SP01 | in-progress |
-| 2 | Firebase init emulator guard + test | 1 | in-progress |
-| 3 | Auth core + AuthProvider | 1 | in-progress |
-| 4 | Shell, RequireView gate, SignInGate, login | 3 | todo |
-| 5 | Home and links pages | 4 | todo |
-| 6 | Ideas list and add-idea flow | 4 | todo |
+| 1 | Admin build scaffold | SP01 | done |
+| 2 | Firebase init emulator guard + test | 1 | done |
+| 3 | Auth core + AuthProvider | 1 | done |
+| 4 | Shell, RequireView gate, SignInGate, login | 3 | in-progress |
+| 5 | Home and links pages | 4 | in-progress |
+| 6 | Ideas list and add-idea flow | 4 | in-progress |
 | 7 | Idea detail page | 4 | todo |
 | 8 | Rank and settings pages | 4 | todo |
 | 9 | CLAUDE.md + README admin section | 5, 6, 7, 8 | todo |
