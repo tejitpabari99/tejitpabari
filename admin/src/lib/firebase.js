@@ -3,14 +3,6 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { firebaseConfig } from './firebase-config.js';
 
-// Dev-only: connect auth + firestore to local emulators. Pure + injectable for tests.
-export function connectEmulators(authInst, dbInst, enabled, fns = { connectAuthEmulator, connectFirestoreEmulator }) {
-	if (enabled !== true) return false;
-	fns.connectAuthEmulator(authInst, 'http://127.0.0.1:9099', { disableWarnings: true });
-	fns.connectFirestoreEmulator(dbInst, '127.0.0.1', 8080);
-	return true;
-}
-
 // Browser-only: server-side/prerender contexts must not execute init.
 // Idempotent: reuses an existing app on repeat import.
 let app, auth, db;
@@ -25,9 +17,16 @@ if (typeof window !== 'undefined') {
 	auth = getAuth(app);
 	db = getFirestore(app);
 
-	// Flag is explicit, never set in production builds. Only on first init:
-	// connect*Emulator throws if called after the service has been used.
-	if (!isReuse) connectEmulators(auth, db, import.meta.env?.VITE_USE_EMULATORS === 'true');
+	// Dev-only. Flag is explicit, never set in production builds; the inline
+	// check lets the bundler drop this block (and its localhost literals) from
+	// prod. Only on first init: connect*Emulator throws if called after the
+	// service has been used.
+	if (!isReuse) {
+		if (import.meta.env.VITE_USE_EMULATORS === 'true') {
+			connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+			connectFirestoreEmulator(db, '127.0.0.1', 8080);
+		}
+	}
 }
 
 export { app, auth, db };
