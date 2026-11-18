@@ -1,14 +1,16 @@
 // src/pages/nonprofit/NonprofitProjectsPage.tsx
-// Placeholder: title only. A later sub-project replaces the body without touching routes.
 import { RouteMeta } from '@/components/RouteMeta';
 import { PageContainer } from '@/layout/PageContainer';
-import { SITE_CONFIG } from '@/config/site-target';
+import { ProjectListSection } from '@/sections/ProjectListSection';
+import { projectsForSite } from '@/data';
+import { ROUTE_META } from '@/config/nonprofit';
 
 export function NonprofitProjectsPage() {
   return (
     <PageContainer>
-      <RouteMeta title="Projects" description={SITE_CONFIG.description} path="/projects" />
+      <RouteMeta title={ROUTE_META.projects.title} description={ROUTE_META.projects.description} path="/projects" suffix={false} />
       <h1 className="text-3xl font-semibold text-teal">Projects</h1>
+      <ProjectListSection items={projectsForSite('nonprofit')} />
     </PageContainer>
   );
 }
