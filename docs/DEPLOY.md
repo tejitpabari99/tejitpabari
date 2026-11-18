@@ -82,3 +82,8 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 - Before: `GET admin/v2/.../config` -> 404 CONFIGURATION_NOT_FOUND (auth never initialized). `POST v2/projects/tejitpabari-99/identityPlatform:initializeAuth {}` -> `{}`; config now exists.
 - authorizedDomains before: `tejitpabari-99.firebaseapp.com`, `tejitpabari-99.web.app`. After (add-only PATCH, updateMask=authorizedDomains): those two + `admin.tejitpabari.com`, `tejitpabari-admin.web.app`, `tejitpabari-admin.firebaseapp.com`, `localhost`.
 - Google IdP: NOT enabled. `POST defaultSupportedIdpConfigs?idpId=google.com {"enabled":true}` -> 400 "client_id cannot be empty"; no API mints the web OAuth client. **OWNER STEP (pending):** Firebase console > Authentication > Sign-in method > Google > Enable (set support email) - https://console.firebase.google.com/project/tejitpabari-99/authentication/providers . The console auto-creates the OAuth client. Then verify: `GET .../defaultSupportedIdpConfigs/google.com` -> `enabled: true`.
+
+## A5 Web app + config (2026-11-18)
+- Before: 1 web app (`tejitpabari-website`). Created `tejitpabari-admin` = `1:869772411310:web:67131c4a32f7e55c5b483f` (`firebase apps:create WEB`).
+- SDK config apiKey is the SAME browser key as `tejitpabari-website` (shared key; Task 6 referrers add-only). Committed into `admin/src/lib/firebase-config.js` (apiKey, appId) and `hosting/go/go.js` API_KEY. No `PLACEHOLDER` left in admin/ or hosting/.
+- `npm run test:go`: 28 pass / 0 fail (incl. API key drift). `npm run test:node`: 23/0. `test:admin` script does not exist in this branch yet (SP02/03); run once present.

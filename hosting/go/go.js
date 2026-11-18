@@ -2,7 +2,7 @@ import { parseSlug, slugToDocId, decodeLink, classify, createRedirectTimer } fro
 
 // Keep PROJECT_ID / API_KEY in sync with admin/src/lib/firebase-config.js (tests/go checks drift).
 const PROJECT_ID = 'tejitpabari-99';
-const API_KEY = 'PLACEHOLDER_API_KEY';
+const API_KEY = 'AIzaSyACdizdfzPlr5ge_Mt8S2bLOLLeo_26UJo';
 const GA_ID = 'G-9NLS3NG63M';
 
 const root = document.getElementById('content');
