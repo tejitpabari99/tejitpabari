@@ -8,10 +8,10 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/subsites/docs/agent_
 
 | # | Task | Repo | Depends on | Status |
 |---|---|---|---|---|
-| 1 | Jekyll config and mermaid include | sparehand-plugin | none | todo |
-| 2 | Link fixes, PDF and script removal, README line | sparehand-plugin | none | todo |
-| 3 | Validate, push, open PR | sparehand-plugin | 1, 2 | todo |
-| 4 | Enable Pages and verify live URLs | sparehand-plugin | 3 (owner merge) | todo |
+| 1 | Jekyll config and mermaid include | sparehand-plugin | none | done |
+| 2 | Link fixes, PDF and script removal, README line | sparehand-plugin | none | done |
+| 3 | Validate, push, open PR | sparehand-plugin | 1, 2 | done |
+| 4 | Enable Pages and verify live URLs | sparehand-plugin | 3 (owner merge) | done |
 | 5 | Card href swap | tejitpabari | 4, 02:T4 | todo |
 | 6 | Card tests and launch checks | tejitpabari | 5 | todo |
 
