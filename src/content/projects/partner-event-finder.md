@@ -9,7 +9,7 @@ techTags: [AI Agents, Skills, Nonprofit]
 status: Building
 links:
   - label: GitHub
-    href: https://github.com/tejitpabari99/sparehand-plugin/blob/main/docs/skills/partner-event-finder.md
+    href: https://tejitpabari99.github.io/sparehand-plugin/skills/partner-event-finder.html
     icon: github
     primary: true
 date: "2026-11-06"

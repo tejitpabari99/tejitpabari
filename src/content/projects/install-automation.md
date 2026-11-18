@@ -9,7 +9,7 @@ techTags: [AI Agents, Skills, Automation]
 status: Building
 links:
   - label: GitHub
-    href: https://github.com/tejitpabari99/sparehand-plugin/blob/main/docs/skills/install-automation.md
+    href: https://tejitpabari99.github.io/sparehand-plugin/skills/install-automation.html
     icon: github
     primary: true
 date: "2026-11-10"
