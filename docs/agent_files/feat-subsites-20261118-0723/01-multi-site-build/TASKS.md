@@ -8,16 +8,16 @@ Source of truth: docs/agent_files/feat-subsites-20261118-0723/01-multi-site-buil
 
 | # | Task | Depends on | Status |
 |---|---|---|---|
-| 1 | Capture main baseline | none | todo |
-| 2 | Site config and Vite SITE switch | 1 | todo |
-| 3 | Per-site route tables and placeholder pages | 2 | todo |
-| 4 | Per-site nav, footer, meta URL | 2 | todo |
-| 5 | Site-aware build scripts | 2 | todo |
-| 6 | firebase.json entries and static dir removal | 5 | todo |
-| 7 | Extend check:launch to dist-* | 5 | todo |
-| 8 | CI and PR preview for all targets | 6, 7 | todo |
-| 9 | Docs, ignores and cleanup | 6, 8 | todo |
-| 10 | End-to-end build:all verification | 3, 4, 8, 9 | todo |
+| 1 | Capture main baseline | none | done |
+| 2 | Site config and Vite SITE switch | 1 | done |
+| 3 | Per-site route tables and placeholder pages | 2 | done |
+| 4 | Per-site nav, footer, meta URL | 2 | done |
+| 5 | Site-aware build scripts | 2 | done |
+| 6 | firebase.json entries and static dir removal | 5 | done |
+| 7 | Extend check:launch to dist-* | 5 | done |
+| 8 | CI and PR preview for all targets | 6, 7 | done |
+| 9 | Docs, ignores and cleanup | 6, 8 | done |
+| 10 | End-to-end build:all verification | 3, 4, 8, 9 | done |
 
 ## Task 1: Capture main baseline
 What it is / what it means: Before any refactor, record what main produces today so "main unchanged" is provable (Decision 8, resolved CSP risk).
