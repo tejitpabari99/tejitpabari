@@ -1,6 +1,6 @@
 ---
-slug: juno
-title: Juno
+slug: juno-app
+title: Juno app
 description: >-
   An AI companion for medical appointments: live note-taking, real-time
   question prompts, and a clear summary of what to do next. Built with
@@ -14,11 +14,12 @@ links:
   - label: App
     href: https://app.meetjuno.health/
     icon: external-link
+    primary: true
   - label: Website
     href: https://meetjuno.health/
     icon: globe
-    primary: true
 date: "2025-06-01"
+sites: [main, healthtech]
 ---
 Juno helps patients get more out of every doctor's visit. During an appointment, it takes structured notes in real time and prompts context-aware questions a patient might not think to ask in the moment. It turns the conversation into a clear summary with concrete follow-ups, instead of a page of hurried handwriting.
 

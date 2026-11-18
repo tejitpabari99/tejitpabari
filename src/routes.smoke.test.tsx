@@ -1,12 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import { routes } from './routes';
+import { routesBySite } from './routes';
+import type { SiteId } from '@/data';
 
-const paths = [
-  '/', '/projects', '/projects/anything', '/projects/anything/live',
-  '/work-experience', '/research', '/research/anything', '/research/anything/live', '/privacy', '/terms',
-  '/404', '/this-does-not-exist',
+const pathsBySite: Record<SiteId, string[]> = {
+  main: [
+    '/', '/projects', '/projects/anything', '/projects/anything/live',
+    '/work-experience', '/research', '/research/anything', '/research/anything/live', '/privacy', '/terms',
+    '/404', '/this-does-not-exist',
+  ],
+  healthtech: ['/', '/projects/anything', '/404', '/this-does-not-exist'],
+  nonprofit: ['/', '/projects', '/projects/anything', '/schedule', '/404', '/this-does-not-exist'],
+};
+
+// Main-only pages that must resolve to the 404 page on subsites.
+const MAIN_ONLY_PATHS = [
+  '/research', '/research/anything', '/research/anything/live',
+  '/work-experience', '/privacy', '/terms', '/projects/anything/live',
 ];
 
 class NoopIntersectionObserver {
@@ -15,7 +26,10 @@ class NoopIntersectionObserver {
   disconnect() {}
 }
 
-describe('route tree smoke test', () => {
+describe.each(Object.keys(pathsBySite) as SiteId[])('route tree smoke test (%s)', (site) => {
+  const routes = routesBySite[site];
+  const paths = pathsBySite[site];
+
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', NoopIntersectionObserver);
   });
@@ -38,4 +52,12 @@ describe('route tree smoke test', () => {
     const nav = screen.queryByRole('navigation', { name: 'Primary' });
     expect(nav).not.toBeNull();
   });
+
+  if (site !== 'main') {
+    it.each(MAIN_ONLY_PATHS)('does not route %s (falls to 404)', (path) => {
+      const router = createMemoryRouter(routes, { initialEntries: [path] });
+      render(<RouterProvider router={router} />);
+      expect(screen.getByRole('heading', { name: 'Page not found' })).toBeInTheDocument();
+    });
+  }
 });

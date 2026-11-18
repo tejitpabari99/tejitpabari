@@ -19,7 +19,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { applyLiveRedirects, readLiveRedirects } from './vite.config';
+import { applyLiveRedirects, readLiveRedirects, resolveSite, siteOutDir, sitePlugins } from './vite.config';
 import viteConfig from './vite.config';
 
 function writeMdFile(dir: string, filename: string, frontmatter: string, body = 'Some body.'): void {
@@ -259,5 +259,44 @@ describe('applyLiveRedirects (writes the main hosting entry only)', () => {
 
   it('throws for the legacy single-object hosting form (firebase.json is now an array)', () => {
     expect(() => applyLiveRedirects({ hosting: { public: 'dist' } }, redirects)).toThrow(/target "main"/);
+  });
+});
+
+describe('SITE switch', () => {
+  const names = (site: string) => sitePlugins(site).map((p) => p.name);
+
+  it('defaults to main when SITE is unset or empty', () => {
+    expect(resolveSite(undefined)).toBe('main');
+    expect(resolveSite('')).toBe('main');
+  });
+
+  it('accepts each valid site', () => {
+    for (const s of ['main', 'healthtech', 'nonprofit']) expect(resolveSite(s)).toBe(s);
+  });
+
+  it('throws on an invalid SITE', () => {
+    expect(() => resolveSite('bogus')).toThrow(/invalid SITE "bogus"/);
+    expect(() => resolveSite('toString')).toThrow(/invalid SITE/);
+  });
+
+  it.each([
+    ['main', 'dist'],
+    ['healthtech', 'dist-healthtech'],
+    ['nonprofit', 'dist-nonprofit'],
+  ])('%s builds into %s', (site, outDir) => {
+    expect(siteOutDir(site)).toBe(outDir);
+  });
+
+  it('default config (SITE unset) is main: outDir dist, VITE_SITE=main, live-redirects present', () => {
+    expect(viteConfig.build?.outDir).toBe('dist');
+    expect(process.env.VITE_SITE).toBe('main');
+    const plugins = (viteConfig.plugins ?? []).flat(Infinity) as { name?: string }[];
+    expect(plugins.map((p) => p?.name)).toContain('live-redirects');
+  });
+
+  it('registers live-redirects only for main', () => {
+    expect(names('main')).toContain('live-redirects');
+    expect(names('healthtech')).not.toContain('live-redirects');
+    expect(names('nonprofit')).not.toContain('live-redirects');
   });
 });

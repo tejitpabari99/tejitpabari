@@ -11,6 +11,7 @@ See `.dev/IMAGE-SPECS.md` for the pixel dimensions, format, and file-size budget
 - `npm run dev` — start the dev server
 - `npm run typecheck` — `tsc --noEmit` only
 - `npm run build` — typecheck, then build the static site to `dist/`
+- `npm run build:healthtech` / `build:nonprofit` — build a subsite (`SITE=healthtech|nonprofit`) to `dist-healthtech/` / `dist-nonprofit/`; `dev:healthtech` / `dev:nonprofit` serve them. `build:all` runs every build serially (each build rewrites `firebase.json`)
 - `npm run preview` — serve the built `dist/` locally
 - `npm test` — run the Vitest suite
 - `npm run lint` — ESLint
@@ -18,7 +19,7 @@ See `.dev/IMAGE-SPECS.md` for the pixel dimensions, format, and file-size budget
 
 ## Deploy
 
-Merge to `main` deploys all hosting targets + Firestore rules via CI. Manual deploy only `npm run deploy:static` (static targets); see `docs/DEPLOY.md`. Needs `firebase login` with access to `tejitpabari-99`; config in `firebase.json`/`.firebaserc`.
+Merge to `main` deploys all hosting targets + Firestore rules via CI. Manual deploy only `npm run deploy:static` (go target); see `docs/DEPLOY.md`. Needs `firebase login` with access to `tejitpabari-99`; config in `firebase.json`/`.firebaserc`.
 
 ## Admin and hosting targets
 
@@ -28,7 +29,7 @@ The admin SPA lives in `admin/` (React + Firebase Auth/Firestore), built separat
 - `npm run test:admin` — admin vitest suite
 - `npm run build:admin` — build to `dist-admin/`
 
-Firebase Hosting targets (`firebase.json`): `main` (`dist/`), `admin` (`dist-admin/`), `go` (`hosting/go`), `nonprofit` (`hosting/nonprofit`), `healthtech` (`hosting/healthtech`). Merge to main deploys through CI. See `CLAUDE.md` and `docs/DEPLOY.md`.
+Firebase Hosting targets (`firebase.json`): `main` (`dist/`), `admin` (`dist-admin/`), `go` (`hosting/go`), `nonprofit` (`dist-nonprofit/`), `healthtech` (`dist-healthtech/`). Merge to main deploys through CI. See `CLAUDE.md` and `docs/DEPLOY.md`.
 
 ## Pre-launch checklist
 

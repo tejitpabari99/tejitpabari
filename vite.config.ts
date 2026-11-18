@@ -20,6 +20,27 @@ import type { Plugin } from 'vite';
 const PROJECTS_DIR = path.resolve(__dirname, 'src/content/projects');
 const RESEARCH_DIR = path.resolve(__dirname, 'src/content/research');
 
+interface SiteEntry {
+  id: string;
+  outDir: string;
+  hasLiveRoutes: boolean;
+}
+
+const SITES = JSON.parse(readFileSync(path.resolve(__dirname, 'src/config/sites.json'), 'utf-8')) as Record<string, SiteEntry>;
+
+// Validates the SITE env value: unset/empty -> main, unknown -> throw.
+export function resolveSite(raw: string | undefined): string {
+  const site = raw === undefined || raw === '' ? 'main' : raw;
+  if (!Object.prototype.hasOwnProperty.call(SITES, site)) {
+    throw new Error(`vite.config: invalid SITE "${site}". Expected one of: ${Object.keys(SITES).join(', ')}.`);
+  }
+  return site;
+}
+
+export function siteOutDir(site: string): string {
+  return SITES[site].outDir;
+}
+
 export interface LiveRedirectEntry {
   source: string;
   destination: string;
@@ -176,12 +197,23 @@ function liveRedirectsPlugin(): Plugin {
   };
 }
 
+// Live redirects rewrite the main firebase.json entry, so only main registers them.
+export function sitePlugins(site: string): Plugin[] {
+  return SITES[site].hasLiveRoutes ? [liveRedirectsPlugin()] : [];
+}
+
+const SITE = resolveSite(process.env.SITE);
+process.env.VITE_SITE = SITE; // read by src/config/site-target.ts (SSR and client)
+
 export default defineConfig({
-  plugins: [react(), liveRedirectsPlugin()], // sitemap.xml/robots.txt generation lives in scripts/generate-sitemap.mjs, run via the `prebuild` npm script — not a Vite plugin here.
+  plugins: [react(), ...sitePlugins(SITE)], // sitemap.xml/robots.txt generation lives in scripts/generate-sitemap.mjs, run via the `prebuild` npm script — not a Vite plugin here.
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
+  },
+  build: {
+    outDir: siteOutDir(SITE),
   },
   ssgOptions: {
     dirStyle: 'nested', // dist/<route>/index.html — matches juno-landing-page; plays cleanly with Firebase's cleanUrls

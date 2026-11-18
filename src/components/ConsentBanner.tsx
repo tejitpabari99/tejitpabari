@@ -1,6 +1,8 @@
 // src/components/ConsentBanner.tsx
 import { Link } from 'react-router-dom';
 import { useConsent } from '@/context/ConsentContext';
+import { SITE } from '@/config/site-target';
+import { MAIN_SITE_URL } from '@/config/links';
 
 export function ConsentBanner() {
   const { consent, hydrated, grant, decline } = useConsent();
@@ -15,7 +17,20 @@ export function ConsentBanner() {
         <p className="text-sm text-body">
           I use Google Analytics to see whether people find this site, for example from a
           LinkedIn post. It only runs, and only sets cookies, if you accept. See the{' '}
-          <Link to="/privacy" className="underline hover:text-teal-secondary">Privacy Policy</Link>.
+          {SITE === 'main' ? (
+            <Link to="/privacy" className="underline hover:text-teal-secondary">Privacy Policy</Link>
+          ) : (
+            // Subsites have no /privacy route; link to the main site like the footer does.
+            <a
+              href={`${MAIN_SITE_URL}/privacy`}
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-teal-secondary"
+            >
+              Privacy Policy
+            </a>
+          )}
+          .
         </p>
         <div className="flex shrink-0 gap-2">
           <button

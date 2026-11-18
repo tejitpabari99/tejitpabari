@@ -4,11 +4,8 @@ import path from 'node:path';
 import matter from 'gray-matter';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
-
-// Deliberately duplicated from src/config/site.ts — see PRD §4.1 for why
-// this one-string duplication is accepted rather than solved with a shared
-// module: this script runs as plain Node before any TS/bundler step exists.
-const SITE_NAME = 'Tejit Pabari';
+import { pathToFileURL } from 'node:url';
+import { currentSite, sitesOf } from './lib/site-config.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const CARD_WIDTH = 1200;
@@ -43,7 +40,9 @@ function assertValidSlug(filePath, filenameSlug, slug) {
   }
 }
 
-export function readCollection(dirName) {
+// `site`, when given, keeps only entries whose frontmatter `sites:` includes
+// it (missing = ['main']). Validation still runs on every file first.
+export function readCollection(dirName, site) {
   const dir = path.join(ROOT, 'src/content', dirName);
   return readdirSync(dir)
     .filter((f) => f.endsWith('.md'))
@@ -53,7 +52,8 @@ export function readCollection(dirName) {
       const filenameSlug = f.replace(/\.md$/, '');
       assertValidSlug(filePath, filenameSlug, data.slug);
       return data;
-    });
+    })
+    .filter((data) => site === undefined || sitesOf(data).includes(site));
 }
 
 const fontDir = path.join(ROOT, 'scripts/assets/fonts');
@@ -74,7 +74,7 @@ export function localImageDataUri(image) {
   return `data:image/${ext};base64,${b64}`;
 }
 
-export function cardJsx({ title, tags, status, imageDataUri }) {
+export function cardJsx({ title, tags, status, imageDataUri, footer = 'tejitpabari.com' }) {
   return {
     type: 'div',
     props: {
@@ -136,7 +136,7 @@ export function cardJsx({ title, tags, status, imageDataUri }) {
               },
               {
                 type: 'div',
-                props: { style: { display: 'flex', fontSize: 26, fontWeight: 600, color: BODY_TEXT }, children: 'tejitpabari.com' },
+                props: { style: { display: 'flex', fontSize: 26, fontWeight: 600, color: BODY_TEXT }, children: footer },
               },
             ],
           },
@@ -172,22 +172,30 @@ async function renderCard(props, outPath) {
   writeFileSync(outPath, png);
 }
 
+/** Which collections get per-item cards for a site: research is main-only
+ *  (subsites route no research); projects are filtered by `sites:`. */
+export function cardCollections(siteConfig) {
+  return siteConfig.hasLiveRoutes ? [['projects', 'projects'], ['research', 'research']] : [['projects', 'projects']];
+}
+
 async function main() {
-  for (const [dirName, outDir] of [['projects', 'projects'], ['research', 'research']]) {
-    const items = readCollection(dirName);
+  const { site, config } = currentSite();
+  const footer = new URL(config.url).host;
+  for (const [dirName, outDir] of cardCollections(config)) {
+    const items = readCollection(dirName, site);
     for (const item of items) {
       const outPath = path.join(ROOT, 'public/og', outDir, `${item.slug}.png`);
       await renderCard(
-        { title: item.title, tags: Array.isArray(item.tags) ? item.tags : [], status: typeof item.status === 'string' ? item.status : undefined, imageDataUri: localImageDataUri(item.image) },
+        { title: item.title, tags: Array.isArray(item.tags) ? item.tags : [], status: typeof item.status === 'string' ? item.status : undefined, imageDataUri: localImageDataUri(item.image), footer },
         outPath,
       );
       console.log(`  og/${outDir}/${item.slug}.png`);
     }
   }
-  await renderCard({ title: SITE_NAME, tags: [], status: undefined, imageDataUri: null }, path.join(ROOT, 'public/og/default.png'));
-  console.log('  og/default.png');
+  await renderCard({ title: config.name, tags: [], status: undefined, imageDataUri: null, footer }, path.join(ROOT, 'public/og/default.png'));
+  console.log(`  og/default.png (${site})`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   main();
 }

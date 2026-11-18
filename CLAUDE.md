@@ -1,6 +1,6 @@
 # tejitpabari
 
-Two builds in one repo: the public site (`vite-react-ssg`, output `dist/`) and the admin SPA (`admin/`, output `dist-admin/`). Static subdomains live in `hosting/`. Firebase project `tejitpabari-99`.
+The public site is built per site with `SITE=main|healthtech|nonprofit` (`vite-react-ssg`) into `dist/`, `dist-healthtech/`, `dist-nonprofit/`; the admin SPA (`admin/`) builds to `dist-admin/`; only `hosting/go` is a plain static site. Firebase project `tejitpabari-99`.
 
 ## Site build
 
@@ -39,18 +39,18 @@ Every admin page must support a guest read-only mode.
 
 ## Static subdomains and CSP
 
-`hosting/go`, `hosting/nonprofit`, `hosting/healthtech` are plain static sites. Their Content-Security-Policy is set per target in `firebase.json` headers, not by the site build. Any new third-party origin (script, connect, frame) needs a CSP edit there, and `go.js` must keep its `API_KEY` equal to `admin/src/lib/firebase-config.js` (`npm run test:go` checks). The admin site has no CSP yet (deferred).
+`hosting/go` is a plain static site. `nonprofit` and `healthtech` are built from this repo with `SITE=main|healthtech|nonprofit` (`npm run build:healthtech`, `build:nonprofit`, `dev:healthtech`, `dev:nonprofit`) into `dist/`, `dist-healthtech/`, `dist-nonprofit/`; `build:all` runs main, healthtech, nonprofit, admin serially. Builds must stay serial: every build rewrites `firebase.json` (CSP hash injection), so parallel builds race. Subsite CSP lives in `firebase.json` headers per target (nonprofit `connect-src` includes `docs.google.com` and `*.googleusercontent.com`), not in the site build. Any new third-party origin (script, connect, frame) needs a CSP edit there, and `go.js` must keep its `API_KEY` equal to `admin/src/lib/firebase-config.js` (`npm run test:go` checks). The admin site has no CSP yet (deferred).
 
 ## Deploy
 
 Runbook: `docs/DEPLOY.md` (phases A-G, owner fallbacks, recorded cloud state). Agents call Google REST APIs with
 `Authorization: Bearer $(node scripts/infra/token.mjs)` (token minted from the firebase-tools login; never print the
-refresh token). Merge to main = CI deploys everything (all hosting targets + Firestore rules). Manual deploys are allowed only for the static targets via `npm run deploy:static` (`firebase deploy --only hosting:go,hosting:nonprofit,hosting:healthtech --project tejitpabari-99`); never deploy main or admin by hand.
+refresh token). Merge to main = CI deploys everything (all hosting targets + Firestore rules). Manual deploys are allowed only for the static targets via `npm run deploy:static` (`firebase deploy --only hosting:go --project tejitpabari-99`); nonprofit/healthtech deploy only via CI (they need their `dist-<site>` builds); never deploy main or admin by hand.
 
 ### CI deploy workflows (SP04)
 
 Workflows (`.github/workflows/`):
-- `ci.yml` (CI): push to main, PRs, reusable. Jobs `unit` (typecheck, lint, tests, build:all, check:admin-build) and `emulator`.
+- `ci.yml` (CI): push to main, PRs, reusable. Jobs `unit` (typecheck, lint, tests, explicit `scripts/*.test.ts` run with CHECK_LAUNCH=1, build:all, check:no-em-dash, check:admin-build) and `emulator`.
 - `firebase-hosting-merge.yml`: push to main. Runs CI, builds all targets, verifies the admin build, then `firebase deploy --only hosting,firestore`. **Merge = deploy all hosting targets + Firestore rules/indexes.**
 - `firebase-hosting-pull-request.yml`: PR preview channels (same-repo PRs only; forks have no secret).
 

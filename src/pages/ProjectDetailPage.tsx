@@ -5,12 +5,13 @@ import { LinksRow } from '@/components/LinksRow';
 import { ContentBody } from '@/data/ContentBody'; // SP02
 import { RouteMeta } from '@/components/RouteMeta'; // SP06
 import { PageContainer } from '@/layout/PageContainer';
-import { projects } from '@/data';
+import { projects, selectForSite } from '@/data';
+import { SITE } from '@/config/site-target';
 import { NotFoundPage } from './NotFoundPage';
 
 export function ProjectDetailPage() {
   const { slug } = useParams<{ slug: string }>();
-  const project = projects.find((p) => p.slug === slug);
+  const project = selectForSite(projects, SITE).find((p) => p.slug === slug);
 
   // Unreachable via getStaticPaths (only real slugs are prerendered), but a
   // hand-edited/typo'd URL can still hit this client-side - reuse SP01's

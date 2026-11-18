@@ -35,6 +35,9 @@ interface RouteMetaProps {
    *  `article:modified_time`: reusing the same value there would falsely
    *  imply a tracked edit history that doesn't exist. */
   publishedTime?: string;
+  /** Append " · SITE_NAME" to the title (default). Pass `false` when the
+   *  caller supplies the complete title (e.g. nonprofit subsite routes). */
+  suffix?: boolean;
 }
 
 export function RouteMeta({
@@ -45,11 +48,12 @@ export function RouteMeta({
   imageAlt,
   type = 'website',
   publishedTime,
+  suffix = true,
 }: RouteMetaProps) {
   // When a route's own title already IS the site name (the home page passes
   // title={SITE_NAME}), don't append "· SITE_NAME" again - that produced the
   // literal, reported "Tejit Pabari · Tejit Pabari" tab title bug.
-  const fullTitle = title === SITE_NAME ? title : `${title} · ${SITE_NAME}`;
+  const fullTitle = !suffix || title === SITE_NAME ? title : `${title} · ${SITE_NAME}`;
   const canonical = absoluteUrl(path);
   const ogImage = absoluteUrl(image ?? DEFAULT_OG_IMAGE);
   const resolvedImageAlt = imageAlt ?? `${fullTitle} preview image`;

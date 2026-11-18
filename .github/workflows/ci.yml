@@ -22,8 +22,17 @@ jobs:
       - run: npm run test:admin
       - run: npm run test:node
       # scripts/** is excluded from `npm test`; CHECK_LAUNCH=1 lifts that for one explicit file.
-      - run: CHECK_LAUNCH=1 npx vitest run scripts/inject-csp-hashes.test.ts
+      # Route smoke (all sites, parametrized) and the main route manifest already run in `npm test`.
+      - run: >-
+          CHECK_LAUNCH=1 npx vitest run
+          scripts/site-aware-build.test.ts
+          scripts/check-no-em-dash.test.ts
+          scripts/generate-sitemap.test.ts
+          scripts/generate-og-cards.test.ts
+          scripts/normalize-ssg-build-id.test.ts
+          scripts/inject-csp-hashes.test.ts
       - run: npm run build:all
+      - run: npm run check:no-em-dash
       - run: npm run check:admin-build
   emulator:
     runs-on: ubuntu-latest

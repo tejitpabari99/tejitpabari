@@ -13,6 +13,9 @@ node scripts/infra/token.mjs --adc            # writes ~/.secrets/adc-owner.json
 Fallback: owner creates a service-account key at `~/.secrets/tejitpabari-99.json`.
 If an API returns 403 insufficient scopes: record as owner step, do not work around.
 
+## SITE builds
+`SITE=main|healthtech|nonprofit` selects the site; outputs `dist/`, `dist-healthtech/`, `dist-nonprofit/` (+ `dist-admin/`). `npm run build:all` runs them serially. Never run builds in parallel: each build rewrites `firebase.json` (CSP hashes), so a parallel run races. Expect `firebase.json` hash diff churn after a build; commit it only when intended. Deploy of all targets is one `firebase deploy --only hosting,firestore` from CI.
+
 ## Phase A - pre-merge infra (must finish before the PR merges; merge = deploy)
 Merging the PR is allowed with T4 (Google provider) and T9 (Gemini billing) blocked: the deploy works, but sign-in and AI stay unavailable until those owner steps are done.
 Owner steps REQUIRED for live sign-in and AI: (a) enable the Google sign-in provider at https://console.firebase.google.com/project/tejitpabari-99/authentication/providers (API path failed: "client_id cannot be empty"); (b) Gemini billing/prepay credits for the AI Logic Gemini Developer API project at https://ai.studio/projects (429 "prepayment credits are depleted"), and confirm AI Logic setup + ~10 RPM per-user limit at https://console.firebase.google.com/project/tejitpabari-99/ailogic.

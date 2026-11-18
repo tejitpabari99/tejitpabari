@@ -1,0 +1,32 @@
+{
+  "main": {
+    "id": "main",
+    "url": "https://tejitpabari.com",
+    "name": "Tejit Pabari",
+    "description": "Health-tech builder and software engineer. Building Juno, an AI companion for medical appointments, while working full-time on Microsoft Fabric Maps.",
+    "outDir": "dist",
+    "target": "main",
+    "hasLiveRoutes": true,
+    "staticRoutes": ["/", "/projects", "/work-experience", "/research", "/privacy", "/terms"]
+  },
+  "healthtech": {
+    "id": "healthtech",
+    "url": "https://healthtech.tejitpabari.com",
+    "name": "Tejit Pabari | Health Tech",
+    "description": "Health tech projects by Tejit Pabari.",
+    "outDir": "dist-healthtech",
+    "target": "healthtech",
+    "hasLiveRoutes": false,
+    "staticRoutes": ["/"]
+  },
+  "nonprofit": {
+    "id": "nonprofit",
+    "url": "https://nonprofit.tejitpabari.com",
+    "name": "Tejit Pabari | Nonprofit AI",
+    "description": "Nonprofit AI consulting by Tejit Pabari.",
+    "outDir": "dist-nonprofit",
+    "target": "nonprofit",
+    "hasLiveRoutes": false,
+    "staticRoutes": ["/", "/projects", "/schedule"]
+  }
+}

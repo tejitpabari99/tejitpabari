@@ -14,7 +14,7 @@ export const MAX_FEATURED = 6;
 // set. The landing page's featured section no longer reshuffles when a
 // project is added, removed, or re-dated.
 export const FEATURED_PROJECT_SLUGS: string[] = [
-  'juno',
+  'juno-app',
   'smarttest',
   'med-doc-tracker',
   'clip-verse',

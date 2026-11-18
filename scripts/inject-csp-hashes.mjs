@@ -52,9 +52,8 @@ import { readFileSync, writeFileSync, readdirSync, statSync, existsSync, copyFil
 import { createHash } from 'node:crypto';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { ROOT, currentSite } from './lib/site-config.mjs';
 
-const ROOT = path.resolve(import.meta.dirname, '..');
-const DIST_DIR = path.join(ROOT, 'dist');
 const FIREBASE_JSON_PATH = path.join(ROOT, 'firebase.json');
 
 // --- 404 promotion --------------------------------------------------------
@@ -69,12 +68,13 @@ const FIREBASE_JSON_PATH = path.join(ROOT, 'firebase.json');
 // that produces `dist/404/index.html`, and this step promotes that file to
 // `dist/404.html`. Runs BEFORE hash collection below so the CSP hash scan
 // also covers the promoted file.
-function promote404() {
-  const src = path.join(DIST_DIR, '404', 'index.html');
-  const dest = path.join(DIST_DIR, '404.html');
+export function promote404(distDir) {
+  const src = path.join(distDir, '404', 'index.html');
+  const dest = path.join(distDir, '404.html');
+  const rel = path.relative(ROOT, distDir) || distDir;
   if (!existsSync(src)) {
     throw new Error(
-      'inject-csp-hashes: dist/404/index.html not found - cannot produce dist/404.html for Firebase Hosting\'s ' +
+      `inject-csp-hashes: ${rel}/404/index.html not found - cannot produce ${rel}/404.html for Firebase Hosting's ` +
         'automatic 404 fallback (see firebase.json, which no longer has a catch-all rewrite to fall back on). ' +
         'This means src/routes.tsx is missing an enumerable 404 route, e.g.:\n' +
         "    { path: '404', element: <NotFoundPage /> }\n" +
@@ -85,7 +85,7 @@ function promote404() {
     );
   }
   copyFileSync(src, dest);
-  console.log("[inject-csp-hashes] promoted dist/404/index.html -> dist/404.html for Firebase Hosting's automatic 404 fallback.");
+  console.log(`[inject-csp-hashes] promoted ${rel}/404/index.html -> ${rel}/404.html for Firebase Hosting's automatic 404 fallback.`);
 }
 
 // Matches any <script ...> opening tag plus its body, non-greedy, across the
@@ -136,34 +136,41 @@ function collectInlineScriptHashes(htmlFiles) {
   return { hashSources: [...hashes].sort(), perFile }; // stable ordering -> stable diffs across builds when content repeats
 }
 
-// firebase.json's `hosting` is an array of per-site entries; the CSP hashes
-// belong to the main site's entry (`target: "main"`) only. Never touch the
-// others.
-export function findMainHosting(config) {
+// firebase.json's `hosting` is an array of per-site entries; each site's CSP
+// hashes belong to the entry whose `target` matches that site's sites.json
+// `target` only. Never touch the others.
+export function findHosting(config, target) {
   const hosting = config?.hosting;
-  const main = Array.isArray(hosting) ? hosting.find((h) => h?.target === 'main') : undefined;
-  if (!main) {
-    throw new Error('inject-csp-hashes: firebase.json has no hosting entry with target "main" to inject CSP hashes into.');
+  const entry = Array.isArray(hosting) ? hosting.find((h) => h?.target === target) : undefined;
+  if (!entry) {
+    throw new Error(`inject-csp-hashes: firebase.json has no hosting entry with target "${target}" to inject CSP hashes into.`);
   }
-  return main;
+  return entry;
 }
 
-// Mutates `config` in place: replaces the inline-script hashes in the main
-// entry's `**` Content-Security-Policy script-src with `hashSources`.
-export function injectCspHashes(config, hashSources) {
-  const headerRule = findMainHosting(config).headers?.find((rule) => rule.source === '**');
+export function findMainHosting(config) {
+  return findHosting(config, 'main');
+}
+
+// Mutates `config` in place: replaces the inline-script hashes in the
+// `target` entry's `**` Content-Security-Policy script-src with
+// `hashSources`. A matching entry with no `**` rule / CSP header / script-src
+// fails loudly (never invents a header) so a mis-shaped entry cannot ship
+// with no hash allow-list.
+export function injectCspHashes(config, hashSources, target = 'main') {
+  const headerRule = findHosting(config, target).headers?.find((rule) => rule.source === '**');
   if (!headerRule) {
-    throw new Error("inject-csp-hashes: firebase.json has no hosting.headers rule with source '**' to inject CSP hashes into.");
+    throw new Error(`inject-csp-hashes: firebase.json hosting entry "${target}" has no headers rule with source '**' to inject CSP hashes into.`);
   }
   const cspHeader = headerRule.headers.find((h) => h.key === 'Content-Security-Policy');
   if (!cspHeader) {
-    throw new Error("inject-csp-hashes: the '**' headers rule has no Content-Security-Policy entry to update.");
+    throw new Error(`inject-csp-hashes: the '**' headers rule of hosting entry "${target}" has no Content-Security-Policy entry to update.`);
   }
 
   const directives = cspHeader.value.split(';').map((d) => d.trim()).filter(Boolean);
   const scriptSrcIndex = directives.findIndex((d) => d === 'script-src' || d.startsWith('script-src '));
   if (scriptSrcIndex === -1) {
-    throw new Error("inject-csp-hashes: Content-Security-Policy has no script-src directive to inject hashes into.");
+    throw new Error(`inject-csp-hashes: Content-Security-Policy of hosting entry "${target}" has no script-src directive to inject hashes into.`);
   }
 
   // Base sources are whatever is committed in firebase.json minus any
@@ -187,9 +194,9 @@ export function injectCspHashes(config, hashSources) {
 // real inline script, exactly the failure mode that broke /projects'
 // tag-filter and search hydration in production. Fails loudly, naming the
 // offending file, rather than warning.
-function verifyHashesLanded(perFile) {
+function verifyHashesLanded(perFile, target) {
   const config = JSON.parse(readFileSync(FIREBASE_JSON_PATH, 'utf-8'));
-  const headerRule = findMainHosting(config).headers?.find((rule) => rule.source === '**');
+  const headerRule = findHosting(config, target).headers?.find((rule) => rule.source === '**');
   const cspHeader = headerRule?.headers?.find((h) => h.key === 'Content-Security-Policy');
   if (!cspHeader) {
     throw new Error('inject-csp-hashes: verification failed - could not re-read a Content-Security-Policy header from firebase.json after writing it.');
@@ -217,7 +224,9 @@ function verifyHashesLanded(perFile) {
 }
 
 function main() {
-  promote404();
+  const { site, config: siteConfig, distDir: DIST_DIR } = currentSite();
+  const target = siteConfig.target;
+  promote404(DIST_DIR);
 
   const htmlFiles = walkHtmlFiles(DIST_DIR);
   if (htmlFiles.length === 0) {
@@ -235,14 +244,14 @@ function main() {
   }
 
   const config = JSON.parse(readFileSync(FIREBASE_JSON_PATH, 'utf-8'));
-  injectCspHashes(config, hashSources);
+  injectCspHashes(config, hashSources, target);
 
   writeFileSync(FIREBASE_JSON_PATH, JSON.stringify(config, null, 2) + '\n');
   console.log(
-    `[inject-csp-hashes] wrote ${hashSources.length} inline-script hash(es) into firebase.json's Content-Security-Policy script-src (scanned ${htmlFiles.length} HTML files).`,
+    `[inject-csp-hashes] wrote ${hashSources.length} inline-script hash(es) into firebase.json's "${target}" entry Content-Security-Policy script-src (site ${site}, scanned ${htmlFiles.length} HTML files).`,
   );
 
-  verifyHashesLanded(perFile);
+  verifyHashesLanded(perFile, target);
   console.log(
     `[inject-csp-hashes] verified: all ${perFile.length} inline <script> tag(s) across ${htmlFiles.length} HTML files have a matching sha256 source in firebase.json's script-src.`,
   );

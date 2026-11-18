@@ -155,4 +155,10 @@ describe('RouteMeta', () => {
     render(<RouteMeta title="Terms of Use" description="d" path="/terms" />);
     expect(document.querySelector('meta[property="og:site_name"]')?.getAttribute('content')).toBe('Tejit Pabari');
   });
+
+  it('omits the site-name suffix when suffix={false}', () => {
+    render(<RouteMeta title="Projects | Nonprofit" description="d" path="/projects" suffix={false} />);
+    expect(document.title).toBe('Projects | Nonprofit');
+    expect(document.querySelector('meta[property="og:title"]')?.getAttribute('content')).toBe('Projects | Nonprofit');
+  });
 });

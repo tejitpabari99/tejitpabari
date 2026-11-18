@@ -34,7 +34,7 @@ jobs:
       - name: Check — pre-launch content gate
         run: npm run check:launch
 
-      - name: Build (main + admin)
+      - name: Build (main + healthtech + nonprofit + admin)
         run: npm run build:all
         env:
           # Deliberately no failure guard here (unlike the merge workflow,
@@ -42,6 +42,9 @@ jobs:
           # so an empty value is the CORRECT state for a PR build, not a
           # misconfiguration to catch. See §4.7 for the full asymmetry.
           VITE_GA_MEASUREMENT_ID: ${{ vars.VITE_GA_MEASUREMENT_ID }}
+
+      - name: Check built output for em dashes
+        run: npm run check:no-em-dash
 
       - name: Deploy preview channel (main)
         # Repository secrets are never exposed to a workflow run triggered by
@@ -72,4 +75,26 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
           projectId: tejitpabari-99
           target: admin
+          expires: 7d
+
+      - name: Deploy preview channel (nonprofit)
+        # Same fork guard as above.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a  # v0.11.0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
+          projectId: tejitpabari-99
+          target: nonprofit
+          expires: 7d
+
+      - name: Deploy preview channel (healthtech)
+        # Same fork guard as above.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: FirebaseExtended/action-hosting-deploy@500ac625ca2dd40cbd15f7659af953801858032a  # v0.11.0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEJITPABARI_99 }}'
+          projectId: tejitpabari-99
+          target: healthtech
           expires: 7d

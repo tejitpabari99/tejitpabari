@@ -89,6 +89,19 @@ export function scanSiteConfigSource(file, source) {
   return found;
 }
 
+/** Every string value in src/config/sites.json (the source of main's
+ *  description, names, routes). Returns [{ keyPath, text }]. */
+export function scanSitesJson(source) {
+  const found = [];
+  (function walk(v, keyPath) {
+    if (typeof v === 'string') {
+      if (findMatches(v).length > 0) found.push({ keyPath, text: v });
+    } else if (Array.isArray(v)) v.forEach((x, i) => walk(x, `${keyPath}[${i}]`));
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, keyPath ? `${keyPath}.${k}` : k);
+  })(JSON.parse(source), '');
+  return found;
+}
+
 function walkDir(dir, exts, fn) {
   for (const entry of readdirSync(dir)) {
     const full = path.join(dir, entry);
@@ -96,6 +109,30 @@ function walkDir(dir, exts, fn) {
     if (st.isDirectory()) walkDir(full, exts, fn);
     else if (exts.some((e) => entry.endsWith(e))) fn(full);
   }
+}
+
+/** Built output: every `dist-<site>` dir (dist-admin excluded, it is the
+ *  internal admin app, not user-visible site copy) is scanned for the same
+ *  banned dashes in its .html files. Pages are minified to few long lines, so
+ *  the snippet is a window around the first match. Returns [{ file, snippet,
+ *  kinds }] with `file` relative to `root`. A missing dist-* is simply
+ *  nothing to scan. */
+export function scanBuiltOutput(root = ROOT) {
+  const found = [];
+  const dirs = readdirSync(root).filter(
+    (d) => d.startsWith('dist-') && d !== 'dist-admin' && statSync(path.join(root, d)).isDirectory(),
+  );
+  for (const d of dirs) {
+    walkDir(path.join(root, d), ['.html'], (file) => {
+      readFileSync(file, 'utf-8').split('\n').forEach((line, i) => {
+        const kinds = findMatches(line);
+        if (kinds.length === 0) return;
+        const at = Math.min(...['—', '&mdash;', '&#8212;'].map((m) => line.indexOf(m)).filter((n) => n >= 0));
+        found.push({ file: `${path.relative(root, file)}:${i + 1}`, snippet: line.slice(Math.max(0, at - 40), at + 50).trim(), kinds });
+      });
+    });
+  }
+  return found;
 }
 
 function main() {
@@ -112,6 +149,14 @@ function main() {
     report(siteFile, line, text);
   }
 
+  // 2b. src/config/sites.json: all string values (site.ts derives its description from here,
+  // and the dist-* scan does not cover main's dist/). The site.ts step above is kept as a
+  // guard in case DEFAULT_DESCRIPTION is ever inlined as a literal again.
+  const sitesFile = path.join(ROOT, 'src/config/sites.json');
+  for (const { keyPath, text } of scanSitesJson(readFileSync(sitesFile, 'utf-8'))) {
+    failures.push({ file: `${sitesFile} ${keyPath}`, line: '-', snippet: text, kinds: findMatches(text) });
+  }
+
   // 3. src/content/**/*.md — whole file, line by line
   walkDir(path.join(ROOT, 'src/content'), ['.md'], (file) => {
     readFileSync(file, 'utf-8').split('\n').forEach((line, i) => report(file, i + 1, line));
@@ -120,6 +165,9 @@ function main() {
   // 4. index.html — whole file, line by line
   const htmlFile = path.join(ROOT, 'index.html');
   readFileSync(htmlFile, 'utf-8').split('\n').forEach((line, i) => report(htmlFile, i + 1, line));
+
+  // 5. Built output: dist-<site>/**/*.html
+  for (const f of scanBuiltOutput()) failures.push({ file: f.file, line: '-', snippet: f.snippet, kinds: f.kinds });
 
   if (failures.length > 0) {
     console.error(`check-no-em-dash: found ${failures.length} offending line(s):\n`);

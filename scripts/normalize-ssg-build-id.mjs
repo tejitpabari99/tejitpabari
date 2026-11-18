@@ -109,9 +109,12 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, renameSync, unlinkSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-const ROOT = path.resolve(import.meta.dirname, '..');
-const DIST_DIR = path.join(ROOT, 'dist');
+import { currentSite } from './lib/site-config.mjs';
+
+// dist for the current site (process.env.SITE, default main): dist or dist-<site>.
+const { distDir: DIST_DIR } = currentSite();
 
 // Same recursive walk inject-csp-hashes.mjs does — duplicated rather than
 // imported so this script has no dependency on that one's internals (they
@@ -265,4 +268,7 @@ function main() {
   );
 }
 
-main();
+// Only run when executed directly, not when imported by the test.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main();
+}

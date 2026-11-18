@@ -14,12 +14,16 @@
   },
   "scripts": {
     "dev": "vite-react-ssg dev",
+    "dev:healthtech": "SITE=healthtech npm run dev",
+    "dev:nonprofit": "SITE=nonprofit npm run dev",
     "dev:admin": "vite -c vite.admin.config.ts",
     "typecheck": "tsc -b --noEmit",
-    "prebuild": "node scripts/generate-og-cards.mjs && node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/clean-generated-public.mjs && node scripts/generate-og-cards.mjs && node scripts/generate-sitemap.mjs",
     "build": "npm run typecheck && vite-react-ssg build",
     "build:admin": "tsc -p tsconfig.admin.json --noEmit && vite build -c vite.admin.config.ts",
-    "build:all": "npm run build && npm run build:admin",
+    "build:healthtech": "SITE=healthtech npm run build",
+    "build:nonprofit": "SITE=nonprofit npm run build",
+    "build:all": "npm run build && npm run build:healthtech && npm run build:nonprofit && npm run build:admin",
     "postbuild": "node scripts/normalize-ssg-build-id.mjs && node scripts/inject-csp-hashes.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -38,7 +42,7 @@
     "test:node": "node --test tests/unit/*.test.js",
     "test:emulator": "firebase emulators:exec --only firestore --project tejitpabari-99 \"node --test --test-concurrency=1 tests/rules/*.test.js tests/migrate/*.test.js tests/data/*.test.js tests/go/*.test.js\"",
     "migrate": "node scripts/migrate-to-firestore.js",
-    "deploy:static": "firebase deploy --only hosting:go,hosting:nonprofit,hosting:healthtech --project tejitpabari-99"
+    "deploy:static": "firebase deploy --only hosting:go --project tejitpabari-99"
   },
   "dependencies": {
     "buffer": "^6.0.3",

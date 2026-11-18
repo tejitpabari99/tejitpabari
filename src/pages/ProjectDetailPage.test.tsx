@@ -26,6 +26,7 @@ const { FIXTURE_PROJECT } = vi.hoisted(() => ({
     links: [{ label: 'GitHub', href: 'https://github.com/x/med-doc-tracker' }],
     date: '2024-06-01',
     body: '', // deliberately empty — this is the case under test
+    sites: ['main'],
   } satisfies Project,
 }));
 

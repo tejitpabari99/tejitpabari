@@ -24,6 +24,7 @@ const { FIXTURE_FEATURED } = vi.hoisted(() => ({
       links: [{ label: 'GitHub', href: 'https://github.com/x' }],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
       live: { type: 'external', href: 'https://app.example.com' },
     },
     {
@@ -36,6 +37,7 @@ const { FIXTURE_FEATURED } = vi.hoisted(() => ({
       links: [{ label: 'GitHub', href: 'https://github.com/x' }],
       date: '2024-01-01',
       body: '',
+      sites: ['main'],
     },
   ] satisfies Project[],
 }));

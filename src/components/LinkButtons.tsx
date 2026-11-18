@@ -12,6 +12,7 @@ import type { Link as ContentLink } from '@/data'; // { label, href, icon?, prim
 import { DynamicIcon } from './icons/DynamicIcon';
 import { ExternalLinkIcon } from './icons/ExternalLinkIcon';
 import { trackEvent } from '@/lib/analytics';
+import { SITE_CONFIG } from '@/config/site-target';
 
 export type LinkButtonSize = 'sm' | 'md';
 
@@ -51,9 +52,11 @@ const PRIMARY_CLASSES = 'bg-teal text-white hover:opacity-90';
 const SECONDARY_CLASSES = 'border border-teal-secondary/20 text-teal-secondary hover:bg-teal-secondary hover:text-white';
 
 export function LinkButtons({ links, size = 'md' }: LinkButtonsProps) {
+  // Sites without /live routes (subsites) must not show the synthetic live button.
+  const visible = SITE_CONFIG.hasLiveRoutes ? links : links.filter((link) => !link.isLive);
   return (
     <>
-      {links.map((link) => (
+      {visible.map((link) => (
         <a
           key={link.href}
           href={link.href}

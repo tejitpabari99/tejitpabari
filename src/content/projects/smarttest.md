@@ -18,6 +18,7 @@ links:
     href: "https://www.labiotech.eu/best-biotech/hiv-test-app-home/#:~:text=SMARTtest,and%20syphilis%20in%20the%20blood."
     icon: newspaper
 date: "2019-01-01"
+sites: [main, healthtech]
 ---
 SMARTtest is a smartphone app that makes HIV and syphilis self-testing more accessible. It walks a user through the test itself, helps interpret the result, and links them to follow-up care, all from a phone. Built with React Native and Firebase, with Twilio and SendGrid handling secure result-sharing, and deployed and tested through Expo.
 
