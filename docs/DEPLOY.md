@@ -128,4 +128,8 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 
 ## A10 positive re-run (2026-11-18, Task 9 verified)
 - 2026-11-18 positive re-run: owner imported tejitpabari-99 into AI Studio, added prepay credits + spend cap. gemini-3.8-flash exists (generateContent 200). Rank prompt 200, valid JSON scores. Negative (no App Check header) still 401.
-- Current model (owner request, verified live: 200 + valid JSON schema output, no thinking tokens, ~2.7x cheaper): `GEMINI_MODEL` = `gemini-3.5-flash-lite`. Earlier entries above refer to the previously used `gemini-3.8-flash`.
+- Current model (owner request, verified live 2026-11-18: 200 + valid JSON schema output): `GEMINI_MODEL` = `gemini-3.5-flash-lite`. Earlier entries above refer to the previously used `gemini-3.8-flash`.
+
+## Gemini quota + custom domains (2026-11-18)
+- Gemini quota 2026-11-18: serviceusage consumer overrides set generate_content_requests_per_minute_per_project_per_user 100->5 (per-user, all regions) on firebasevertexai + firebaseml; no project-level limit exists; generativelanguage untouched.
+- Custom domains 2026-11-18: nonprofit/np/healthtech/htech CNAME + _acme-challenge TXT added in Cloudflare; Hosting still pending at 07:02Z. htech was proxied (orange cloud); owner to set DNS-only.
