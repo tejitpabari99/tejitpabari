@@ -52,9 +52,9 @@ export function Nav() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">
-      <div className="mx-auto flex w-fit items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream/92 p-1.5 shadow-pill backdrop-blur-md">
+      <div className="mx-auto flex w-fit max-w-full items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream/92 p-1.5 shadow-pill backdrop-blur-md">
             <nav aria-label="Primary">
-              <ul className="flex items-center gap-0.5 sm:gap-1">
+              <ul className="flex flex-wrap items-center justify-center gap-0.5 sm:gap-1">
                 {NAV_LINKS.map((item) => {
                   // Home has no sectionId: active only at the untouched page
                   // top of "/" (before any section has scrolled into view) —
@@ -77,8 +77,7 @@ export function Nav() {
                       {external ? (
                         <a
                           href={item.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          {...(item.sameTab ? {} : { target: '_blank', rel: 'noopener noreferrer' })}
                           className={className}
                           onClick={() =>
                             trackEvent('outbound_click', { url: item.href, context: 'nav', label: item.label })
