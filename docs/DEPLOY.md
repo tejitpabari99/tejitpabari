@@ -54,3 +54,20 @@ Delete `cc` record (token or owner); owner stops old VPS; delete `~/.secrets/adc
 
 ---
 # Recorded state / evidence (append-only log)
+
+## A1 State snapshot (2026-11-18, before changes)
+Sites: `tejitpabari-99` (main), `-nonprofit`, `-healthtech`, `-admin`, `-go` (all `<site>.web.app`).
+
+| Site | Custom domain | hostState | ownership | cert | Redirect | Required DNS |
+|---|---|---|---|---|---|---|
+| tejitpabari-99 | tejitpabari.com | HOST_ACTIVE | ACTIVE | CERT_ACTIVE | - | live |
+| tejitpabari-nonprofit | nonprofit.tejitpabari.com | HOST_UNHOSTED | MISSING | CERT_VALIDATING | - | CNAME `tejitpabari-nonprofit.web.app` |
+| tejitpabari-nonprofit | np.tejitpabari.com | HOST_UNHOSTED | MISSING | CERT_VALIDATING | -> nonprofit. | CNAME `tejitpabari-nonprofit.web.app` |
+| tejitpabari-healthtech | healthtech.tejitpabari.com | HOST_UNHOSTED | MISSING | CERT_VALIDATING | - | CNAME `tejitpabari-healthtech.web.app` |
+| tejitpabari-healthtech | htech.tejitpabari.com | HOST_UNHOSTED | MISSING | CERT_VALIDATING | -> healthtech. | CNAME `tejitpabari-healthtech.web.app` |
+| tejitpabari-admin | (none) | | | | | |
+| tejitpabari-go | (none) | | | | | |
+
+Nonprofit/np/healthtech/htech DNS pending (Cloudflare, owner; Task 12 finishes).
+Web apps: 1 - `tejitpabari-website` (`1:869772411310:web:ce899107a79838ba5b483f`, WEB).
+Enabled services (48): includes firebase, firebasehosting, firebaserules, identitytoolkit, securetoken, datastore, iam, iamcredentials, cloudresourcemanager, serviceusage, storage*, run, cloudbuild, secretmanager, etc. NOT enabled: firestore, firebaseappcheck, recaptchaenterprise, firebasevertexai, generativelanguage, apikeys.
