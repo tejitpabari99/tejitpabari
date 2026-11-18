@@ -1,6 +1,7 @@
 import type { RouteObject } from 'react-router-dom';
 import Layout from './components/Layout';
 import Placeholder from './components/Placeholder';
+import Login from './pages/Login';
 
 export const routes: RouteObject[] = [
   {
@@ -12,7 +13,7 @@ export const routes: RouteObject[] = [
       { path: '/ideas/:slug', element: <Placeholder name="Idea" /> },
       { path: '/links', element: <Placeholder name="Links" /> },
       { path: '/settings', element: <Placeholder name="Settings" /> },
-      { path: '/login', element: <Placeholder name="Login" /> },
+      { path: '/login', element: <Login /> },
     ],
   },
 ];
