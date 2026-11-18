@@ -16,7 +16,7 @@ Source of truth: /root/projects/tejitpabari/.worktrees/feat/admin-merge/docs/age
 | 6 | Browser API key referrers (add-only) | 5 | done |
 | 7 | reCAPTCHA key, App Check, AI Logic, debug token, repo var | 5, SP03 | done (owner: AI Logic Get started + quota) |
 | 8 | CI service-account IAM roles | 3 | done |
-| 9 | Rules + indexes deploy, Gemini smoke | 3, 7, SP01 | todo |
+| 9 | Rules + indexes deploy, Gemini smoke | 3, 4 (or emulator-auth path), 7, SP01 | todo |
 | 10 | Data export sync + migration run | 9 | todo |
 | 11 | Post-merge smoke on *.web.app | 10, SP04, PR merged | todo |
 | 12 | Custom domains admin./go. + Cloudflare DNS | 11 | todo |
@@ -66,7 +66,7 @@ Done when: policy shows the bindings; `firebase deploy --only firestore:rules --
 ## Task 9 — Rules + indexes deploy, Gemini smoke
 What it is: PRD A9-A10.
 What changes at a high level: `firebase deploy --only firestore`; run `dev:admin` with the debug token and rank one throwaway idea against live Gemini.
-Done when: rules release visible; anon read of `ideas` without `settings/main` is denied (curl REST); one rank returns valid scores.
+Done when: rules release visible; anon read of `ideas` without `settings/main` is denied (curl REST); one rank returns valid scores (admin role via real Google sign-in once T4 is unblocked, or auth emulator + real AI Logic + debug token); a generateContent call with no/invalid App Check token is rejected (401/403), proving `firebaseml.googleapis.com` enforcement covers AI Logic.
 
 ## Task 10 — Data export sync + migration run
 What it is: PRD Phase B.
