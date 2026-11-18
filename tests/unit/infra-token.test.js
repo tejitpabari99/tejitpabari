@@ -79,7 +79,7 @@ test('--adc writes authorized_user file mode 600 and prints no secrets', async (
 	assert.equal(statSync(adc).mode & 0o777, 0o600);
 });
 
-test('--adc locks dir to 0700 and overwrites a pre-existing 0644 file as 0600', async () => {
+test('--adc leaves a pre-existing non-default dir mode and overwrites a pre-existing 0644 file as 0600', async () => {
 	const dir = mkdtempSync(join(tmpdir(), 'tok-'));
 	const home = join(dir, 'secrets');
 	mkdirSync(home, { mode: 0o755 });
@@ -89,8 +89,42 @@ test('--adc locks dir to 0700 and overwrites a pre-existing 0644 file as 0600', 
 	chmodSync(adc, 0o644);
 	const r = await run(['--adc', adc], { FIREBASE_LOGIN_FILE: fixtureLogin(dir) });
 	assert.equal(r.code, 0);
-	assert.equal(statSync(home).mode & 0o777, 0o700);
+	assert.equal(statSync(home).mode & 0o777, 0o755);
 	assert.equal(statSync(adc).mode & 0o777, 0o600);
 	assert.equal(JSON.parse(readFileSync(adc, 'utf8')).refresh_token, REFRESH);
 	assert.deepEqual(readdirSync(home), ['adc.json']);
+});
+
+test('--adc into a pre-existing non-default 0755 dir leaves its mode unchanged', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'tok-'));
+	const shared = join(dir, 'shared');
+	mkdirSync(shared, { mode: 0o755 });
+	chmodSync(shared, 0o755);
+	const adc = join(shared, 'adc.json');
+	const r = await run(['--adc', adc], { FIREBASE_LOGIN_FILE: fixtureLogin(dir) });
+	assert.equal(r.code, 0);
+	assert.equal(statSync(shared).mode & 0o777, 0o755);
+	assert.equal(statSync(adc).mode & 0o777, 0o600);
+});
+
+test('--adc default path: ~/.secrets created/locked 0700, file 0600', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'tok-'));
+	const home = join(dir, 'home');
+	mkdirSync(join(home, '.secrets'), { recursive: true, mode: 0o755 });
+	chmodSync(join(home, '.secrets'), 0o755);
+	const r = await run(['--adc'], { FIREBASE_LOGIN_FILE: fixtureLogin(dir), HOME: home });
+	assert.equal(r.code, 0);
+	const adc = join(home, '.secrets/adc-owner.json');
+	assert.equal(r.out.trim(), adc);
+	assert.equal(statSync(join(home, '.secrets')).mode & 0o777, 0o700);
+	assert.equal(statSync(adc).mode & 0o777, 0o600);
+});
+
+test('--adc failed write leaves no .tmp file behind', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'tok-'));
+	const out = join(dir, 'adc.json');
+	mkdirSync(out); // rename onto a directory fails
+	const r = await run(['--adc', out], { FIREBASE_LOGIN_FILE: fixtureLogin(dir) });
+	assert.notEqual(r.code, 0);
+	assert.deepEqual(readdirSync(dir).filter((f) => f.endsWith('.tmp')), []);
 });

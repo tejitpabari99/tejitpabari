@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { canView } from '../lib/access.js';
 import { getSettings } from '../lib/settings.js';
@@ -14,6 +14,7 @@ export function RequireView() {
   const [guestVisibility, setGuestVisibility] = useState<Record<string, boolean> | null>(null);
   const [settingsError, setSettingsError] = useState<Error | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const hadGood = useRef(false);
 
   useEffect(() => {
     if (!authReady) return;
@@ -21,13 +22,15 @@ export function RequireView() {
     getSettings().then(
       (s: { guestVisibility?: Record<string, boolean> }) => {
         if (cancelled) return;
+        hadGood.current = true;
         setGuestVisibility(s.guestVisibility || {});
         setSettingsError(null);
       },
       (e: unknown) => {
         if (cancelled) return;
-        setGuestVisibility({});
-        setSettingsError(e instanceof Error ? e : new Error(String(e)));
+        // keep the last good settings on a failed refetch; only fall back to {} if there never were any
+        setGuestVisibility((prev) => prev ?? {});
+        if (!hadGood.current) setSettingsError(e instanceof Error ? e : new Error(String(e)));
       },
     );
     return () => {

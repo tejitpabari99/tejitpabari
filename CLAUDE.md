@@ -75,7 +75,7 @@ Target -> site -> domain (project `tejitpabari-99`):
 App Check:
 - Enforced ONLY on `firebaseml.googleapis.com` (AI Logic). App Check rejects `firebasevertexai.googleapis.com` ("Service not supported").
 - Firestore must stay UNenforced: go. reads links via unauthenticated REST with no App Check token.
-- reCAPTCHA Enterprise key domains: `admin.tejitpabari.com` + `tejitpabari-admin.web.app` only. Localhost and preview channels need the debug token from `~/.secrets/appcheck-debug-token` via `VITE_APPCHECK_DEBUG_TOKEN`.
+- reCAPTCHA Enterprise key domains: `admin.tejitpabari.com` + `tejitpabari-admin.web.app` only. Only localhost (`dev:admin`) uses the debug token from `~/.secrets/appcheck-debug-token` via `VITE_APPCHECK_DEBUG_TOKEN` (dev builds only). Preview channels are prod builds, guest-only: sign-in and AI aren't available there.
 
 Runbook: `docs/DEPLOY.md`.
 

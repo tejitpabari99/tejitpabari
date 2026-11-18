@@ -140,6 +140,21 @@ describe('RequireView gate', () => {
     expect(h.getSettings).toHaveBeenCalledTimes(2);
   });
 
+  it('failed refetch after a success keeps the last good settings', async () => {
+    h.getSettings.mockResolvedValue({ guestVisibility: { '/': true, '/links': true } });
+    const router = mount('/');
+    await fire(null);
+    await screen.findByTestId('page');
+    h.getSettings.mockRejectedValue(new Error('offline'));
+    await act(async () => {
+      await router.navigate('/links');
+    });
+    await waitFor(() => expect(h.getSettings).toHaveBeenCalledTimes(2));
+    expect(await screen.findByTestId('page')).toHaveTextContent('page:links');
+    expect(screen.queryByText('Sign in with Google')).toBeNull();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
   it('settings are re-fetched on navigation', async () => {
     const router = mount('/');
     await fire(null);
