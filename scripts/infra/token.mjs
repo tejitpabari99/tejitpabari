@@ -4,7 +4,7 @@
 //         node scripts/infra/token.mjs --adc [file] -> writes authorized_user ADC file (mode 600,
 //                                                      default ~/.secrets/adc-owner.json), prints its path
 // Never prints the refresh token. Env overrides (tests): FIREBASE_LOGIN_FILE, TOKEN_ENDPOINT.
-import { readFileSync, writeFileSync, mkdirSync, chmodSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, chmodSync, renameSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -30,9 +30,14 @@ const args = process.argv.slice(2);
 const adcIdx = args.indexOf('--adc');
 if (adcIdx !== -1) {
 	const out = args[adcIdx + 1] || join(homedir(), '.secrets/adc-owner.json');
-	mkdirSync(dirname(out), { recursive: true, mode: 0o700 });
-	writeFileSync(out, JSON.stringify({ type: 'authorized_user', client_id: CLIENT_ID, client_secret: CLIENT_SECRET, refresh_token: refresh }), { mode: 0o600 });
-	chmodSync(out, 0o600);
+	const dir = dirname(out);
+	mkdirSync(dir, { recursive: true, mode: 0o700 });
+	chmodSync(dir, 0o700);
+	// temp file (0600) + rename: an overwrite never exposes the token at an old file's permissions
+	const tmp = `${out}.${process.pid}.tmp`;
+	writeFileSync(tmp, JSON.stringify({ type: 'authorized_user', client_id: CLIENT_ID, client_secret: CLIENT_SECRET, refresh_token: refresh }), { mode: 0o600 });
+	chmodSync(tmp, 0o600);
+	renameSync(tmp, out);
 	process.stdout.write(out + '\n');
 } else {
 	const endpoint = process.env.TOKEN_ENDPOINT || 'https://oauth2.googleapis.com/token';

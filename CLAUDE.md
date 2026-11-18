@@ -45,7 +45,7 @@ Every admin page must support a guest read-only mode.
 
 Runbook: `docs/DEPLOY.md` (phases A-G, owner fallbacks, recorded cloud state). Agents call Google REST APIs with
 `Authorization: Bearer $(node scripts/infra/token.mjs)` (token minted from the firebase-tools login; never print the
-refresh token). Merge to main = CI deploys hosting + rules. Never deploy hosting by hand.
+refresh token). Merge to main = CI deploys everything (all hosting targets + Firestore rules). Manual deploys are allowed only for the static targets via `npm run deploy:static` (`firebase deploy --only hosting:go,hosting:nonprofit,hosting:healthtech --project tejitpabari-99`); never deploy main or admin by hand.
 
 ### CI deploy workflows (SP04)
 
@@ -53,7 +53,22 @@ _Placeholder: filled in by SP04 (workflow names, triggers, required secrets/vars
 
 ### Hosting targets and cutover (SP05)
 
-_Placeholder: filled in by SP05 (site-to-target map, custom domains, DNS cutover status)._
+Target -> site -> domain (project `tejitpabari-99`):
+
+| Target | Site | Domain |
+|---|---|---|
+| main | tejitpabari-99 | tejitpabari.com |
+| admin | tejitpabari-admin | admin.tejitpabari.com |
+| go | tejitpabari-go | go.tejitpabari.com |
+| nonprofit | tejitpabari-nonprofit | nonprofit.tejitpabari.com (+ np. redirect) |
+| healthtech | tejitpabari-healthtech | healthtech.tejitpabari.com (+ htech. redirect) |
+
+App Check:
+- Enforced ONLY on `firebaseml.googleapis.com` (AI Logic). App Check rejects `firebasevertexai.googleapis.com` ("Service not supported").
+- Firestore must stay UNenforced: go. reads links via unauthenticated REST with no App Check token.
+- reCAPTCHA Enterprise key domains: `admin.tejitpabari.com` + `tejitpabari-admin.web.app` only. Localhost and preview channels need the debug token from `~/.secrets/appcheck-debug-token` via `VITE_APPCHECK_DEBUG_TOKEN`.
+
+Runbook: `docs/DEPLOY.md`.
 
 ## AI
 

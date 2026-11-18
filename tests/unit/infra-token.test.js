@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
-import { mkdtempSync, writeFileSync, readFileSync, statSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, statSync, mkdirSync, chmodSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -77,4 +77,20 @@ test('--adc writes authorized_user file mode 600 and prints no secrets', async (
 	assert.equal(j.type, 'authorized_user');
 	assert.equal(j.refresh_token, REFRESH);
 	assert.equal(statSync(adc).mode & 0o777, 0o600);
+});
+
+test('--adc locks dir to 0700 and overwrites a pre-existing 0644 file as 0600', async () => {
+	const dir = mkdtempSync(join(tmpdir(), 'tok-'));
+	const home = join(dir, 'secrets');
+	mkdirSync(home, { mode: 0o755 });
+	chmodSync(home, 0o755);
+	const adc = join(home, 'adc.json');
+	writeFileSync(adc, 'old');
+	chmodSync(adc, 0o644);
+	const r = await run(['--adc', adc], { FIREBASE_LOGIN_FILE: fixtureLogin(dir) });
+	assert.equal(r.code, 0);
+	assert.equal(statSync(home).mode & 0o777, 0o700);
+	assert.equal(statSync(adc).mode & 0o777, 0o600);
+	assert.equal(JSON.parse(readFileSync(adc, 'utf8')).refresh_token, REFRESH);
+	assert.deepEqual(readdirSync(home), ['adc.json']);
 });
