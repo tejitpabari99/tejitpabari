@@ -26,6 +26,7 @@ export interface Criterion {
   id: string;
   label: string;
   weight: number;
+  invert: boolean;
 }
 
 export interface Settings {
