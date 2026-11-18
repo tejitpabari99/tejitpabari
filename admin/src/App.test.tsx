@@ -3,7 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 
 const h = vi.hoisted(() => ({ cb: null as null | ((u: unknown) => void) }));
-vi.mock('./lib/firebase.js', () => ({ auth: {} }));
+vi.mock('./lib/firebase.js', () => ({ auth: {}, db: {} }));
 vi.mock('firebase/auth', async (orig) => ({
   ...(await orig<typeof import('firebase/auth')>()),
   onAuthStateChanged: (_a: unknown, fn: (u: unknown) => void) => {
@@ -26,6 +26,6 @@ describe('admin app root', () => {
     );
     expect(screen.getByText('admin.tejitpabari.com')).toBeInTheDocument();
     await act(async () => h.cb!(null));
-    expect(await screen.findByTestId('page')).toHaveTextContent('Home');
+    expect(await screen.findByRole('heading', { name: 'Projects' })).toBeInTheDocument();
   });
 });
