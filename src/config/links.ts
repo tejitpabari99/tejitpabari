@@ -48,6 +48,7 @@ export const NAV_LINKS_BY_SITE: Record<SiteId, NavLink[]> = {
   ],
   nonprofit: [
     { label: 'Home', href: '/' },
+    { label: 'Consultation', href: '/#consultation', sectionId: 'consultation' },
     { label: 'Projects', href: '/projects' },
     { label: 'Schedule', href: '/schedule' },
   ],

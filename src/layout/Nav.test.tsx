@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Nav } from './Nav';
 
@@ -72,5 +72,44 @@ describe('Nav', () => {
       if (sh) Object.defineProperty(document.documentElement, 'scrollHeight', sh); else Reflect.deleteProperty(document.documentElement, 'scrollHeight');
       if (ih) Object.defineProperty(window, 'innerHeight', ih); else Reflect.deleteProperty(window, 'innerHeight');
     }
+  });
+
+  describe('mobile menu', () => {
+    it('renders a closed hamburger button with aria state', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      expect(btn).toHaveAttribute('aria-expanded', 'false');
+      expect(btn).toHaveAttribute('aria-controls', 'mobile-menu');
+      expect(document.getElementById('mobile-menu')).toBeNull();
+    });
+
+    it('opens a panel with the same links and active state', () => {
+      render(<MemoryRouter initialEntries={['/']}><Nav /></MemoryRouter>);
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      fireEvent.click(btn);
+      expect(btn).toHaveAttribute('aria-expanded', 'true');
+      const panel = document.getElementById('mobile-menu') as HTMLElement;
+      expect(panel).not.toBeNull();
+      const links = within(panel).getAllByRole('link');
+      expect(links.map((l) => l.textContent)).toEqual([
+        'Home', 'Projects', 'Work Experience', 'Health Tech', 'Non Profit', 'Blog', 'About',
+      ]);
+      const active = links.filter((l) => l.className.includes('bg-teal text-white'));
+      expect(active.map((l) => l.textContent)).toEqual(['Home']);
+    });
+
+    it('closes on link click, Escape, and outside click', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const open = () => fireEvent.click(screen.getByRole('button', { name: /menu/i }));
+      open();
+      fireEvent.click(within(document.getElementById('mobile-menu')!).getByRole('link', { name: 'Projects' }));
+      expect(document.getElementById('mobile-menu')).toBeNull();
+      open();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(document.getElementById('mobile-menu')).toBeNull();
+      open();
+      fireEvent.mouseDown(document.body);
+      expect(document.getElementById('mobile-menu')).toBeNull();
+    });
   });
 });
