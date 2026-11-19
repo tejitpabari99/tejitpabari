@@ -69,7 +69,9 @@ export function localImageDataUri(image) {
   if (!image || !image.startsWith('/') || image === UNSPLASH_PLACEHOLDER) return null;
   const filePath = path.join(ROOT, 'public', image.replace(/^\//, ''));
   if (!existsSync(filePath)) return null;
-  const ext = path.extname(filePath).slice(1);
+  const ext = path.extname(filePath).slice(1).toLowerCase();
+  // satori decodes only png/jpeg/gif/svg; anything else (e.g. webp) renders a text-only card.
+  if (!['png', 'jpg', 'jpeg', 'gif', 'svg'].includes(ext)) return null;
   const b64 = readFileSync(filePath).toString('base64');
   return `data:image/${ext};base64,${b64}`;
 }
