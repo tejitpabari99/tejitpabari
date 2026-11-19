@@ -38,7 +38,7 @@ describe('nonprofit pages', () => {
     expect(screen.getByRole('heading', { name: cfg.SERVICES_HEADING })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: 'All projects' })).toHaveAttribute('id', 'projects');
     expect(screen.getByText(cfg.PROJECTS_SUBTITLE)).toBeInTheDocument();
-    expect(expected).toHaveLength(3);
+    expect(expected.map((p) => p.slug)).toEqual(['auto-emailer', 'partner-event-finder']);
     expect(cardHrefs()).toEqual(expected.map((p) => `/projects/${p.slug}`));
     expect(document.body.textContent).not.toMatch(/clip-verse|onolys/i);
     expect(document.title).toBe('Tejit Pabari | Nonprofit AI Consulting');
