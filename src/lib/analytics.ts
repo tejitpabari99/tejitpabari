@@ -142,7 +142,6 @@ export type AnalyticsEventName =
   | 'live_link_click'
   // SP04 nonprofit site
   | 'book_consultation_click' // {source: 'hero'|'services'}
-  | 'service_toggle' // {service: slug, expanded: true}
   | 'schedule_load'; // {state: 'ok'|'error'|'empty', row_count}
 
 export function trackEvent(
