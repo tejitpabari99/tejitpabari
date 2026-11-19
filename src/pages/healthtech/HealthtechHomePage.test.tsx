@@ -29,7 +29,7 @@ describe('HealthtechHomePage', () => {
     expect(screen.getByText(HEALTHTECH_HERO_COPY)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Visit Onolys' })).toHaveAttribute('href', 'https://onolys.com');
     expect(screen.getByRole('heading', { level: 2, name: 'All projects' })).toHaveAttribute('id', 'projects');
-    expect(expected).toHaveLength(7);
+    expect(expected).toHaveLength(8);
     expect(cardHrefs(document.body)).toEqual(expected.map((p) => `/projects/${p.slug}`));
   });
 
@@ -46,8 +46,8 @@ describe('HealthtechHomePage', () => {
     expect(document.title).toBe('Tejit Pabari | Health Tech');
     const desc = document.querySelector('meta[name="description"]')!.getAttribute('content')!;
     expect(desc.length).toBeLessThan(160);
-    expect(desc).toMatch(/^I build tools that make healthcare easier to understand/);
-    expect(desc.endsWith('care plans.')).toBe(true);
+    expect(desc).toMatch(/^I build tools that make healthcare more accessible/);
+    expect(desc.endsWith('clinical assessments.')).toBe(true);
   });
 
   it('fires project_card_click when a card is clicked', async () => {

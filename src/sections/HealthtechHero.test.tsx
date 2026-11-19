@@ -7,16 +7,24 @@ vi.mock('@/lib/analytics', () => ({ trackEvent }));
 import { HealthtechHero } from './HealthtechHero';
 
 const APPROVED =
-  "I build tools that make healthcare easier to understand, from a self-testing app to an AI companion for doctor visits and plain-language care plans. Today I'm building Onolys, AI that helps check the quality of clinical assessments.";
+  'I build tools that make healthcare more accessible. Currently, I am building Onolys, a platform for quality control of clinical assessments.';
 
 afterEach(() => { cleanup(); trackEvent.mockClear(); });
 
 describe('HealthtechHero', () => {
-  it('renders eyebrow, H1 and sub-label', () => {
+  it('renders eyebrow and H1, no sub-label', () => {
     render(<HealthtechHero />);
     expect(screen.getByText('Health Tech Builder')).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 1, name: 'Tejit Pabari' })).toBeInTheDocument();
-    expect(screen.getByText('Health tech projects')).toBeInTheDocument();
+    expect(screen.queryByText('Health tech projects')).not.toBeInTheDocument();
+  });
+
+  it('shows the portrait on the right (lg:order-2) and text on the left', () => {
+    const { container } = render(<HealthtechHero />);
+    const img = screen.getByAltText('Tejit Pabari');
+    expect(img).toHaveAttribute('src', '/tejit-portrait.webp');
+    expect(img.parentElement?.className).toContain('lg:order-2');
+    expect(container.querySelector('h1')?.parentElement?.className).toContain('lg:order-1');
   });
 
   it('paragraph equals approved copy exactly, no em dash', () => {

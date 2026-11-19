@@ -173,6 +173,14 @@ describe('projectsForSite', () => {
     expect(r.map((p) => p.date)).toEqual(['2024-03-01', '2024-01-01', '2024-01-01', '2023-01-01']);
     expect(r[1].title).toBe('Apple');
   });
+  it('puts pinned slugs first in pin order, then newest first', () => {
+    expect(selectForSite(list, 'main', ['old-main', 'tie-a']).map((p) => p.slug)).toEqual(['old-main', 'tie-a', 'both', 'tie-b']);
+    expect(selectForSite(list, 'healthtech', ['missing', 'both']).map((p) => p.slug)).toEqual(['both', 'new-ht']);
+  });
+  it('real healthtech list pins miti then onolys, main is not pinned', () => {
+    expect(projectsForSite('healthtech').slice(0, 2).map((p) => p.slug)).toEqual(['miti', 'onolys']);
+    expect(projectsForSite('main')[0].slug).not.toBe('miti');
+  });
   it('returns a fresh array and does not mutate the source', () => {
     const before = list.map((p) => p.slug);
     const a = selectForSite(list, 'main');

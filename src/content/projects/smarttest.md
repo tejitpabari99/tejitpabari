@@ -2,10 +2,9 @@
 slug: smarttest
 title: "SMARTtest: HIV & Syphilis Self-Testing App"
 description: >-
-  A smartphone app that makes HIV and syphilis self-testing more accessible.
-  It walks users through the test, helps interpret results, and links them
-  to follow-up care. Downloaded 1,000+ times.
-image: https://images.unsplash.com/photo-1572177812156-58036aae439c
+  An app that guides you through a private at-home HIV and syphilis test and
+  helps you act on the result. Downloaded 1,000+ times.
+image: /projects/smarttest.webp
 tags: [Health Tech]
 techTags: [React Native, Firebase, Twilio, SendGrid, Expo]
 status: Completed
@@ -20,6 +19,8 @@ links:
 date: "2019-01-01"
 sites: [main, healthtech]
 ---
-SMARTtest is a smartphone app that makes HIV and syphilis self-testing more accessible. It walks a user through the test itself, helps interpret the result, and links them to follow-up care, all from a phone. Built with React Native and Firebase, with Twilio and SendGrid handling secure result-sharing, and deployed and tested through Expo.
+**The problem.** Getting tested for HIV and syphilis can feel awkward, and many people never do.
 
-The app has been downloaded 1,000+ times and received national news coverage. The underlying research was published in the journal *AIDS and Behavior* (one of the earliest projects that pointed me toward health tech, years before Juno).
+**What it does.** SMARTtest walks you through the self-test step by step, helps you read the result, and connects you to follow-up care, all from your phone.
+
+**Outcome.** Downloaded 1,000+ times, covered in the news, and published in the journal *AIDS and Behavior*. One of the projects that first pointed me toward health tech.

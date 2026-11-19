@@ -1,13 +1,13 @@
 // src/pages/healthtech/HealthtechHomePage.tsx
-// Hero plus the full health project list (newest first via projectsForSite).
+// Hero plus the full health project list (MITI and Onolys pinned first, then newest first via projectsForSite).
 import { RouteMeta } from '@/components/RouteMeta';
 import { PageContainer } from '@/layout/PageContainer';
 import { HealthtechHero, HEALTHTECH_HERO_COPY } from '@/sections/HealthtechHero';
 import { ProjectListSection } from '@/sections/ProjectListSection';
 import { projectsForSite } from '@/data';
 
-// First sentence of the hero copy; well under 160 characters.
-const DESCRIPTION = HEALTHTECH_HERO_COPY.split('. ')[0] + '.';
+// Full hero copy; under 160 characters.
+const DESCRIPTION = HEALTHTECH_HERO_COPY;
 
 export function HealthtechHomePage() {
   return (

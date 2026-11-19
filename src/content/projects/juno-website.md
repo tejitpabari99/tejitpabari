@@ -2,9 +2,9 @@
 slug: juno-website
 title: Juno website
 description: >-
-  The public website for Juno, an AI companion for medical appointments. It
-  explains what Juno does and points visitors to the app.
-image: https://images.unsplash.com/photo-1572177812156-58036aae439c
+  The home of Juno: a calm, clear site that explains how Juno turns
+  confusing medical information into plain understanding.
+image: /projects/juno-website.webp
 tags: [Health Tech]
 techTags: [React, Web Design, Health Tech]
 status: Completed
@@ -16,4 +16,8 @@ links:
 date: "2026-08-30"
 sites: [main, healthtech]
 ---
-The marketing site for Juno. It introduces the product, explains how Juno helps patients during doctor visits, and links through to the app.
+**What it is.** The public website for Juno, built to make a complex topic feel simple.
+
+**What visitors see.** The promise up front ("Medical clarity, when it matters most"), a look at how Juno explains an appointment from a recording or notes, and the privacy points that matter: no files stored, encrypted and secure.
+
+**What it's for.** Helping patients understand what Juno does in seconds, then start using the app or join the waitlist.

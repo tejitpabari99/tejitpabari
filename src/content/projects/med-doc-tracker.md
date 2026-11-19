@@ -2,12 +2,12 @@
 slug: med-doc-tracker
 title: Med-Doc Tracker
 description: >-
-  A personal tool for storing, organizing, and searching all your medical
-  documents in one place. Built to make the fragmented world of medical
-  records simpler to navigate.
-image: https://images.unsplash.com/photo-1572177812156-58036aae439c
+  All your medical documents in one place, easy to organize and easy to
+  search.
+image: /projects/med-doc-tracker.webp
 tags: [Health Tech]
 techTags: [Document Management, Search, Health Tech]
+status: Completed
 links:
   - label: Website
     href: https://tejitpabari.short.gy/med-doc-tracker
@@ -16,3 +16,8 @@ links:
 date: "2024-06-01"
 sites: [main, healthtech]
 ---
+**The problem.** Medical records end up scattered across portals, emails and paper.
+
+**What it does.** A personal tool to store, organize and search all your medical documents in one place, so the one you need is quick to find.
+
+**Who it's for.** Anyone managing their own health paperwork, or a family member's.
