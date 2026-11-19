@@ -23,25 +23,30 @@ export function Nav() {
   const isHome = pathname === '/';
   const activeSection = isHome ? scrollSection : null;
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const hamburgerRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
 
-  // Close the mobile menu on Escape or a press outside it.
+  // Mobile drawer: Escape closes, body scroll locked, focus moves in and back out.
   useEffect(() => {
-    if (!menuOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
-    const onPress = (e: MouseEvent | TouchEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener('keydown', onKey);
-    document.addEventListener('mousedown', onPress);
-    document.addEventListener('touchstart', onPress);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.removeEventListener('mousedown', onPress);
-      document.removeEventListener('touchstart', onPress);
-    };
+    if (menuOpen) {
+      wasOpen.current = true;
+      closeRef.current?.focus();
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') setMenuOpen(false);
+      };
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', onKey);
+      return () => {
+        document.removeEventListener('keydown', onKey);
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+    if (wasOpen.current) {
+      wasOpen.current = false;
+      hamburgerRef.current?.focus();
+    }
   }, [menuOpen]);
 
   useEffect(() => {
@@ -122,29 +127,54 @@ export function Nav() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6 sm:pt-5 lg:px-8">
-      {/* Mobile: hamburger fixed top-left, dropdown panel below it. */}
-      <div ref={menuRef} className="absolute left-4 top-4 md:hidden">
-        <button
-          type="button"
-          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-          aria-expanded={menuOpen}
-          aria-controls="mobile-menu"
-          onClick={() => setMenuOpen((o) => !o)}
-          className="flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream/92 text-teal-secondary shadow-pill backdrop-blur-md hover:bg-teal-secondary/8"
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-            <path d="M3 5h12M3 9h12M3 13h12" />
-          </svg>
-        </button>
-        {menuOpen && (
-          <nav
-            id="mobile-menu"
-            aria-label="Mobile"
-            className="absolute left-0 top-11 w-60 rounded-2xl border border-teal-secondary/15 bg-cream/95 p-1.5 shadow-pill backdrop-blur-md"
+      {/* Mobile: hamburger fixed top-left; opens a left slide-in drawer. */}
+      <button
+        ref={hamburgerRef}
+        type="button"
+        aria-label="Open menu"
+        aria-expanded={menuOpen}
+        aria-controls="mobile-menu"
+        onClick={() => setMenuOpen(true)}
+        className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream/92 text-teal-secondary shadow-pill backdrop-blur-md hover:bg-teal-secondary/8 md:hidden"
+      >
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M3 5h12M3 9h12M3 13h12" />
+        </svg>
+      </button>
+      <div
+        data-testid="mobile-menu-backdrop"
+        aria-hidden="true"
+        onClick={() => setMenuOpen(false)}
+        className={`fixed inset-0 z-10 bg-teal/40 transition-opacity duration-300 motion-reduce:transition-none md:hidden ${
+          menuOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      />
+      <div
+        id="mobile-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        aria-hidden={!menuOpen}
+        className={`fixed inset-y-0 left-0 z-20 flex w-[80vw] max-w-[300px] flex-col border-r border-teal-secondary/15 bg-cream p-3 shadow-pill transition-[transform,visibility] duration-300 ease-out motion-reduce:transition-none md:hidden ${
+          menuOpen ? 'visible translate-x-0' : 'invisible -translate-x-full'
+        }`}
+      >
+        <div className="mb-2 flex justify-end">
+          <button
+            ref={closeRef}
+            type="button"
+            aria-label="Close menu"
+            onClick={() => setMenuOpen(false)}
+            className="flex h-9 w-9 items-center justify-center rounded-pill text-teal-secondary hover:bg-teal-secondary/8"
           >
-            <ul className="flex flex-col gap-0.5">{ACTIVE_LINKS.map((item) => renderLink(item, true))}</ul>
-          </nav>
-        )}
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              <path d="M4 4l10 10M14 4L4 14" />
+            </svg>
+          </button>
+        </div>
+        <nav aria-label="Mobile">
+          <ul className="flex flex-col gap-0.5">{ACTIVE_LINKS.map((item) => renderLink(item, true))}</ul>
+        </nav>
       </div>
       <div className="mx-auto hidden w-fit max-w-full items-center justify-center rounded-pill border border-teal-secondary/15 bg-cream/92 p-1.5 shadow-pill backdrop-blur-md md:flex">
         <nav aria-label="Primary">

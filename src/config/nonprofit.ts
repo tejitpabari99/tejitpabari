@@ -31,19 +31,19 @@ export const SERVICES: readonly Service[] = [
     slug: 'ai-evaluation',
     title: 'AI evaluation',
     teaser: "Find where AI helps, and where it doesn't.",
-    body: "I audit your team's work, including the tools you already use and any AI already in the mix. Together we list the repetitive tasks and identify a priority and scope for the ones that can be automated. I flag privacy and accuracy risks in plain language so nothing surprises you later. You leave with a short, clear list of what to try first and what to skip.",
+    body: "I audit your team's work, tools and any AI already in use. Together we list repetitive tasks and prioritize the ones worth automating. I flag privacy and accuracy risks in plain language, and you leave with a clear list of what to try first and what to skip.",
   },
   {
     slug: 'automation-ai-workflows',
     title: 'Automation & AI workflows',
     teaser: 'Hand off the repetitive work.',
-    body: "I design automations and agentic AI workflows for repetitive tasks such as mass donor outreach, collecting partner event details, generating reports from data, automated newsletter creation and more. All automations are owned by you, use tools already available to you and come with guides so your team can run and adjust them without me.",
+    body: "I build automations and AI workflows for repetitive tasks like donor outreach, partner event details, reports and newsletters. You own everything, it runs on tools you already have, and it comes with guides so your team can run it without me.",
   },
   {
     slug: 'ai-adoption',
     title: 'AI Adoption and Policy',
     teaser: 'Help your team feel confident with AI tools.',
-    body: "I run workshops on how to best use AI and its limitations, with hands-on practice using real examples from your work. I also coach your team on how to best leverage the tools you already have, so they get more out of them. I guide nonprofits on creating their AI policy and train staff on how to handle sensitive information. The goal is a team that uses AI safely and gets time back.",
+    body: "Hands-on workshops on using AI well and knowing its limits, with examples from your own work. I coach your team to get more from the tools you have, help you write an AI policy, and train staff to handle sensitive information safely.",
   },
 ];
 

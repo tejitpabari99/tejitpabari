@@ -75,41 +75,65 @@ describe('Nav', () => {
   });
 
   describe('mobile menu', () => {
-    it('renders a closed hamburger button with aria state', () => {
+    const panelEl = () => document.getElementById('mobile-menu') as HTMLElement;
+
+    it('renders a closed hamburger button with aria state and a hidden drawer', () => {
       render(<MemoryRouter><Nav /></MemoryRouter>);
       const btn = screen.getByRole('button', { name: 'Open menu' });
       expect(btn).toHaveAttribute('aria-expanded', 'false');
       expect(btn).toHaveAttribute('aria-controls', 'mobile-menu');
-      expect(document.getElementById('mobile-menu')).toBeNull();
+      expect(panelEl()).toHaveAttribute('aria-hidden', 'true');
+      expect(panelEl().className).toContain('-translate-x-full');
     });
 
-    it('opens a panel with the same links and active state', () => {
+    it('opens a left side-panel dialog with the same links and active state', () => {
       render(<MemoryRouter initialEntries={['/']}><Nav /></MemoryRouter>);
       const btn = screen.getByRole('button', { name: 'Open menu' });
       fireEvent.click(btn);
       expect(btn).toHaveAttribute('aria-expanded', 'true');
-      const panel = document.getElementById('mobile-menu') as HTMLElement;
-      expect(panel).not.toBeNull();
+      const panel = panelEl();
+      expect(panel).toHaveAttribute('role', 'dialog');
+      expect(panel).toHaveAttribute('aria-modal', 'true');
+      expect(panel).toHaveAttribute('aria-label', 'Menu');
+      expect(panel).not.toHaveAttribute('aria-hidden', 'true');
+      expect(panel.className).toContain('translate-x-0');
+      expect(panel.className).toContain('left-0');
       const links = within(panel).getAllByRole('link');
       expect(links.map((l) => l.textContent)).toEqual([
         'Home', 'Projects', 'Work Experience', 'Health Tech', 'Non Profit', 'Blog', 'About',
       ]);
       const active = links.filter((l) => l.className.includes('bg-teal text-white'));
       expect(active.map((l) => l.textContent)).toEqual(['Home']);
+      expect(document.body.style.overflow).toBe('hidden');
     });
 
-    it('closes on link click, Escape, and outside click', () => {
+    it('moves focus into the panel on open and back to the hamburger on close', () => {
       render(<MemoryRouter><Nav /></MemoryRouter>);
-      const open = () => fireEvent.click(screen.getByRole('button', { name: /menu/i }));
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      fireEvent.click(btn);
+      expect(document.activeElement).toBe(within(panelEl()).getByRole('button', { name: 'Close menu' }));
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(document.activeElement).toBe(btn);
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('closes on link click, Escape, backdrop click, and close button', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const hamburger = screen.getByRole('button', { name: 'Open menu' });
+      const open = () => fireEvent.click(hamburger);
+      const isClosed = () => expect(hamburger).toHaveAttribute('aria-expanded', 'false');
       open();
-      fireEvent.click(within(document.getElementById('mobile-menu')!).getByRole('link', { name: 'Projects' }));
-      expect(document.getElementById('mobile-menu')).toBeNull();
+      fireEvent.click(within(panelEl()).getByRole('link', { name: 'Projects' }));
+      isClosed();
       open();
       fireEvent.keyDown(document, { key: 'Escape' });
-      expect(document.getElementById('mobile-menu')).toBeNull();
+      isClosed();
       open();
-      fireEvent.mouseDown(document.body);
-      expect(document.getElementById('mobile-menu')).toBeNull();
+      fireEvent.click(screen.getByTestId('mobile-menu-backdrop'));
+      isClosed();
+      open();
+      fireEvent.click(within(panelEl()).getByRole('button', { name: 'Close menu' }));
+      isClosed();
     });
   });
 });
