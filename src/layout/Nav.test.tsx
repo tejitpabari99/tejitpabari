@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { Nav } from './Nav';
 
@@ -72,5 +72,68 @@ describe('Nav', () => {
       if (sh) Object.defineProperty(document.documentElement, 'scrollHeight', sh); else Reflect.deleteProperty(document.documentElement, 'scrollHeight');
       if (ih) Object.defineProperty(window, 'innerHeight', ih); else Reflect.deleteProperty(window, 'innerHeight');
     }
+  });
+
+  describe('mobile menu', () => {
+    const panelEl = () => document.getElementById('mobile-menu') as HTMLElement;
+
+    it('renders a closed hamburger button with aria state and a hidden drawer', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      expect(btn).toHaveAttribute('aria-expanded', 'false');
+      expect(btn).toHaveAttribute('aria-controls', 'mobile-menu');
+      expect(panelEl()).toHaveAttribute('aria-hidden', 'true');
+      expect(panelEl().className).toContain('-translate-x-full');
+    });
+
+    it('opens a left side-panel dialog with the same links and active state', () => {
+      render(<MemoryRouter initialEntries={['/']}><Nav /></MemoryRouter>);
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      fireEvent.click(btn);
+      expect(btn).toHaveAttribute('aria-expanded', 'true');
+      const panel = panelEl();
+      expect(panel).toHaveAttribute('role', 'dialog');
+      expect(panel).toHaveAttribute('aria-modal', 'true');
+      expect(panel).toHaveAttribute('aria-label', 'Menu');
+      expect(panel).not.toHaveAttribute('aria-hidden', 'true');
+      expect(panel.className).toContain('translate-x-0');
+      expect(panel.className).toContain('left-0');
+      const links = within(panel).getAllByRole('link');
+      expect(links.map((l) => l.textContent)).toEqual([
+        'Home', 'Projects', 'Work Experience', 'Health Tech', 'Non Profit', 'Blog', 'About',
+      ]);
+      const active = links.filter((l) => l.className.includes('bg-teal text-white'));
+      expect(active.map((l) => l.textContent)).toEqual(['Home']);
+      expect(document.body.style.overflow).toBe('hidden');
+    });
+
+    it('moves focus into the panel on open and back to the hamburger on close', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const btn = screen.getByRole('button', { name: 'Open menu' });
+      fireEvent.click(btn);
+      expect(document.activeElement).toBe(within(panelEl()).getByRole('button', { name: 'Close menu' }));
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(document.activeElement).toBe(btn);
+      expect(document.body.style.overflow).toBe('');
+    });
+
+    it('closes on link click, Escape, backdrop click, and close button', () => {
+      render(<MemoryRouter><Nav /></MemoryRouter>);
+      const hamburger = screen.getByRole('button', { name: 'Open menu' });
+      const open = () => fireEvent.click(hamburger);
+      const isClosed = () => expect(hamburger).toHaveAttribute('aria-expanded', 'false');
+      open();
+      fireEvent.click(within(panelEl()).getByRole('link', { name: 'Projects' }));
+      isClosed();
+      open();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      isClosed();
+      open();
+      fireEvent.click(screen.getByTestId('mobile-menu-backdrop'));
+      isClosed();
+      open();
+      fireEvent.click(within(panelEl()).getByRole('button', { name: 'Close menu' }));
+      isClosed();
+    });
   });
 });

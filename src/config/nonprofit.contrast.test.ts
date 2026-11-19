@@ -4,7 +4,7 @@
 // does not override green/blue/gray.
 import { describe, expect, it } from 'vitest';
 import colors from 'tailwindcss/colors';
-import { STATUS_COLORS } from './nonprofit';
+import { SERVICE_CARD_STYLES, STATUS_COLORS } from './nonprofit';
 
 const palette = colors as unknown as Record<string, Record<string, string>>;
 
@@ -45,6 +45,22 @@ describe('nonprofit STATUS_COLORS contrast', () => {
       const fg = classes.split(' ').find((c) => c.startsWith('text-'))!;
       const ratio = contrast(resolve(bg), resolve(fg));
       expect(ratio).toBeGreaterThanOrEqual(4.5);
+    });
+  }
+});
+
+describe('service card contrast', () => {
+  // ink / body text colors from tailwind.config.ts
+  const text = { ink: '#162b26', body: '#3E514D' };
+  for (const st of SERVICE_CARD_STYLES) {
+    for (const [name, fg] of Object.entries(text)) {
+      it(`${st.bg} with ${name} text >= 4.5:1`, () => {
+        expect(contrast(resolve(st.bg), fg)).toBeGreaterThanOrEqual(4.5);
+      });
+    }
+    it(`${st.badge} >= 4.5:1`, () => {
+      const [bg, fg] = st.badge.split(' ');
+      expect(contrast(resolve(bg), resolve(fg))).toBeGreaterThanOrEqual(4.5);
     });
   }
 });

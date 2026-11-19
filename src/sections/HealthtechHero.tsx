@@ -1,16 +1,21 @@
 import { Button } from '@/components/Button';
+import { HeroPortrait } from '@/sections/HeroPortrait';
 import { trackEvent } from '@/lib/analytics';
 
 export const ONOLYS_URL = 'https://onolys.com';
 
 export const HEALTHTECH_HERO_COPY =
-  "I build tools that make healthcare easier to understand, from a self-testing app to an AI companion for doctor visits and plain-language care plans. Today I'm building Onolys, AI that helps check the quality of clinical assessments.";
+  'I build tools that make healthcare more accessible. Currently, I am building Onolys, a platform for quality control of clinical assessments.';
 
 export function HealthtechHero() {
   return (
     <section className="relative bg-cream px-8 pb-14 pt-28 sm:pt-32 md:px-10 lg:px-12 lg:pt-36">
-      <div className="mx-auto w-full max-w-content">
-        <div className="w-full max-w-[560px] text-left">
+      <div className="mx-auto grid w-full max-w-content grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.55fr)] lg:gap-8">
+        <div className="order-1 flex items-center justify-center lg:order-2">
+          <HeroPortrait src="/tejit-portrait.webp" />
+        </div>
+
+        <div className="order-2 mx-auto w-full max-w-[560px] text-left lg:order-1 lg:mx-0">
           <p className="mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.28em] text-teal-secondary sm:text-[0.74rem]">
             Health Tech Builder
           </p>
@@ -19,8 +24,6 @@ export function HealthtechHero() {
             Tejit Pabari
           </h1>
 
-          <p className="mt-3 text-[0.94rem] font-semibold text-teal-secondary">Health tech projects</p>
-
           <p className="mt-5 max-w-[32rem] text-[0.94rem] leading-7 text-body">{HEALTHTECH_HERO_COPY}</p>
 
           <div className="mt-7">
@@ -28,7 +31,7 @@ export function HealthtechHero() {
               href={ONOLYS_URL}
               target="_blank"
               rel="noreferrer"
-              className="w-full sm:w-auto"
+              className="w-full min-h-[44px] sm:w-auto"
               onClick={() => trackEvent('outbound_click', { url: ONOLYS_URL, source: 'healthtech_hero', label: 'Visit Onolys' })}
             >
               Visit Onolys

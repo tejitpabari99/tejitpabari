@@ -109,11 +109,29 @@ for (const p of projects) {
   seenProjectSlugs.add(p.slug);
 }
 
-/** Pure filter+sort: cards for `site`, newest first, ties by title. Fresh array. */
-export function selectForSite(list: readonly Project[], site: SiteId): Project[] {
+/** Slugs pinned to the top of a site's list, in this order. The rest follow newest first. */
+export const PINNED_SLUGS: Partial<Record<SiteId, readonly string[]>> = {
+  healthtech: ['miti', 'onolys'],
+};
+
+/** Pure filter+sort: cards for `site`, pinned slugs first (in pin order), then newest first, ties by title. Fresh array. */
+export function selectForSite(
+  list: readonly Project[],
+  site: SiteId,
+  pinned: readonly string[] = PINNED_SLUGS[site] ?? [],
+): Project[] {
+  const rank = (p: Project) => {
+    const i = pinned.indexOf(p.slug);
+    return i === -1 ? Number.POSITIVE_INFINITY : i;
+  };
   return list
     .filter((p) => p.sites.includes(site))
-    .sort((a, b) => b.date.localeCompare(a.date) || a.title.localeCompare(b.title));
+    .sort((a, b) => {
+      const ra = rank(a);
+      const rb = rank(b);
+      if (ra !== rb) return ra < rb ? -1 : 1;
+      return b.date.localeCompare(a.date) || a.title.localeCompare(b.title);
+    });
 }
 
 export function projectsForSite(site: SiteId): Project[] {

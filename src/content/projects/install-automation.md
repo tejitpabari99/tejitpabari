@@ -13,6 +13,6 @@ links:
     icon: github
     primary: true
 date: "2026-11-10"
-sites: [main, nonprofit]
+sites: [main]
 ---
 Part of the Sparehand plugin. It handles the setup steps so a nonprofit team can get the tooling running without doing each install by hand.

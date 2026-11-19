@@ -54,6 +54,11 @@ describe('localImageDataUri', () => {
     expect(result).toMatch(/^data:image\/png;base64,/);
   });
 
+  it('returns null for a format satori cannot decode (webp), so the card renders text-only', () => {
+    writeFileSync(path.join(fixtureDir, 'real.webp'), Buffer.from([0x52, 0x49, 0x46, 0x46]));
+    expect(localImageDataUri('/_fixture-images/real.webp')).toBeNull();
+  });
+
   it('returns null (never throws) for a root-relative path to a missing file', () => {
     expect(localImageDataUri('/_fixture-images/does-not-exist.png')).toBeNull();
   });

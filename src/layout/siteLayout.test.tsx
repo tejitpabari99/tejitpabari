@@ -31,7 +31,7 @@ const NAV_EXPECTED: Record<SiteId, [string, string][]> = {
   ],
   healthtech: [['Home', '/'], ['Projects', '/#projects'], ['Website', 'https://tejitpabari.com']],
   nonprofit: [
-    ['Home', '/'], ['Projects', '/projects'], ['Schedule', '/schedule'], ['Website', 'https://tejitpabari.com'],
+    ['Home', '/'], ['Consultation', '/#consultation'], ['Projects', '/projects'], ['Schedule', '/schedule'], ['Website', 'https://tejitpabari.com'],
   ],
 };
 

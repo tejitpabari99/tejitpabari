@@ -10,19 +10,22 @@ function allStrings(v: unknown, out: string[] = []): string[] {
 }
 
 describe('nonprofit config', () => {
-  it('has 4 services in order', () => {
+  it('has 3 services in order', () => {
     expect(cfg.SERVICES.map((s) => s.slug)).toEqual([
       'ai-evaluation',
       'automation-ai-workflows',
       'ai-adoption',
-      'student-career-mentoring',
     ]);
     expect(cfg.SERVICES.map((s) => s.title)).toEqual([
       'AI evaluation',
       'Automation & AI workflows',
-      'AI adoption',
-      'Student & career mentoring',
+      'AI Adoption and Policy',
     ]);
+  });
+
+  it('has services heading and projects subtitle', () => {
+    expect(cfg.SERVICES_HEADING).toBe('What Services do I provide');
+    expect(cfg.PROJECTS_SUBTITLE).toBe('Check out my active projects used by Non Profits');
   });
 
   it('has no em dash in any exported string', () => {
@@ -41,9 +44,9 @@ describe('nonprofit config', () => {
   it('has hero copy', () => {
     expect(cfg.HERO_EYEBROW).toBe('Nonprofit AI Consulting');
     expect(cfg.HERO_HEADING).toBe('Tejit Pabari');
-    expect(cfg.HERO_TEXT.startsWith('Small nonprofit teams lose hours')).toBe(true);
+    expect(cfg.HERO_TEXT.startsWith("I audit a nonprofit organization's work")).toBe(true);
     expect(cfg.HERO_TEXT.endsWith('Free consultations, no obligation.')).toBe(true);
-    expect(cfg.STATEMENT_HEADING).toBe('What a consultation is');
+    expect(cfg.STATEMENT_HEADING).toBe('What is a consultation');
   });
 
   it('maps statuses case-insensitively, unknown to To do', () => {
@@ -76,11 +79,9 @@ describe('nonprofit config', () => {
 describe('new analytics events', () => {
   it('are accepted by trackEvent types', () => {
     expectTypeOf<'book_consultation_click'>().toExtend<AnalyticsEventName>();
-    expectTypeOf<'service_toggle'>().toExtend<AnalyticsEventName>();
     expectTypeOf<'schedule_load'>().toExtend<AnalyticsEventName>();
     expect(() => {
       trackEvent('book_consultation_click', { source: 'hero' });
-      trackEvent('service_toggle', { service: 'ai-adoption', expanded: true });
       trackEvent('schedule_load', { state: 'ok', row_count: 3 });
     }).not.toThrow();
   });
