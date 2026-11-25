@@ -233,6 +233,6 @@ export default defineConfig({
     // `check:launch` sets `CHECK_LAUNCH=1` to lift the exclusion for that
     // one invocation only, letting its own explicit file argument narrow
     // discovery back down to exactly that one file.
-    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude, 'tests/**', 'admin/**', 'hosting/**', 'migration/**'] : [...configDefaults.exclude, 'scripts/**', 'tests/**', 'admin/**', 'hosting/**', 'migration/**'],
+    exclude: process.env.CHECK_LAUNCH === '1' ? [...configDefaults.exclude, 'tests/**', 'admin/**', 'hosting/**', 'migration/**', 'workers/**'] : [...configDefaults.exclude, 'scripts/**', 'tests/**', 'admin/**', 'hosting/**', 'migration/**', 'workers/**'],
   },
 });
