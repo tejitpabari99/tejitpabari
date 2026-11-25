@@ -139,3 +139,4 @@ Enabled services (48): includes firebase, firebasehosting, firebaserules, identi
 - Gemini quota 2026-11-18: serviceusage consumer overrides set generate_content_requests_per_minute_per_project_per_user 100->5 (per-user, all regions) on firebasevertexai + firebaseml; no project-level limit exists; generativelanguage untouched.
 - Custom domains 2026-11-18: nonprofit/np/healthtech/htech CNAME + _acme-challenge TXT added in Cloudflare; Hosting still pending at 07:02Z. htech was proxied (orange cloud); owner to set DNS-only.
 - T10 migration 2026-11-18: VPS export (60 ideas, 18 links, settings) migrated to tejitpabari-99 Firestore via owner ADC; 0 errors; click counts (clicks/lastClicked) dropped by design; idea agent-docs-viewer intentionally not migrated (owner). ADC file deleted after.
+- Phase G 2026-11-25: owner deleted the `cc` DNS record; `migration/cc-content` removed (tests use `tests/fixtures/cc-content`).
