@@ -23,13 +23,33 @@ describe('esc', () => {
   });
 });
 
+describe('/stats plugin', () => {
+  it('shows per-plugin table and honors ?plugin= filter', async () => {
+    await ev({ org: 'a', plugin: 'sparehand' });
+    await ev({ org: 'b', plugin: 'thepass' });
+    await ev({ org: 'c', plugin: null });
+    const all = await (await page()).text();
+    expect(all).toContain('Per plugin');
+    expect(all).toContain('<td>thepass</td>');
+    expect(all).toContain('<td>unknown</td>');
+    const f = await (await page('?plugin=thepass')).text();
+    expect(f).toMatch(/id="active-orgs">1</);
+    expect(f).toContain('Plugin: thepass');
+    expect(f).not.toContain('<td>a</td>');
+  });
+  it('escapes a hostile plugin filter', async () => {
+    const f = await (await page('?plugin=%3Cscript%3E')).text();
+    expect(f).not.toContain('<script>');
+  });
+});
+
 describe('/stats HTML', () => {
   it('AC7: empty DB -> 200 HTML, No data yet rows, zeros', async () => {
     const res = await page();
     expect(res.status).toBe(200);
     expect(res.headers.get('content-type')).toMatch(/^text\/html/);
     const body = await res.text();
-    expect(body.match(/No data yet/g)).toHaveLength(6);
+    expect(body.match(/No data yet/g)).toHaveLength(7);
     expect(body).toMatch(/<div class="big" id="active-orgs">0<\/div>/);
     expect(body).toContain('Production only');
   });

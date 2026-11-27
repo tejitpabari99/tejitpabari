@@ -55,13 +55,39 @@ describe('auth (AC5)', () => {
   });
 });
 
+describe('queryStats plugin dimension', () => {
+  it('groups per plugin, null shown as unknown', async () => {
+    await ev({ org: 'a', plugin: 'sparehand', n: 2 });
+    await ev({ org: 'b', plugin: 'thepass', n: 3 });
+    await ev({ org: 'c', plugin: 'thepass', n: 4 });
+    await ev({ org: 'd', plugin: null });
+    const s = await stats();
+    const by = Object.fromEntries(s.plugins.map((p) => [p.plugin, p]));
+    expect(by.thepass).toMatchObject({ events: 2, batches: 2, items: 7, orgs: 2 });
+    expect(by.sparehand).toMatchObject({ events: 1, orgs: 1 });
+    expect(by.unknown).toMatchObject({ events: 1 });
+  });
+  it('plugin filter restricts all tables; unknown matches NULL', async () => {
+    await ev({ org: 'a', plugin: 'sparehand' });
+    await ev({ org: 'b', plugin: 'thepass' });
+    await ev({ org: 'c', plugin: null });
+    const t = await stats({ plugin: 'thepass' });
+    expect(t.activeOrgs).toBe(1);
+    expect(t.totals.events).toBe(1);
+    expect(t.orgs.map((o) => o.org)).toEqual(['b']);
+    expect(t.plugins).toHaveLength(3);
+    const u = await stats({ plugin: 'unknown' });
+    expect(u.orgs.map((o) => o.org)).toEqual(['c']);
+  });
+});
+
 describe('queryStats zero data', () => {
   it('returns empty sets and zeros without throwing', async () => {
     const s = await stats();
     expect(s.activeOrgs).toBe(0);
     expect(s.activeOrgsByMonth).toEqual([]);
     expect(s.totals).toMatchObject({ events: 0, uids: 0, items: 0, first: null, last: null });
-    for (const k of ['toolMonth', 'toolAllTime', 'orgs', 'origins', 'failingSteps']) expect(s[k]).toEqual([]);
+    for (const k of ['plugins', 'toolMonth', 'toolAllTime', 'orgs', 'origins', 'failingSteps']) expect(s[k]).toEqual([]);
   });
 });
 

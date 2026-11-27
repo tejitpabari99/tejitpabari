@@ -14,14 +14,19 @@ function cutoff(now) {
 
 // One D1 batch of aggregate SELECTs. All values are bound; the only dynamic SQL
 // is the mode literal and placeholder lists sized from constants.
-export async function queryStats(db, { includeTest = false, now = new Date(), excluded = ORGS_EXCLUDE } = {}) {
+export async function queryStats(db, { includeTest = false, now = new Date(), excluded = ORGS_EXCLUDE, plugin = null } = {}) {
   const modeSql = includeTest ? '' : " AND mode = 'prod'";
   const exclSql = excluded.length ? ` AND (org IS NULL OR org NOT IN (${ph(excluded)}))` : '';
   const known = ` AND origin IN (${ph(KNOWN_ORIGINS)})`;
-  const baseAll = `1=1${modeSql}${exclSql}`; // no origin filter (origins table)
+  const baseNoPlugin = `1=1${modeSql}${exclSql}${known}`; // used by the per-plugin table (never plugin-filtered)
+  const bNoPlugin = [...excluded, ...KNOWN_ORIGINS];
+  // Optional plugin filter; 'unknown' matches rows with NULL plugin. Value is bound, never interpolated.
+  const plugSql = plugin == null ? '' : plugin === 'unknown' ? ' AND plugin IS NULL' : ' AND plugin = ?';
+  const plugP = plugin == null || plugin === 'unknown' ? [] : [plugin];
+  const baseAll = `1=1${modeSql}${exclSql}${plugSql}`; // no origin filter (origins table)
   const base = `${baseAll}${known}`;
-  const bAll = [...excluded];
-  const b = [...excluded, ...KNOWN_ORIGINS];
+  const bAll = [...excluded, ...plugP];
+  const b = [...excluded, ...plugP, ...KNOWN_ORIGINS];
   const act = `event IN (${ph(ACTIVE_EVENTS)}) AND org IS NOT NULL`;
   const actCase = `COUNT(DISTINCT CASE WHEN ${act} THEN org END)`;
   const since = cutoff(now);
@@ -50,6 +55,10 @@ export async function queryStats(db, { includeTest = false, now = new Date(), ex
         GROUP BY org ORDER BY batches DESC, items DESC, org ASC LIMIT 200`, ...b),
     P(`SELECT origin, COUNT(*) AS events, COUNT(DISTINCT org) AS orgs FROM events
         WHERE ${baseAll} GROUP BY origin ORDER BY events DESC, origin ASC`, ...bAll),
+    P(`SELECT COALESCE(plugin, 'unknown') AS plugin, COUNT(*) AS events,
+        SUM(event = 'batch_done') AS batches, COALESCE(SUM(n), 0) AS items,
+        ${actCase} AS orgs, COUNT(DISTINCT uid) AS uids FROM events WHERE ${baseNoPlugin}
+        GROUP BY plugin ORDER BY events DESC, plugin ASC`, ...ACTIVE_EVENTS, ...bNoPlugin),
     P(`SELECT tool_name, COALESCE(step, '(none)') AS step, COALESCE(reason, '(none)') AS reason,
         COUNT(*) AS count FROM events WHERE ${base} AND event = 'step_failed'
         GROUP BY tool_name, step, reason ORDER BY count DESC, tool_name ASC, step ASC LIMIT 20`, ...b),
@@ -58,6 +67,8 @@ export async function queryStats(db, { includeTest = false, now = new Date(), ex
 
   return {
     includeTest,
+    plugin,
+    plugins: rows(7),
     totals: rows(0)[0],
     activeOrgs: rows(1)[0].orgs,
     activeOrgsByMonth: rows(2),
@@ -65,6 +76,6 @@ export async function queryStats(db, { includeTest = false, now = new Date(), ex
     toolAllTime: rows(4),
     orgs: rows(5),
     origins: rows(6),
-    failingSteps: rows(7),
+    failingSteps: rows(8),
   };
 }

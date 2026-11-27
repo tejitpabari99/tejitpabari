@@ -7,6 +7,9 @@ import { renderStats, STATS_HEADERS } from './html.js';
 const TEXT = { 'Content-Type': 'text/plain; charset=utf-8' };
 const ROBOTS = 'User-agent: *\nAllow: /ping\n';
 
+// Same cleaning as /ping `plugin`; empty -> no filter.
+const normPluginFilter = (s) => (s ?? '').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 30) || null;
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -34,7 +37,7 @@ export default {
         return new Response('Stats not configured', { status: 503, headers: { ...TEXT, 'Cache-Control': 'no-store' } });
       }
       if (!(await checkAuth(request, env.STATS_PASSWORD))) return unauthorized();
-      const stats = await queryStats(env.DB, { includeTest: url.searchParams.get('test') === '1' });
+      const stats = await queryStats(env.DB, { includeTest: url.searchParams.get('test') === '1', plugin: normPluginFilter(url.searchParams.get('plugin')) });
       return new Response(renderStats(stats), { status: 200, headers: STATS_HEADERS });
     }
 
