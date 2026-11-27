@@ -44,6 +44,7 @@ export function renderStats(s, now = new Date()) {
   const toggle = s.includeTest
     ? '<a href="/stats">Production only</a>'
     : '<a href="/stats?test=1">Include test runs</a>';
+  const plugLabel = s.plugin ? ` &middot; ${esc('Plugin: ' + s.plugin)} &middot; <a href="/stats${s.includeTest ? '?test=1' : ''}">All plugins</a>` : '';
   const t = s.totals;
   const totals = table(
     [
@@ -62,13 +63,17 @@ export function renderStats(s, now = new Date()) {
 <title>Usage stats</title>
 <style>${CSS}</style></head><body>
 <h1>Usage stats</h1>
-<p class="meta">${esc(modeLabel)} &middot; ${toggle} &middot; ${esc('Generated ' + gen + ' UTC')}</p>
+<p class="meta">${esc(modeLabel)} &middot; ${toggle}${plugLabel} &middot; ${esc('Generated ' + gen + ' UTC')}</p>
 <h2>Active orgs</h2>
 <div class="big" id="active-orgs">${esc(s.activeOrgs)}</div>
 <p class="meta">Orgs with at least one batch or guide start (known origins only).</p>
 ${table([{ key: 'month', label: 'Month' }, { key: 'orgs', label: 'Active orgs', num: true }], s.activeOrgsByMonth)}
 <h2>Totals</h2>
 ${totals}
+${section('Per plugin', [
+    { key: 'plugin', label: 'Plugin' }, { key: 'events', label: 'Events', num: true }, { key: 'batches', label: 'Batches', num: true },
+    { key: 'items', label: 'Items', num: true }, { key: 'orgs', label: 'Active orgs', num: true }, { key: 'uids', label: 'Distinct uids', num: true },
+  ], s.plugins)}
 ${section('Per tool and month (last 24)', [{ key: 'tool_name', label: 'Tool' }, { key: 'month', label: 'Month' }, ...TOOL_COLS], s.toolMonth)}
 ${section('Per tool, all time', [{ key: 'tool_name', label: 'Tool' }, ...TOOL_COLS], s.toolAllTime)}
 ${section('Orgs (top 200 by batches)', [

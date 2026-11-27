@@ -10,7 +10,7 @@ describe('required fields', () => {
     expect(r).toMatchObject({
       tool_type: 'plugin', tool_name: 'start', event: 'setup_done', mode: 'prod',
       v: null, org: null, uid: null, n: null, ok: null, fail: null,
-      step: null, reason: null, origin: 'other', run: null, extras: null,
+      step: null, reason: null, origin: 'other', run: null, extras: null, plugin: null,
     });
     expect(r.ts).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
   });
@@ -164,8 +164,28 @@ describe('t and reserved keys', () => {
   });
   it('row has exactly the insert columns', () => {
     expect(Object.keys(n()).sort()).toEqual(
-      ['ts', 'tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid', 'n', 'ok', 'fail', 'step', 'reason', 'origin', 'run', 'extras'].sort(),
+      ['ts', 'tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid', 'n', 'ok', 'fail', 'step', 'reason', 'origin', 'run', 'extras', 'plugin'].sort(),
     );
+  });
+});
+
+describe('plugin', () => {
+  it('parses plugin: trim, lowercase, strip, max 30', () => {
+    expect(n('plugin=sparehand').plugin).toBe('sparehand');
+    expect(n('plugin=%20ThePass%20').plugin).toBe('thepass');
+    expect(n('plugin=a%20b!c_d-e').plugin).toBe('abc_d-e');
+    expect(n('plugin=' + 'a'.repeat(40)).plugin).toBe('a'.repeat(30));
+  });
+  it('null when absent or empty after cleaning', () => {
+    expect(n().plugin).toBeNull();
+    expect(n('plugin=').plugin).toBeNull();
+    expect(n('plugin=%21%21').plugin).toBeNull();
+  });
+  it('first value wins and plugin is not in extras', () => {
+    const r = n('plugin=thepass&plugin=sparehand&foo=bar');
+    expect(r.plugin).toBe('thepass');
+    expect(JSON.parse(r.extras)).toEqual({ foo: 'bar' });
+    expect(n('plugin=thepass').extras).toBeNull();
   });
 });
 

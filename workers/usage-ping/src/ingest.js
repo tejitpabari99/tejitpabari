@@ -7,7 +7,7 @@ const REASONS = ['no_access', 'not_found', 'quota', 'bad_input', 'other'];
 const UID_RE = /^u_[0-9a-f]{8}$/;
 const KNOWN = new Set([
   'tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid', 'origin',
-  'n', 'ok', 'fail', 'step', 'reason', 'x_run',
+  'n', 'ok', 'fail', 'step', 'reason', 'x_run', 'plugin',
 ]);
 // Reserved: ignored (t) or server-derived (ts, id, country, client); never go to extras.
 const RESERVED = new Set(['t', 'ts', 'id', 'country', 'client']);
@@ -95,6 +95,7 @@ export function normalizePing(url, uaHeader = null) {
     reason,
     origin: deriveOrigin(get('origin'), uaHeader),
     run: orNull(clean(get('x_run'), /[^a-z0-9_-]/g, 40)),
+    plugin: orNull(clean(get('plugin'), /[^a-z0-9_-]/g, 30)),
     extras: buildExtras(sp),
   };
 }

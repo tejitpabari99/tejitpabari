@@ -4,7 +4,7 @@ import { env } from 'cloudflare:test';
 const readme = env.README_TEXT;
 
 describe('README coverage (Task 6)', () => {
-  const params = ['tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid', 'origin', 'n', 'ok', 'fail', 'step', 'reason', 'x_run', 't'];
+  const params = ['tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid', 'origin', 'n', 'ok', 'fail', 'step', 'reason', 'x_run', 'plugin', 't'];
   it.each(params)('mentions contract param `%s`', (p) => {
     expect(readme).toContain('`' + p + '`');
   });

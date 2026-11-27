@@ -1,6 +1,6 @@
 const COLS = [
   'ts', 'tool_type', 'tool_name', 'event', 'mode', 'v', 'org', 'uid',
-  'n', 'ok', 'fail', 'step', 'reason', 'origin', 'run', 'extras',
+  'n', 'ok', 'fail', 'step', 'reason', 'origin', 'run', 'extras', 'plugin',
 ];
 const SQL = `INSERT OR IGNORE INTO events (${COLS.join(', ')}) VALUES (${COLS.map(() => '?').join(', ')})`;
 

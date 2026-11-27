@@ -12,7 +12,7 @@ Source of truth for design and the full contract table:
 |---|---|
 | `GET /ping` | Validate, normalize, store one row, **always** answer `200 ok` (`text/plain`, `Cache-Control: no-store`), valid or not. Never redirects. DB failure is logged and swallowed. HEAD: no body, nothing stored. URL longer than 2048 chars: `ok`, not stored. |
 | `GET /robots.txt` | `User-agent: *` / `Allow: /ping`. Does not mention `/stats`. |
-| `GET /stats` | Basic auth (user `admin`, password = secret `STATS_PASSWORD`). 401 with `WWW-Authenticate: Basic realm="stats"` on missing/wrong creds, 503 if the secret is unset (fail closed). Server-rendered HTML, no JS. `?test=1` includes test runs. |
+| `GET /stats` | Basic auth (user `admin`, password = secret `STATS_PASSWORD`). 401 with `WWW-Authenticate: Basic realm="stats"` on missing/wrong creds, 503 if the secret is unset (fail closed). Server-rendered HTML, no JS. `?test=1` includes test runs. `?plugin=<name>` filters every table to one plugin (`unknown` = rows without plugin); a "Per plugin" table always lists all plugins. |
 | anything else | `404`, nothing stored. Non-GET is 404. |
 
 ## /ping contract
@@ -33,6 +33,7 @@ A row is stored only if `tool_type`, `tool_name` and `event` are all non-empty a
 | `n`, `ok`, `fail` | no | integer 0..5000, otherwise NULL |
 | `step` | no | lowercase, `[a-z0-9_]`, max 50 |
 | `reason` | no | `no_access`, `not_found`, `quota`, `bad_input`, `other`; unknown becomes `other`; omitted is NULL |
+| `plugin` | no | which plugin sent the ping (`sparehand`, `thepass`): lowercase, trim, `[a-z0-9_-]`, max 30; empty becomes NULL (shown as `unknown` in stats). Never in extras. Migration 0002 backfilled all pre-existing rows to `sparehand` |
 | `x_run` | no | run id for dedupe: lowercase, `[a-z0-9_-]`, max 40; stored in column `run`, never in extras |
 | `t` | no | reserved cache-buster; ignored, not stored. Clients should add a random `t` |
 | any other key | no | goes to `extras` JSON: key lowercased `[a-z0-9_]` max 30, value trimmed max 100, max 20 keys, <= 1024 bytes, `@` values become `redacted` |
